@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Darts Master Pro - Ultimate Edition</title>
+    <style>
+        :root { --green: #27ae60; --orange: #e67e22; --dark: #1a1a1a; --red: #c0392b; --blue: #2980b9; --purple: #8e44ad; --gold: #f1c40f; }
+        
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: white; text-align: center; margin: 0; padding-bottom: 120px; }
+        .hidden { display: none !important; }
+        .container { padding: 10px; max-width: 900px; margin: auto; }
+        
+        button { 
+            background: var(--green); border: none; padding: 12px 18px; 
+            color: white; border-radius: 8px; cursor: pointer; font-size: 14px; margin: 4px;
+            font-weight: bold; transition: 0.2s; min-width: 140px;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+        }
+        button:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
+        button:hover { background: #2ecc71; }
+        button.secondary { background: var(--orange); }
+        button.blue { background: var(--blue); }
+        button.purple { background: var(--purple); }
+        button.gray { background: #7f8c8d; }
+        button.exit-game { background: var(--red); margin-top: 20px; width: 100%; max-width: 300px; border: 2px solid white; }
+
+        /* Sääntö-näkymä */
+        .rules-display { 
+            background: #333; padding: 25px; border-radius: 15px; 
+            border: 2px solid var(--gold); text-align: left; 
+            margin: 20px 0; font-size: 15px; line-height: 1.7;
+            max-height: 60vh; overflow-y: auto;
+        }
+        .rules-display h4 { color: var(--gold); margin: 15px 0 5px 0; text-transform: uppercase; border-bottom: 1px solid #555; }
+        .rules-display p { margin-top: 5px; }
+
+        /* Modal */
+        #custom-confirm {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 3000;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        .confirm-box {
+            background: #2c3e50; padding: 30px; border-radius: 20px;
+            border: 3px solid var(--red); max-width: 350px; width: 85%;
+            box-shadow: 0 0 30px rgba(192, 57, 43, 0.4);
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* Tikkataulu & Peli-UI */
+        #timer-box { background: var(--red); padding: 10px; border-radius: 10px; margin: 5px auto; max-width: 300px; border: 2px solid white; }
+        #timer-bar-fill { width: 100%; height: 10px; background: var(--gold); transition: width 0.1s linear; border-radius: 5px; }
+
+        #dartboard-container { position: relative; width: 300px; height: 300px; margin: 10px auto; }
+        .disabled-board { opacity: 0.2; pointer-events: none; }
+        #dartboard-svg { width: 100%; height: 100%; }
+        .segment { stroke: #333; stroke-width: 0.5; cursor: pointer; }
+        .board-text { fill: white; font-size: 10px; font-weight: bold; pointer-events: none; }
+
+        #warfare-controls { margin: 20px auto; max-width: 400px; }
+        .hit-btn { background: var(--red); font-size: 24px; padding: 30px; width: 100%; margin-bottom: 10px; border: 3px solid white; }
+
+        #scoreboard { 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(85px, 1fr)); gap: 5px;
+            background: #111; padding: 10px; position: fixed; bottom: 0; width: 100%; border-top: 3px solid var(--green);
+            max-height: 25vh; overflow-y: auto; z-index: 1000;
+        }
+        .player-box { background: #222; padding: 5px; border-radius: 4px; border: 1px solid #444; font-size: 10px; }
+        .active-p { border-color: var(--green); background: #1b4d2e; font-weight: bold; }
+        .done-p { opacity: 0.5; background: #333; }
+
+        input, select { padding: 10px; font-size: 16px; border-radius: 5px; margin: 5px; width: 150px; }
+        label { font-size: 14px; font-weight: bold; display: block; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- VARMISTUS-MODAL -->
+    <div id="custom-confirm" class="hidden">
+        <div class="confirm-box">
+            <h3>⚠️ VAROITUS</h3>
+            <p>Haluatko varmasti lopettaa nykyisen pelin ja palata etusivulle?</p>
+            <button onclick="confirmYes()" class="secondary" style="width: 100%; margin-bottom: 10px;">KYLLÄ, LOPETA PELI</button>
+            <button onclick="confirmNo()" class="gray" style="width: 100%;">PERUUTA</button>
+        </div>
+    </div>
+
+    <!-- ETUSIVU -->
+    <div id="home-screen" class="container">
+        <h1>🎯 DARTS MASTER PRO</h1>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 5px;">
+            <button onclick="openSettings('100')">Peli 100</button>
+            <button onclick="openSettings('101')" class="secondary">Peli 101-901</button>
+            <button onclick="openSettings('shanghai')" class="blue">Shanghai</button>
+            <button onclick="openSettings('halveit')" class="blue">Halve It</button>
+            <button onclick="openSettings('clock')" class="purple">Kellon ympäri</button>
+            <button onclick="openSettings('killer')" class="purple">Killer</button>
+            <button onclick="openSettings('scricket')" class="blue">Simple Cricket</button>
+            <button onclick="openSettings('ccricket')" class="blue">Cut Throat</button>
+            <button onclick="openSettings('golf')" class="purple">Golf</button>
+            <button onclick="openSettings('prisoner')" class="secondary">Vanginvartija</button>
+            <button onclick="openSettings('fives')" class="secondary">Viitoset</button>
+            <button onclick="openSettings('encricket')" class="blue">English Cricket</button>
+            <button onclick="openSettings('warfare')" class="blue">Taistelu</button>
+        </div>
+    </div>
+
+    <!-- ASETUKSET -->
+    <div id="settings-screen" class="container hidden">
+        <h2 id="stitle">Ladataan...</h2>
+        <button onclick="showRules()" class="blue" style="width: 100%; max-width: 300px; margin: 10px 0;">📖 LUE PELIN SÄÄNNÖT</button>
+        <div id="p-count-area">
+            <label>Pelaajien määrä (1-8):</label>
+            <input type="number" id="p-count" value="2" min="1" max="8">
+        </div>
+        <div id="dynamic-settings"></div>
+        <button onclick="startGame()" style="margin-top: 20px; font-size: 18px; padding: 15px 30px;">ALOITA PELI ➔</button><br>
+        <button onclick="showScreen('home-screen')" class="gray">TAKASIN ETUSIVULLE</button>
+    </div>
+
+    <!-- SÄÄNNÖT -->
+    <div id="rules-screen" class="container hidden">
+        <h2 id="rules-game-title">Pelin säännöt</h2>
+        <div class="rules-display" id="rules-text-content"></div>
+        <button onclick="showScreen('settings-screen')" class="gray" style="font-size: 18px; padding: 15px 30px;">⬅ TAKASIN ASETUKSIIN</button>
+    </div>
+
+    <!-- PELINÄKYMÄ -->
+    <div id="game-screen" class="container hidden">
+        <div id="info-box" style="background:#2c3e50; padding:10px; border-radius:10px;">
+            <h2 id="turn-txt" style="margin:5px 0;">Pelaaja 1</h2>
+            <div id="mode-hint" style="color:var(--gold); font-weight:bold;">KOHDE</div>
+            <div id="darts" style="font-size:24px; color:var(--gold);">● ● ●</div>
+            <div id="hit-txt">Heitä tikka</div>
+        </div>
+
+        <div id="timer-box" class="hidden">
+            VAIHTO: <span id="timer-num">5</span>s
+            <div id="timer-bar-fill"></div>
+        </div>
+        
+        <div id="dartboard-container">
+            <svg id="dartboard-svg" viewBox="0 0 250 250">
+                <circle cx="125" cy="125" r="120" fill="#000" />
+                <g id="board-g"></g>
+                <circle cx="125" cy="125" r="12" fill="#27ae60" class="segment" id="bull-outer" />
+                <circle cx="125" cy="125" r="5" fill="#c0392b" class="segment" id="bull-inner" />
+            </svg>
+        </div>
+
+        <div id="warfare-controls" class="hidden">
+            <button class="hit-btn" onclick="handleWarfareAction(true)">OSUI! 💥</button>
+            <button class="miss-btn" onclick="handleWarfareAction(false)" style="background:#555; padding:15px; width:100%;">OHI 💨</button>
+        </div>
+
+        <button onclick="nextPlayerManual()" class="secondary">VAIHDA PELAAJAA HETI</button><br>
+        <button onclick="confirmExitToHome()" class="exit-game">🛑 LOPETA PELI</button>
+    </div>
+
+    <!-- LOPPUTULOKSET -->
+    <div id="victory-screen" class="hidden">
+        <h1>🏆 LOPPUTULOKSET</h1>
+        <div id="results-list" style="font-size:18px; margin:20px; text-align: left; display: inline-block;"></div>
+        <button onclick="startGame()" class="secondary">PELAA UUDELLEEN</button><br>
+        <button onclick="showScreen('home-screen')" class="gray">PÄÄVALIKKOON</button>
+    </div>
+
+    <div id="scoreboard" class="hidden"></div>
+
+    <script>
+        let players = [], curIdx = 0, goal = 100, mode = '100';
+        let darts = 0, turnHits = [], winners = 0, autoTimer = null;
+        let currentRound = 1;
+        const boardValues = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+
+        const gameData = {
+            '100': { 
+                title: "Peli 100", 
+                rules: `<h4>Tavoite</h4><p>Kerää mahdollisimman nopeasti valittu pistemäärä (esim. 100 tai 500).</p>
+                        <h4>Pelin kulku</h4><p>Jokainen pelaaja heittää vuorollaan 3 tikkaa. Pisteet lasketaan yhteen ja lisätään pelaajan kokonaispistemäärään.</p>
+                        <h4>Pisteytys</h4><p>Kaikki taulun osumat lasketaan. Pelin voittaa se, joka saavuttaa tai ylittää tavoitteen ensimmäisenä. Tässä pelissä ei ole 'Bust'-sääntöä, eli voit heittää tavoitteen yli ilman rangaistusta.</p>`,
+                settings: `<label>Tavoitepisteet:</label><input type="number" id="goal-score" value="100" step="50">` 
+            },
+            '101': { 
+                title: "Peli 101-901", 
+                rules: `<h4>Tavoite</h4><p>Vähennä pisteesi tasan nollaan.</p>
+                        <h4>Pelin kulku</h4><p>Aloitatte valitusta pistemäärästä (esim. 301 tai 501). Jokainen heittämäsi piste vähennetään tästä summasta.</p>
+                        <h4>Bust-sääntö</h4><p>Jos heität enemmän pisteitä kuin sinulla on jäljellä, pisteesi eivät muutu ja vuorosi loppuu heti. Tätä kutsutaan 'Bustiksi'. Sinun on päästävä tasan nollaan voittaaksesi.</p>`,
+                settings: `<label>Aloituspisteet:</label><input type="number" id="goal-score" value="301" step="100">` 
+            },
+            'shanghai': { 
+                title: "Shanghai", 
+                rules: `<h4>Tavoite</h4><p>Kerää eniten pisteitä kierroksilla 1-7 tai voita välittömästi tekemällä 'Shanghai'.</p>
+                        <h4>Pelin kulku</h4><p>Peli kestää 7 kierrosta. Kierroksella 1 heitetään vain numeroon 1, kierroksella 2 vain numeroon 2, jne. Osumat muihin numeroihin antavat 0 pistettä.</p>
+                        <h4>Shanghai-voitto</h4><p>Jos pelaaja osuu samalla vuorolla saman kierroksen numeroon kolmesti niin, että hän saa Singlen, Tuplan ja Triplan, hän tekee 'Shanghain' ja voittaa pelin välittömästi pisteistä huolimatta.</p>`,
+                settings: "" 
+            },
+            'halveit': { 
+                title: "Halve It", 
+                rules: `<h4>Tavoite</h4><p>Kerää mahdollisimman korkea pistemäärä välttämällä puolittumisia.</p>
+                        <h4>Pelin kulku</h4><p>Pelissä heitetään tiettyjä kohteita järjestyksessä: 20, 19, Mikä tahansa Tupla, 18, 17, Mikä tahansa Tripla, 16, 15 ja häränsilmä (Bull).</p>
+                        <h4>Puolittumissääntö</h4><p>Jos pelaaja ei osu kierroksen kohteeseen yhdelläkään kolmesta tikastaan, hänen siihen asti keräämänsä kokonaispistemäärä puolittuu välittömästi. Jos pisteitä on 0, ne pysyvät nollassa.</p>`,
+                settings: "" 
+            },
+            'clock': { 
+                title: "Kellon ympäri", 
+                rules: `<h4>Tavoite</h4><p>Kierrä numerot 1-20 (tai valittu tavoite) järjestyksessä.</p>
+                        <h4>Pelin kulku</h4><p>Pelaajien on osuttava numeroon 1 ennen kuin he voivat siirtyä numeroon 2, ja niin edelleen. Vain osuma kohdalla olevaan numeroon lasketaan.</p>
+                        <h4>Voittaminen</h4><p>Ensimmäinen pelaaja, joka saavuttaa tavoitenumeron (yleensä 20), voittaa pelin. Tuplat ja triplat lasketaan vain yhtenä osumana tässä pelimuodossa.</p>`,
+                settings: `<label>Tavoitenumero:</label><select id="clock-goal"><option value="5">1-5</option><option value="10">1-10</option><option value="20" selected>1-20</option></select>` 
+            },
+            'killer': { 
+                title: "Killer", 
+                rules: `<h4>Vaihe 1: Killeriksi tuleminen</h4><p>Jokaiselle pelaajalle on arvottu oma numero. Heitä omaa numeroasi, kunnes saat siihen 3 osumaa (Tupla=2 osumaa, Tripla=3). Nyt olet 'Killer'.</p>
+                        <h4>Vaihe 2: Jahtaus</h4><p>Killerinä yrität osua vastustajien numeroihin poistaaksesi heiltä elämiä. Jos Killer osuu omaan numeroonsa vahingossa, hän menettää itse elämän.</p>
+                        <h4>Putoaminen</h4><p>Kun elämät loppuvat, putoat pelistä. Viimeinen pelaaja elossa on voittaja.</p>`,
+                settings: `<label>Elämät:</label><input type="number" id="killer-lives" value="3" min="1">` 
+            },
+            'scricket': { 
+                title: "Simple Cricket", 
+                rules: `<h4>Tavoite</h4><p>Sulje kaikki pelin numerot mahdollisimman nopeasti.</p>
+                        <h4>Pelin kulku</h4><p>Pelin numerot ovat 15, 16, 17, 18, 19, 20 ja häränsilmä (Bull). Sinun on osuttava kuhunkin numeroon 3 kertaa 'sulkeaksesi' sen.</p>
+                        <h4>Pisteytys</h4><p>Tupla on kaksi osumaa ja tripla kolme osumaa kyseiseen numeroon. Kun numero on suljettu, siihen osutut lisätikat eivät enää vaikuta peliin. Ensimmäinen kaikki sulkenut voittaa.</p>`,
+                settings: "" 
+            },
+            'ccricket': { 
+                title: "Cut Throat Cricket", 
+                rules: `<h4>Tavoite</h4><p>Sulje numerot ja pidä pistemääräsi mahdollisimman alhaisena.</p>
+                        <h4>Pelin kulku</h4><p>Kuten tavallinen Cricket, mutta pisteillä on merkitystä. Jos olet jo sulkenut numeron ja vastustajallasi on se vielä auki, saat heitettyäsi kyseiseen numeroon pisteitä vastustajallesi.</p>
+                        <h4>Voittaminen</h4><p>Peli päättyy, kun olet sulkenut kaikki numerot JA pistemääräsi on yhtä suuri tai pienempi kuin vastustajien. Pienin pistemäärä on siis paras.</p>`,
+                settings: "" 
+            },
+            'golf': { 
+                title: "Golf", 
+                rules: `<h4>Tavoite</h4><p>Suorita 'reiät' mahdollisimman vähillä lyönneillä.</p>
+                        <h4>Pelin kulku</h4><p>Kukin numero (1, 2, 3...) on yksi reikä. Sinulla on 3 tikkaa per reikä.</p>
+                        <h4>Pisteytys</h4><p>Vain vuoron VIIMEINEN heitetty tikka jää voimaan.
+                           - Tripla = 1 lyönti (Hole-in-one)
+                           - Tupla = 2 lyöntiä
+                           - Kapea single = 3, Leveä single = 4
+                           - Ohi = 5 lyöntiä.
+                           Pienin kokonaistulos viimeisen reiän jälkeen voittaa.</p>`,
+                settings: `<label>Reikiä:</label><select id="golf-holes"><option value="9" selected>9 reikää</option><option value="18">18 reikää</option></select>` 
+            },
+            'prisoner': { 
+                title: "Vanginvartija", 
+                rules: `<h4>Tavoite</h4><p>Kierrä taulu 1-20 menettämättä kaikkia elämiäsi.</p>
+                        <h4>Pelin kulku</h4><p>Heität numeroita järjestyksessä. Jos koko vuoron (3 tikkaa) aikana mikään tikka ei osu kohdenumeroon, 'vanki karkaa' ja menetät yhden elämän.</p>
+                        <h4>Pelastus</h4><p>Osumalla häränsilmään (Bullseye) vuoron aikana voit saada yhden menetetyn elämän takaisin. Putoat pelistä, jos elämäsi menevät nollaan. Voittaja on se, joka pääsee pisimmälle tai suorittaa numeron 20.</p>`,
+                settings: `<label>Elämät:</label><input type="number" id="p-lives" value="3" min="1">` 
+            },
+            'fives': { 
+                title: "Viitoset", 
+                rules: `<h4>Tavoite</h4><p>Kerää valittu pistemäärä (esim. 50) heittämällä jaollisia summia.</p>
+                        <h4>Pelin kulku</h4><p>Heität vuorossa 3 tikkaa. Laske niiden yhteissumma (esim. 20 + 5 + 1 = 26).</p>
+                        <h4>Pisteytys</h4><p>Saat pisteitä vain, jos vuoron summa on jaollinen 5:llä. Saat pisteitä summan jaettuna viidellä (esim. summa 35 = 7 pistettä peliin). Jos summa ei ole jaollinen 5:llä, saat 0 pistettä.</p>`,
+                settings: `<label>Tavoitepisteet:</label><input type="number" id="goal-score" value="50" step="10">` 
+            },
+            'encricket': { 
+                title: "English Cricket", 
+                rules: `<h4>Roolit</h4><p>Toinen pelaaja on 'Batter' (Lyöjä) ja toinen 'Bowler' (Keilaaja).</p>
+                        <h4>Pelin kulku</h4><p>Bowler heittää häränsilmää poistaakseen Batterin 10 'hilaa' (Double Bull = 2 hilaa). Batter yrittää kerätä pisteitä muista numeroista.</p>
+                        <h4>Pisteytys</h4><p>Batter saa pisteitä vain vuoron 40 pisteen ylittävältä osalta (esim. 65p vuorossa = 25p peliin). Kun 10 hilaa on mennyt, roolit vaihtuvat. Suurimman pistemäärän Batterina kerännyt voittaa.</p>`,
+                settings: "" 
+            },
+            'warfare': { 
+                title: "Taistelu", 
+                rules: `<h4>Valmistelu</h4><p>Kumpikin pelaaja valitsee salaa vastustajan puolelta taulua 3 numeroa, jotka ovat hänen 'laivojaan'.</p>
+                        <h4>Pelin kulku</h4><p>Yrität heittää vastustajasi valitsemiin numeroihin. Koska numerot ovat salaisia, vastustajan on rehellisesti ilmoitettava 'OSUI', kun osut hänen laivaansa.</p>
+                        <h4>Voittaminen</h4><p>Ensimmäinen pelaaja, joka upottaa vastustajansa kaikki 3 laivaa (eli saa 3 ilmoitettua osumaa), voittaa taistelun välittömästi.</p>`,
+                settings: "" 
+            }
+        };
+
+        function showScreen(id) {
+            clearInterval(autoTimer); autoTimer = null;
+            document.querySelectorAll('.container, #scoreboard, #victory-screen').forEach(el => el.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if(id === 'game-screen') document.getElementById('scoreboard').classList.remove('hidden');
+        }
+
+        function confirmExitToHome() {
+            document.getElementById('custom-confirm').classList.remove('hidden');
+        }
+        function confirmYes() {
+            document.getElementById('custom-confirm').classList.add('hidden');
+            showScreen('home-screen');
+        }
+        function confirmNo() {
+            document.getElementById('custom-confirm').classList.add('hidden');
+        }
+
+        function openSettings(m) {
+            mode = m; const data = gameData[m];
+            showScreen('settings-screen');
+            document.getElementById('stitle').innerText = data.title;
+            document.getElementById('dynamic-settings').innerHTML = data.settings;
+            document.getElementById('p-count-area').classList.toggle('hidden', ['encricket','warfare'].includes(m));
+        }
+
+        function showRules() {
+            const data = gameData[mode];
+            document.getElementById('rules-game-title').innerText = data.title;
+            document.getElementById('rules-text-content').innerHTML = data.rules;
+            showScreen('rules-screen');
+        }
+
+        function startGame() {
+            let count = parseInt(document.getElementById('p-count').value);
+            if(['encricket','warfare'].includes(mode)) count = 2;
+            players = []; winners = 0; curIdx = 0; darts = 0; currentRound = 1;
+
+            if(mode === 'golf') goal = parseInt(document.getElementById('golf-holes').value);
+            else if(mode === 'clock') goal = parseInt(document.getElementById('clock-goal').value);
+            else if(document.getElementById('goal-score')) goal = parseInt(document.getElementById('goal-score').value);
+
+            for(let i=1; i<=count; i++) {
+                let p = { id: i, score: 0, done: false, rank: 0, clock: 1, lives: 3, marks: 0, killer: false };
+                if(mode === '101') p.score = goal;
+                if(mode === 'shanghai') p.shanghaiHits = new Set();
+                if(mode === 'killer') p.num = boardValues[i-1] || i;
+                if(mode === 'prisoner') p.lives = parseInt(document.getElementById('p-lives') ? document.getElementById('p-lives').value : 3);
+                if(mode.includes('cricket')) p.cricket = { 20:0, 19:0, 18:0, 17:0, 16:0, 15:0, 25:0 };
+                if(mode === 'encricket') p.role = (i === 1) ? 'batter' : 'bowler';
+                players.push(p);
+            }
+            document.getElementById('dartboard-container').classList.toggle('hidden', mode === 'warfare');
+            document.getElementById('warfare-controls').classList.toggle('hidden', mode !== 'warfare');
+            showScreen('game-screen'); initTurn();
+        }
+
+        function handleHit(pts, m, type) {
+            if (darts >= 3 || autoTimer || players[curIdx].done) return;
+            const p = players[curIdx]; const hitVal = pts * m; let isWin = false;
+
+            switch(mode) {
+                case '100': p.score += hitVal; if(p.score >= goal) isWin = true; break;
+                case '101': if(p.score - hitVal >= 0) { p.score -= hitVal; if(p.score === 0) isWin = true; } else { document.getElementById('hit-txt').innerText = "BUST!"; darts = 3; } break;
+                case 'shanghai': if(pts === currentRound) { p.score += hitVal; p.shanghaiHits.add(m); if(p.shanghaiHits.size === 3) isWin = true; } break;
+                case 'clock': if(pts === p.clock) { p.clock++; if(p.clock > goal) isWin = true; } break;
+                case 'halveit': const hT = [20,19,'D',18,17,'T',16,15,25]; if((hT[currentRound-1]==='D'&&type==='double')||(hT[currentRound-1]==='T'&&type==='triple')||pts===hT[currentRound-1]) { p.score += hitVal; turnHits.push(true); } break;
+                case 'killer': if(!p.killer) { if(pts === p.num) { p.marks += m; if(p.marks >= 3) p.killer = true; } } else { players.forEach(o => { if(o.id!==p.id && pts===o.num && !o.done) { o.lives-=m; if(o.lives<=0) { o.done=true; o.rank="Hävisi"; checkKillerEnd(); } } }); } break;
+                case 'scricket': case 'ccricket': if([20,19,18,17,16,15,25].includes(pts)) { let add = Math.min(m, 3-p.cricket[pts]); p.cricket[pts]+=add; let over = m-add; if(mode==='ccricket'&&over>0) players.forEach(o => { if(o.id!==p.id&&o.cricket[pts]<3) o.score+=(over*pts); }); } if([20,19,18,17,16,15,25].every(n => p.cricket[n]>=3)) { if(mode==='scricket') isWin=true; else if(p.score===Math.min(...players.map(pl=>pl.score))) isWin=true; } break;
+                case 'golf': let tG = ((currentRound-1)%20)+1; let s = 5; if(pts===tG) s = (type==='triple')?1:(type==='double')?2:(type==='single-inner')?3:4; p.tempGolf = s; break;
+                case 'prisoner': if(pts === p.clock) { p.clock++; turnHits.push(true); if(p.clock > 20) isWin = true; } else if(pts === 25) p.lives++; break;
+                case 'fives': turnHits.push(hitVal); break;
+                case 'encricket': if(p.role === 'bowler') { if(pts === 25) p.wickets = (p.wickets||0) + m; } else turnHits.push(hitVal); break;
+            }
+
+            darts++; document.getElementById('hit-txt').innerText = `Osuit: ${hitVal}`;
+            if (isWin) { markWinner(p); return; }
+            if (darts === 3) finishTurn(p);
+            updateUI();
+        }
+
+        function handleWarfareAction(isHit) {
+            if (darts >= 3 || autoTimer) return;
+            const p = players[curIdx]; darts++;
+            if (isHit) { p.score++; document.getElementById('hit-txt').innerText = `OSUMA! (${p.score}/3)`; if(p.score >= 3) { markWinner(p); return; } }
+            else document.getElementById('hit-txt').innerText = "OHI...";
+            if (darts === 3) startTimer();
+            updateUI();
+        }
+
+        function finishTurn(p) {
+            if(mode==='halveit' && turnHits.length===0) p.score = Math.floor(p.score / 2);
+            if(mode==='golf') p.score += (p.tempGolf || 5);
+            if(mode==='prisoner' && turnHits.length===0) { p.lives--; if(p.lives<=0) { p.done=true; p.rank="Hävisi"; checkKillerEnd(); } }
+            if(mode==='fives') { let s = turnHits.reduce((a,b)=>a+b,0); if(s%5===0) p.score += (s/5); if(p.score>=goal) { markWinner(p); return; } }
+            if(mode==='encricket' && p.role==='batter') { let s = turnHits.reduce((a,b)=>a+b,0); if(s>40) p.score += (s-40); }
+            let bowler = players.find(pl => pl.role === 'bowler');
+            if(mode==='encricket' && bowler && bowler.wickets >= 10) { alert("Hilat täynnä! Roolit vaihtuvat."); swapCricket(); return; }
+            startTimer();
+        }
+
+        function markWinner(p) {
+            p.done = true; winners++; p.rank = winners;
+            alert(`Sijoitus ${p.rank}: Pelaaja ${p.id}!`);
+            if (players.filter(pl => !pl.done).length <= (mode==='killer'?1:0)) showResults();
+            else nextPlayerManual();
+        }
+
+        function checkKillerEnd() { if(players.filter(pl => !pl.done).length <= 1) showResults(); }
+        function swapCricket() { players.forEach(p => { p.role = (p.role === 'batter' ? 'bowler' : 'batter'); p.wickets = 0; }); curIdx = players.findIndex(p => p.role === 'batter'); darts = 0; initTurn(); }
+
+        function startTimer() {
+            if (autoTimer) return;
+            document.getElementById('timer-box').classList.remove('hidden');
+            document.querySelectorAll('.segment, .hit-btn, .miss-btn').forEach(el => el.style.pointerEvents = 'none');
+            let timeLeft = 50;
+            autoTimer = setInterval(() => {
+                timeLeft--; document.getElementById('timer-num').innerText = Math.ceil(timeLeft / 10);
+                document.getElementById('timer-bar-fill').style.width = (timeLeft * 2) + "%";
+                if (timeLeft <= 0) nextPlayerManual();
+            }, 100);
+        }
+
+        function nextPlayerManual() {
+            clearInterval(autoTimer); autoTimer = null;
+            document.getElementById('timer-box').classList.add('hidden');
+            document.querySelectorAll('.segment, .hit-btn, .miss-btn').forEach(el => el.style.pointerEvents = 'auto');
+            if(players.every(p => p.done)) return;
+            do { curIdx = (curIdx + 1) % players.length; } while (players[curIdx].done);
+            if(curIdx === 0) currentRound++; 
+            initTurn();
+        }
+
+        function initTurn() {
+            const p = players[curIdx];
+            document.getElementById('turn-txt').innerText = `Pelaaja ${p.id} vuoro`;
+            let hint = `KOHDE: ${goal}`;
+            if(mode==='shanghai') hint = `SHANGHAI - Nro: ${currentRound}`;
+            if(mode==='halveit') hint = `HALVE IT - Kohde: ${[20,19,'D',18,17,'T',16,15,25][currentRound-1]}`;
+            if(mode==='golf') hint = `GOLF - Reikä: ${currentRound}`;
+            if(mode==='clock') hint = `KELLON YMPÄRI - Nro: ${p.clock}`;
+            if(mode==='killer') hint = p.killer ? "KILLER: Tapa muita!" : `OSU NUMEROOSI: ${p.num}`;
+            if(mode==='prisoner') hint = `VANGINVARTIJA - Nro: ${p.clock}`;
+            if(mode==='encricket') hint = p.role==='batter' ? "BATTER: Kerää pisteitä (>40)" : "BOWLER: Heitä BULLSEYE";
+            if(mode==='warfare') hint = "TAISTELU: Kerää 3 osumaa!";
+            document.getElementById('mode-hint').innerText = hint;
+            document.getElementById('hit-txt').innerText = "Heitä tikka";
+            darts = 0; turnHits = []; updateUI();
+        }
+
+        function updateUI() {
+            let dTxt = ""; for(let i=0; i<3; i++) dTxt += (i < darts) ? "○ " : "● ";
+            document.getElementById('darts').innerText = dTxt;
+            const sb = document.getElementById('scoreboard');
+            sb.innerHTML = players.map((p, i) => `
+                <div class="player-box ${i===curIdx && !p.done?'active-p':''} ${p.done?'done-p':''}">
+                    P${p.id}${p.role?' ('+p.role[0].toUpperCase()+')':''}<br>
+                    ${p.done ? p.rank+'.' : (['clock','prisoner'].includes(mode)?'Nro '+p.clock : (mode==='warfare' ? 'Osumat: '+p.score+'/3' : 'Pts '+p.score))}
+                    ${['killer','prisoner'].includes(mode)?' | ❤️'+p.lives:''}
+                </div>
+            `).join('');
+        }
+
+        function showResults() {
+            showScreen('victory-screen');
+            let res = [...players].sort((a,b) => (mode==='golf'||mode==='ccricket'||mode==='warfare')?a.score-b.score:b.score-a.score);
+            document.getElementById('results-list').innerHTML = res.map((p, i) => `<p>${i+1}. Pelaaja ${p.id} ${p.rank==='Hävisi'?'(Hävisi)':''}</p>`).join('');
+        }
+
+        (function initBoard() {
+            const g = document.getElementById('board-g');
+            for (let i = 0; i < 20; i++) {
+                const a = (i * 18) - 99;
+                const rad = Math.PI * a / 180, nRad = Math.PI * (a + 18) / 180;
+                const draw = (r1, r2, c, m, type) => {
+                    const x1 = 125+r1*Math.cos(rad), y1 = 125+r1*Math.sin(rad), x2 = 125+r1*Math.cos(nRad), y2 = 125+r1*Math.sin(nRad);
+                    const x3 = 125+r2*Math.cos(nRad), y3 = 125+r2*Math.sin(nRad), x4 = 125+r2*Math.cos(rad), y4 = 125+r2*Math.sin(rad);
+                    const d = `M ${x1} ${y1} A ${r1} ${r1} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${r2} ${r2} 0 0 0 ${x4} ${y4} Z`;
+                    const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    p.setAttribute("d", d); p.setAttribute("fill", c); p.setAttribute("class", "segment");
+                    p.onclick = () => handleHit(boardValues[i], m, type); g.appendChild(p);
+                };
+                draw(12, 60, i%2?'#eee':'#111', 1, 'single-inner');
+                draw(60, 85, i%2?'#27ae60':'#c0392b', 3, 'triple');
+                draw(85, 105, i%2?'#eee':'#111', 1, 'single-outer');
+                draw(105, 120, i%2?'#27ae60':'#c0392b', 2, 'double');
+                const tx = 125+112*Math.cos(Math.PI*(a+9)/180), ty = 125+112*Math.sin(Math.PI*(a+9)/180)+4;
+                const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                t.setAttribute("x", tx); t.setAttribute("y", ty); t.setAttribute("class", "board-text");
+                t.setAttribute("text-anchor", "middle"); t.textContent = boardValues[i]; g.appendChild(t);
+            }
+            document.getElementById('bull-outer').onclick = () => handleHit(25, 1, 'single');
+            document.getElementById('bull-inner').onclick = () => handleHit(25, 2, 'double');
+        })();
+    </script>
+</body>
+</html>
