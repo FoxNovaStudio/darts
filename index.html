@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Darts Master Pro - Prisoner Update</title>
+    <title>Darts Master Pro - Big Bullseye Update</title>
     <style>
         :root { --green: #27ae60; --orange: #e67e22; --dark: #1a1a1a; --red: #c0392b; --blue: #2980b9; --purple: #8e44ad; --gold: #f1c40f; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: white; text-align: center; margin: 0; padding-bottom: 120px; }
@@ -16,9 +16,11 @@
             font-weight: bold; transition: 0.2s; min-width: 140px;
             box-shadow: 0 4px 0 rgba(0,0,0,0.3);
         }
-        button:hover { background: #2ecc71; transform: scale(1.05); }
+        button:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
+        button:hover { background: #2ecc71; }
         button.secondary { background: var(--orange); }
         button.blue { background: var(--blue); }
+        button.purple { background: var(--purple); }
         button.gray { background: #7f8c8d; }
         button.exit-game { background: var(--red); margin-top: 20px; width: 100%; max-width: 300px; border: 2px solid white; }
 
@@ -32,7 +34,7 @@
         #timer-box { background: var(--red); padding: 10px; border-radius: 10px; margin: 5px auto; max-width: 300px; border: 2px solid white; }
         #timer-bar-fill { width: 100%; height: 10px; background: var(--gold); transition: width 0.1s linear; border-radius: 5px; }
 
-        #dartboard-container { position: relative; width: 300px; height: 300px; margin: 10px auto; }
+        #dartboard-container { position: relative; width: 320px; height: 320px; margin: 10px auto; }
         .disabled-board { opacity: 0.2; pointer-events: none; }
         #dartboard-svg { width: 100%; height: 100%; }
         .segment { stroke: #333; stroke-width: 0.5; cursor: pointer; }
@@ -46,13 +48,16 @@
 
         input, select { padding: 10px; font-size: 16px; border-radius: 5px; margin: 5px; width: 150px; }
         label { font-size: 14px; font-weight: bold; display: block; margin-top: 10px; }
+
+        #warfare-controls { margin: 20px auto; max-width: 400px; }
+        .hit-btn { background: var(--red); font-size: 24px; padding: 30px; width: 100%; margin-bottom: 10px; border: 3px solid white; }
     </style>
 </head>
 <body>
 
     <div id="custom-confirm" class="hidden">
         <div class="confirm-box">
-            <h3 id="confirm-title">⚠️ VAROITUS</h3>
+            <h3>⚠️ VAROITUS</h3>
             <p id="confirm-msg">Haluatko varmasti lopettaa?</p>
             <button id="confirm-yes-btn" class="secondary" style="width: 100%; margin-bottom: 10px;">KYLLÄ</button>
             <button onclick="confirmNo()" class="gray" style="width: 100%;">PERUUTA</button>
@@ -71,7 +76,7 @@
             <button onclick="openSettings('scricket')" class="blue">Simple Cricket</button>
             <button onclick="openSettings('ccricket')" class="blue">Cut Throat</button>
             <button onclick="openSettings('golf')" class="purple">Golf</button>
-            <button onclick="openSettings('prisoner')" class="secondary" style="border: 2px solid gold;">Vanginvartija</button>
+            <button onclick="openSettings('prisoner')" class="secondary">Vanginvartija</button>
             <button onclick="openSettings('fives')" class="secondary">Viitoset</button>
             <button onclick="openSettings('encricket')" class="blue">English Cricket</button>
             <button onclick="openSettings('warfare')" class="blue">Taistelu</button>
@@ -91,9 +96,9 @@
     </div>
 
     <div id="rules-screen" class="container hidden">
-        <h2 id="rules-game-title">Säännöt</h2>
+        <h2 id="rules-game-title">Pelin säännöt</h2>
         <div class="rules-display" id="rules-text-content"></div>
-        <button onclick="showScreen('settings-screen')" class="gray">⬅ TAKASIN ASETUKSIIN</button>
+        <button onclick="showScreen('settings-screen')" class="gray" style="font-size: 18px; padding: 15px 30px;">⬅ TAKASIN</button>
     </div>
 
     <div id="game-screen" class="container hidden">
@@ -113,8 +118,9 @@
             <svg id="dartboard-svg" viewBox="0 0 250 250">
                 <circle cx="125" cy="125" r="120" fill="#000" />
                 <g id="board-g"></g>
-                <circle cx="125" cy="125" r="12" fill="#27ae60" class="segment" id="bull-outer" />
-                <circle cx="125" cy="125" r="5" fill="#c0392b" class="segment" id="bull-inner" />
+                <!-- ISOMPI KESKUSTA -->
+                <circle cx="125" cy="125" r="22" fill="#27ae60" class="segment" id="bull-outer" />
+                <circle cx="125" cy="125" r="10" fill="#c0392b" class="segment" id="bull-inner" />
             </svg>
         </div>
 
@@ -143,26 +149,19 @@
         const boardValues = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
 
         const gameData = {
-            '100': { title: "Peli 100", rules: "<h4>Tavoite</h4><p>Kerää pisteitä nollasta ylöspäin.</p><h4>Säännöt</h4><p>Ei bust-sääntöä. Ensimmäinen tavoitteen saavuttanut voittaa.</p>", settings: `<label>Tavoitepisteet:</label><input type="number" id="goal-score" value="100" step="50">` },
-            '101': { title: "Peli 101-901", rules: "<h4>Tavoite</h4><p>Vähennä pisteet nollaan.</p><h4>Säännöt</h4><p>Jos heität yli nollan, vuoro nollautuu (Bust).</p>", settings: `<label>Aloituspisteet:</label><input type="number" id="goal-score" value="301" step="100">` },
-            'shanghai': { title: "Shanghai", rules: "<h4>Tavoite</h4><p>Kierrokset 1-7.</p><h4>Säännöt</h4><p>Single+Tupla+Tripla samaan numeroon yhdellä vuorolla = Shanghai-voitto!</p>", settings: "" },
-            'halveit': { title: "Halve It", rules: "<h4>Säännöt</h4><p>Jos et osu kierroksen kohteeseen, pisteet puolittuvat.</p>", settings: "" },
-            'clock': { title: "Kellon ympäri", rules: "<h4>Säännöt</h4><p>Heitä numerot järjestyksessä tavoitteeseen.</p>", settings: `<label>Tavoitenumero:</label><select id="clock-goal"><option value="5">1-5</option><option value="10">1-10</option><option value="15">1-15</option><option value="20" selected>1-20</option></select>` },
+            '100': { title: "Peli 100", rules: "<h4>Tavoite</h4><p>Kerää pisteitä nollasta ylöspäin.</p><h4>Säännöt</h4><p>Ensimmäinen tavoitteen saavuttanut voittaa. Muut voivat jatkaa sijoituksista.</p>", settings: `<label>Tavoitepisteet:</label><input type="number" id="goal-score" value="100" step="50">` },
+            '101': { title: "Peli 101-901", rules: "<h4>Tavoite</h4><p>Vähennä pisteet nollaan.</p><h4>Bust</h4><p>Jos heität yli nollan, vuoro nollataan.</p>", settings: `<label>Aloituspisteet:</label><input type="number" id="goal-score" value="301" step="100">` },
+            'shanghai': { title: "Shanghai", rules: "<h4>Säännöt</h4><p>Kierrokset 1-7. Single+Tupla+Tripla samalla vuorolla kierroksen numeroon = Shanghai-voitto!</p>", settings: "" },
+            'halveit': { title: "Halve It", rules: "<h4>Säännöt</h4><p>Jos et osu kierroksen kohteeseen yhdelläkään tikalla, pisteesi puolittuvat.</p>", settings: "" },
+            'clock': { title: "Kellon ympäri", rules: "<h4>Säännöt</h4><p>Heitä numerot 1-20 järjestyksessä.</p>", settings: `<label>Tavoitenumero:</label><select id="clock-goal"><option value="5">1-5</option><option value="10">1-10</option><option value="15">1-15</option><option value="20" selected>1-20</option></select>` },
             'killer': { title: "Killer", rules: "<h4>Säännöt</h4><p>Tule Killeriksi (3 osumaa omaan numeroon) ja poista muiden elämät.</p>", settings: `<label>Elämät:</label><input type="number" id="killer-lives" value="3" min="1">` },
-            'scricket': { title: "Simple Cricket", rules: "<h4>Säännöt</h4><p>Sulje 15-20 ja Bull.</p>", settings: "" },
-            'ccricket': { title: "Cut Throat Cricket", rules: "<h4>Säännöt</h4><p>Cricket, jossa osumat antavat pisteitä vastustajille. Pienin voittaa.</p>", settings: "" },
-            'golf': { title: "Golf", rules: "<h4>Säännöt</h4><p>Pienin tulos voittaa. Viimeinen tikka jää voimaan.</p>", settings: `<label>Reikiä:</label><select id="golf-holes"><option value="9" selected>9 reikää</option><option value="18">18 reikää</option></select>` },
-            'prisoner': { 
-                title: "Vanginvartija", 
-                rules: `<h4>Tavoite</h4><p>Kierrä numerot 1-20 (tai valittu tavoite) järjestyksessä.</p>
-                        <h4>Vankila</h4><p>Jos heität tikan ohi kohdenumeron, tikka jää vangiksi taululle ja poistuu käytöstäsi.</p>
-                        <h4>Pelastus</h4><p>- Osut kohdenumeroosi: Saat kaikki omat vankitikkasi takaisin.<br>- Osut häränsilmään (Bull): Vapautat kaikkien pelaajien kaikki vankitikat.</p>
-                        <h4>Häviäminen</h4><p>Jos kenenkään pelaajan tikat eivät riitä heittämiseen (kaikki vankilassa), kaikki häviävät pelin.</p>`, 
-                settings: `<label>Tavoitenumero:</label><select id="prisoner-goal"><option value="5">1-5</option><option value="10">1-10</option><option value="15">1-15</option><option value="20" selected>1-20</option></select>` 
-            },
-            'fives': { title: "Viitoset", rules: "<h4>Säännöt</h4><p>Vain jaolliset 5:llä summat lasketaan.</p>", settings: `<label>Tavoitepisteet:</label><input type="number" id="goal-score" value="50" step="10">` },
-            'encricket': { title: "English Cricket", rules: "<h4>Säännöt</h4><p>Bowler heittää Bullia, Batter kerää pisteitä (>40).</p>", settings: "" },
-            'warfare': { title: "Taistelu", rules: "<h4>Säännöt</h4><p>Upota vastustajan 3 salaista laivaa ilmoittamalla osumat.</p>", settings: "" }
+            'scricket': { title: "Simple Cricket", rules: "<h4>Säännöt</h4><p>Sulje numerot 15-20 ja Bull (3 osumaa kuhunkin).</p>", settings: "" },
+            'ccricket': { title: "Cut Throat Cricket", rules: "<h4>Säännöt</h4><p>Kuten Cricket, mutta ylimääräiset osumat antavat pisteitä vastustajille. Pienin voittaa.</p>", settings: "" },
+            'golf': { title: "Golf", rules: "<h4>Säännöt</h4><p>Pienin tulos voittaa. Vain vuoron viimeinen heitto jää voimaan.</p>", settings: `<label>Reikiä:</label><select id="golf-holes"><option value="9" selected>9 reikää</option><option value="18">18 reikää</option></select>` },
+            'prisoner': { title: "Vanginvartija", rules: "<h4>Vankila</h4><p>Jos heität ohi kohdenumeron, tikka jää vangiksi taululle.</p><h4>Pelastus</h4><p>Osumalla kohdenumeroon saat omat tikat takaisin. Osuma Bullseyeen vapauttaa kaikki.</p>", settings: `<label>Tavoitenumero:</label><select id="prisoner-goal"><option value="5">1-5</option><option value="10">1-10</option><option value="15">1-15</option><option value="20" selected>1-20</option></select>` },
+            'fives': { title: "Viitoset", rules: "<h4>Säännöt</h4><p>Saat pisteitä vain, jos vuoron summa on jaollinen 5:llä (summa/5).</p>", settings: `<label>Tavoitepisteet:</label><input type="number" id="goal-score" value="50" step="10">` },
+            'encricket': { title: "English Cricket", rules: "<h4>Säännöt</h4><p>Bowler heittää Bullia, Batter kerää pisteitä yli 40 menevistä summista.</p>", settings: "" },
+            'warfare': { title: "Taistelu", rules: "<h4>Säännöt</h4><p>Upota vastustajan 3 salaista laivaa osumilla. Ilmoita osumat rehellisesti.</p>", settings: "" }
         };
 
         function showScreen(id) {
@@ -174,7 +173,6 @@
 
         function confirmExitToHome() {
             const modal = document.getElementById('custom-confirm');
-            document.getElementById('confirm-title').innerText = "⚠️ VAROITUS";
             document.getElementById('confirm-msg').innerText = "Haluatko varmasti lopettaa pelin ja palata etusivulle?";
             document.getElementById('confirm-yes-btn').onclick = () => { modal.classList.add('hidden'); showScreen('home-screen'); };
             modal.classList.remove('hidden');
@@ -222,42 +220,29 @@
 
         function handleHit(pts, m, type) {
             if (autoTimer || players[curIdx].done) return;
-            const p = players[curIdx];
-            const hitVal = pts * m;
-            let isWin = false;
+            const p = players[curIdx]; const hitVal = pts * m; let isWin = false;
 
             if (mode === 'prisoner') {
                 dartsLeftToThrow--;
                 if (pts === p.clock) {
-                    p.clock++;
-                    // Osuma vapauttaa omat tikat
-                    p.dartsAvailable += p.dartsInJail;
-                    p.dartsInJail = 0;
+                    p.clock++; p.dartsAvailable += p.dartsInJail; p.dartsInJail = 0;
                     document.getElementById('hit-txt').innerText = "OSUMA! Tikat vapautettu.";
                     if (p.clock > goal) isWin = true;
                 } else if (pts === 25) {
-                    // Bullseye vapauttaa kaikkien tikat
-                    players.forEach(pl => {
-                        pl.dartsAvailable += pl.dartsInJail;
-                        pl.dartsInJail = 0;
-                    });
-                    document.getElementById('hit-txt').innerText = "PAKO! Kaikki tikat vapautettu.";
+                    players.forEach(pl => { pl.dartsAvailable += pl.dartsInJail; pl.dartsInJail = 0; });
+                    document.getElementById('hit-txt').innerText = "PAKO! Kaikki vapautettu.";
                 } else {
-                    // Ohi: Tikka vankilaan
-                    p.dartsAvailable--;
-                    p.dartsInJail++;
+                    p.dartsAvailable--; p.dartsInJail++;
                     document.getElementById('hit-txt').innerText = "OHI! Tikka jäi vangiksi.";
                 }
-
                 if (isWin) { markWinner(p); return; }
-                if (dartsLeftToThrow <= 0 || p.dartsAvailable <= 0) { finishTurn(p); }
+                if (dartsLeftToThrow <= 0 || p.dartsAvailable <= 0) finishTurn(p);
             } else {
-                // Muut pelit (normaali logiikka)
                 dartsLeftToThrow--;
                 switch(mode) {
                     case '100': p.score += hitVal; if(p.score >= goal) isWin = true; break;
                     case '101': if(p.score - hitVal >= 0) { p.score -= hitVal; if(p.score === 0) isWin = true; } else { document.getElementById('hit-txt').innerText = "BUST!"; dartsLeftToThrow = 0; } break;
-                    case 'shanghai': if(pts === currentRound) { p.score += hitVal; p.shanghaiHits = p.shanghaiHits || new Set(); p.shanghaiHits.add(m); if(p.shanghaiHits.size === 3) isWin = true; } break;
+                    case 'shanghai': if(pts === currentRound) { p.shHits = p.shHits || new Set(); p.shHits.add(m); p.score += hitVal; if(p.shHits.size === 3) isWin = true; } break;
                     case 'clock': if(pts === p.clock) { p.clock++; if(p.clock > goal) isWin = true; } break;
                     case 'halveit': const hT = [20,19,'D',18,17,'T',16,15,25]; if((hT[currentRound-1]==='D'&&type==='double')||(hT[currentRound-1]==='T'&&type==='triple')||pts===hT[currentRound-1]) { p.score += hitVal; p.hitThisTurn = true; } break;
                     case 'killer': if(!p.killer) { if(pts === boardValues[p.id-1]) { p.marks += m; if(p.marks >= 3) p.killer = true; } } else { players.forEach(o => { if(o.id!==p.id && pts===boardValues[o.id-1] && !o.done) { o.score -= m; if(o.score <= -3) { o.done=true; o.rank="Hävisi"; checkKillerEnd(); } } }); } break;
@@ -286,26 +271,13 @@
             if(mode==='golf') p.score += (p.tempGolf || 5);
             if(mode==='fives') { let s = p.turnTotal || 0; if(s%5===0) p.score += (s/5); if(p.score>=goal) { markWinner(p); return; } }
             if(mode==='encricket' && p.role==='batter') { let s = p.turnTotal || 0; if(s>40) p.score += (s-40); }
-            
-            // Tarkista Vanginvartijan loppumisehto: Kaikki tikat vankilassa
-            if (mode === 'prisoner') {
-                const totalInJail = players.reduce((sum, pl) => sum + pl.dartsInJail, 0);
-                if (totalInJail >= players.length * 3) {
-                    gameOverEveryoneLost();
-                    return;
-                }
-            }
-
+            if (mode === 'prisoner') { if (players.reduce((sum, pl) => sum + pl.dartsInJail, 0) >= players.length * 3) { gameOverEveryoneLost(); return; } }
             let bowler = players.find(pl => pl.role === 'bowler');
             if(mode==='encricket' && bowler && bowler.wickets >= 10) { alert("Hilat täynnä! Roolit vaihtuvat."); swapCricket(); return; }
             startTimer();
         }
 
-        function gameOverEveryoneLost() {
-            showScreen('victory-screen');
-            document.getElementById('victory-title').innerText = "💀 KAIKKI HÄVISIVÄT!";
-            document.getElementById('results-list').innerHTML = "<p>Kaikki tikat jäivät vankilaan. Vanginvartija voitti.</p>";
-        }
+        function gameOverEveryoneLost() { showScreen('victory-screen'); document.getElementById('victory-title').innerText = "💀 KAIKKI HÄVISIVÄT!"; document.getElementById('results-list').innerHTML = "<p>Kaikki tikat jäivät vankilaan.</p>"; }
 
         function markWinner(p) {
             p.done = true; winners++; p.rank = winners;
@@ -315,8 +287,7 @@
         }
 
         function showResults() {
-            showScreen('victory-screen');
-            document.getElementById('victory-title').innerText = "🏆 LOPPUTULOKSET";
+            showScreen('victory-screen'); document.getElementById('victory-title').innerText = "🏆 LOPPUTULOKSET";
             let res = [...players].sort((a,b) => (mode==='golf'||mode==='ccricket'||mode==='warfare')?a.score-b.score:b.score-a.score);
             document.getElementById('results-list').innerHTML = res.map((p, i) => `<p>${i+1}. Pelaaja ${p.id} ${p.rank==='Hävisi'?'(Hävisi)':''}</p>`).join('');
         }
@@ -337,34 +308,18 @@
             clearInterval(autoTimer); autoTimer = null;
             document.getElementById('timer-box').classList.add('hidden');
             document.getElementById('dartboard-container').classList.remove('disabled-board');
-            
             if(players.every(p => p.done)) return;
-            
             let nextIdx = (curIdx + 1) % players.length;
-            let loops = 0;
-            while ((players[nextIdx].done || (mode === 'prisoner' && players[nextIdx].dartsAvailable <= 0)) && loops < players.length) {
+            while ((players[nextIdx].done || (mode === 'prisoner' && players[nextIdx].dartsAvailable <= 0)) && players.some(pl => !pl.done)) {
                 nextIdx = (nextIdx + 1) % players.length;
-                loops++;
             }
-            
-            // Jos kierto palasi alkuun, kierros vaihtuu
             if(nextIdx <= curIdx) currentRound++;
-
-            curIdx = nextIdx;
-            initTurn();
+            curIdx = nextIdx; initTurn();
         }
 
         function initTurn() {
-            const p = players[curIdx];
-            // Nollaa vuoron muuttujat
-            p.hitThisTurn = false; p.turnTotal = 0; p.tempGolf = 5; p.shanghaiHits = new Set();
-            
-            // Jos vankilassa, mutta tikat loppu, siirrytään heti seuraavaan (tämä on varmistus)
-            if (mode === 'prisoner' && p.dartsAvailable <= 0) {
-                nextPlayerManual();
-                return;
-            }
-
+            const p = players[curIdx]; p.hitThisTurn = false; p.turnTotal = 0; p.tempGolf = 5; p.shHits = new Set();
+            if (mode === 'prisoner' && p.dartsAvailable <= 0) { nextPlayerManual(); return; }
             dartsLeftToThrow = Math.min(3, p.dartsAvailable);
             document.getElementById('turn-txt').innerText = `Pelaaja ${p.id} vuoro`;
             let hint = `KOHDE: ${goal}`;
@@ -373,37 +328,33 @@
             if(mode==='golf') hint = `GOLF - Reikä: ${currentRound}`;
             if(mode==='clock') hint = `KELLON YMPÄRI - Nro: ${p.clock}`;
             if(mode==='killer') hint = `OSU NUMEROOSI: ${boardValues[p.id-1]}`;
-            if(mode==='prisoner') hint = `VANKINVARTIJA - Kohde: ${p.clock}`;
+            if(mode==='prisoner') hint = `VANGINVARTIJA - Kohde: ${p.clock}`;
             if(mode==='encricket') hint = p.role==='batter' ? "BATTER (>40)" : "BOWLER (BULL)";
             if(mode==='warfare') hint = "TAISTELU: 3 osumaa!";
-            
             document.getElementById('mode-hint').innerText = hint;
             document.getElementById('hit-txt').innerText = "Heitä tikka";
             updateUI();
         }
 
         function updateUI() {
-            const p = players[curIdx];
-            let dTxt = ""; 
-            // Näytetään vain käytettävissä olevat tikat
+            const p = players[curIdx]; let dTxt = "";
             for(let i=0; i<3; i++) {
                 if (i < (3 - dartsLeftToThrow)) dTxt += "○ ";
                 else if (i < p.dartsAvailable) dTxt += "● ";
-                else dTxt += "❌ "; // Tikka vankilassa
+                else dTxt += "❌ ";
             }
             document.getElementById('darts-display').innerText = dTxt;
-
             const sb = document.getElementById('scoreboard');
             sb.innerHTML = players.map((p, i) => `
                 <div class="player-box ${i===curIdx && !p.done?'active-p':''} ${p.done?'done-p':''} ${p.dartsAvailable <= 0 && mode==='prisoner'?'jail-p':''}">
                     P${p.id}${p.role?' ('+p.role[0].toUpperCase()+')':''}<br>
-                    ${p.done ? p.rank+'.' : (['clock','prisoner'].includes(mode)?'Nro '+p.clock : (mode==='warfare' ? 'Osumat: '+p.score+'/3' : 'Pts '+p.score))}
-                    ${mode==='prisoner'?'<br>Tikat: '+p.dartsAvailable:''}
+                    ${p.done ? p.rank+'.' : (['clock','prisoner'].includes(mode)?'Nro '+p.clock : (mode==='warfare' ? p.score+'/3' : p.score))}
+                    ${mode==='prisoner'?'<br>T: '+p.dartsAvailable:''}
                 </div>
             `).join('');
         }
 
-        function swapCricket() { players.forEach(p => { p.role = (p.role === 'batter' ? 'bowler' : 'batter'); p.wickets = 0; }); curIdx = players.findIndex(p => p.role === 'batter'); dartsLeftToThrow = 3; initTurn(); }
+        function swapCricket() { players.forEach(p => { p.role = (p.role === 'batter' ? 'bowler' : 'batter'); p.wickets = 0; p.turnTotal = 0; }); curIdx = players.findIndex(p => p.role === 'batter'); dartsLeftToThrow = 3; initTurn(); }
 
         (function initBoard() {
             const g = document.getElementById('board-g');
@@ -418,7 +369,7 @@
                     p.setAttribute("d", d); p.setAttribute("fill", c); p.setAttribute("class", "segment");
                     p.onclick = () => handleHit(boardValues[i], m, type); g.appendChild(p);
                 };
-                draw(12, 60, i%2?'#eee':'#111', 1, 'single-inner');
+                draw(22, 60, i%2?'#eee':'#111', 1, 'single-inner');
                 draw(60, 85, i%2?'#27ae60':'#c0392b', 3, 'triple');
                 draw(85, 105, i%2?'#eee':'#111', 1, 'single-outer');
                 draw(105, 120, i%2?'#27ae60':'#c0392b', 2, 'double');
