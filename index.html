@@ -1,7 +1,34 @@
-
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DartsScore v22</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-#app{font-family:var(--font-sans);background:var(--color-background-tertiary);min-height:500px;position:relative}
+html,body{height:100%;background:#f0f0f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+:root{
+  --color-background-primary:#fff;
+  --color-background-secondary:#f5f5f7;
+  --color-background-tertiary:#ebebed;
+  --color-background-danger:#fff0f0;
+  --color-background-info:#f0f7ff;
+  --color-text-primary:#1a1a1a;
+  --color-text-secondary:#555;
+  --color-text-tertiary:#888;
+  --color-text-info:#0071e3;
+  --color-text-danger:#c00;
+  --color-border-primary:#d0d0d0;
+  --color-border-secondary:#c0c0c0;
+  --color-border-tertiary:#e0e0e0;
+  --color-border-info:#0071e3;
+  --color-border-danger:#c00;
+  --border-radius-sm:6px;
+  --border-radius-md:10px;
+  --border-radius-lg:14px;
+  --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
+}
+#app{max-width:480px;margin:0 auto;background:var(--color-background-tertiary);min-height:100vh;position:relative}
 .pg{display:none}.pg.on{display:block}
 .bar{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:0 14px;height:48px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
 .bar-title{font-size:17px;font-weight:500;color:var(--color-text-primary)}
@@ -13,16 +40,14 @@
 .hbtns{padding:16px;display:flex;flex-direction:column;gap:10px}
 .bm{border:none;border-radius:var(--border-radius-lg);padding:16px;font-size:16px;font-weight:500;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
 .bm.g{background:#1D9E75;color:#fff}.bm.g:hover{background:#0F6E56}
-.bm.o{background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);color:var(--color-text-primary)}.bm.o:hover{background:var(--color-background-secondary)}
+.bm.o{background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);color:var(--color-text-primary)}
 .sec-lbl{padding:14px 14px 6px;font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.08em;text-transform:uppercase}
 .gl{padding:0 12px;display:flex;flex-direction:column;gap:6px;padding-bottom:8px}
 .gc{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:11px 12px;display:flex;align-items:center;gap:10px}
-.gc:hover{border-color:var(--color-border-secondary)}
 .gi{width:36px;height:36px;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;cursor:pointer}
 .gn{font-size:15px;font-weight:500;color:var(--color-text-primary)}
 .gd{font-size:12px;color:var(--color-text-secondary);margin-top:1px}
-.gc-qbtn{width:28px;height:28px;font-size:13px;border-radius:50%;background:none;border:0.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text-secondary);font-family:inherit;flex-shrink:0}
-.gc-qbtn:hover{background:var(--color-background-secondary)}
+.gc-qbtn{width:28px;height:28px;font-size:13px;border-radius:50%;background:none;border:0.5px solid var(--color-border-secondary);cursor:pointer;color:var(--color-text-secondary);font-family:inherit;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .sbody{padding:12px;display:flex;flex-direction:column;gap:12px}
 .sc{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px}
 .sc h3{font-size:12px;font-weight:500;color:var(--color-text-secondary);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px}
@@ -38,12 +63,9 @@
 .oi{background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:7px 10px;font-size:14px;color:var(--color-text-primary);width:100px;font-family:inherit}
 .sbtn{background:#1D9E75;color:#fff;border:none;border-radius:var(--border-radius-lg);padding:15px;font-size:16px;font-weight:500;font-family:inherit;cursor:pointer;width:100%}
 .sbtn:disabled{opacity:.35;cursor:not-allowed}
-.sbtn:not(:disabled):hover{background:#0F6E56}
 .nop{text-align:center;padding:20px;color:var(--color-text-secondary);font-size:13px}
 .shdr{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:10px 14px;display:flex;align-items:center;gap:12px}
-.shdr-l{flex:1}
-.scp{font-size:22px;font-weight:500;color:var(--color-text-primary)}
-.sti{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.shdr-l{flex:1}.scp{font-size:22px;font-weight:500;color:var(--color-text-primary)}.sti{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
 .tbox{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
 .tnum{font-size:30px;font-weight:500;line-height:1;min-width:32px;text-align:center}
 .tnum.ok{color:#1D9E75}.tnum.urg{color:#E24B4A}
@@ -52,35 +74,20 @@
 .tcancel{background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:5px 10px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer}
 .sbar{display:flex;gap:6px;padding:7px 12px;background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);overflow-x:auto}
 .chip{flex-shrink:0;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:20px;padding:4px 12px;min-width:64px;text-align:center}
-.chip.act{border-color:#1D9E75;background:#E1F5EE}
-.chip.fin{border-color:#BA7517;background:#FAEEDA;opacity:.7}
-.chip.out{opacity:.4}
-.chip.ai-chip{border-color:var(--color-border-info);background:var(--color-background-info)}
-.cn{font-size:11px;color:var(--color-text-secondary)}
-.cs{font-size:18px;font-weight:500;color:var(--color-text-primary)}
-.chip.act .cs{color:#0F6E56}.chip.fin .cs{color:#BA7517}
-.ce{font-size:10px;color:var(--color-text-tertiary)}
+.chip.act{border-color:#1D9E75;background:#E1F5EE}.chip.fin{border-color:#BA7517;background:#FAEEDA;opacity:.7}.chip.out{opacity:.4}.chip.ai-chip{border-color:#0071e3;background:#f0f7ff}
+.cn{font-size:11px;color:var(--color-text-secondary)}.cs{font-size:18px;font-weight:500;color:var(--color-text-primary)}.chip.act .cs{color:#0F6E56}.chip.fin .cs{color:#BA7517}.ce{font-size:10px;color:var(--color-text-tertiary)}
 .bwrap{display:flex;justify-content:center;padding:6px 4px 2px}
 .trow{display:flex;gap:6px;justify-content:center;padding:5px 12px}
 .tc{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:16px;padding:4px 12px;font-size:15px;font-weight:500;color:var(--color-text-secondary);min-width:48px;text-align:center}
-.tc.hit{border-color:#1D9E75;color:#0F6E56;background:#E1F5EE}
-.tc.miss{border-color:#E24B4A;color:#A32D2D;background:#FCEBEB}
-.tc.bull{border-color:#BA7517;color:#633806;background:#FAEEDA}
-.tc.jailed{border-color:#444;background:#222;color:#888;border-style:dashed}
-.tc.bust{border-color:#E24B4A;background:#FCEBEB;color:#A32D2D;text-decoration:line-through}
+.tc.hit{border-color:#1D9E75;color:#0F6E56;background:#E1F5EE}.tc.miss{border-color:#E24B4A;color:#A32D2D;background:#FCEBEB}.tc.bull{border-color:#BA7517;color:#633806;background:#FAEEDA}.tc.jailed{border-color:#444;background:#222;color:#888;border-style:dashed}.tc.bust{border-color:#E24B4A;background:#FCEBEB;color:#A32D2D;text-decoration:line-through}
 .qrow{display:flex;flex-wrap:wrap;gap:5px;padding:4px 12px}
 .qb{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:6px 10px;font-size:13px;font-weight:500;color:var(--color-text-secondary);cursor:pointer;font-family:inherit}
-.qb:hover{border-color:var(--color-border-secondary);color:var(--color-text-primary)}
 .qb.on{background:#E1F5EE;border-color:#1D9E75;color:#0F6E56}
 .gacts{display:flex;gap:8px;padding:7px 12px 12px}
 .ga{flex:1;padding:11px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;color:var(--color-text-primary)}
-.ga:hover{background:var(--color-background-secondary)}
-.ga.dn{border-color:var(--color-border-danger);color:var(--color-text-danger)}
+.ga.dn{border-color:#c00;color:#c00}
 .ib{margin:4px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:8px 12px;font-size:13px;color:var(--color-text-secondary);line-height:1.5}
-.ib b{color:var(--color-text-primary)}
-.ib.red{background:#FCEBEB;border-left:3px solid #E24B4A}
-.ib.grn{background:#E1F5EE;border-left:3px solid #1D9E75}
-.ib.gld{background:#FAEEDA;border-left:3px solid #BA7517}
+.ib b{color:var(--color-text-primary)}.ib.red{background:#FCEBEB;border-left:3px solid #E24B4A}.ib.grn{background:#E1F5EE;border-left:3px solid #1D9E75}
 .cw{padding:6px 12px;overflow-x:auto}
 .ct{width:100%;border-collapse:collapse;font-size:13px}
 .ct th{padding:5px 6px;color:var(--color-text-tertiary);font-size:11px;border-bottom:0.5px solid var(--color-border-tertiary);font-weight:500}
@@ -92,41 +99,30 @@
 .wn{font-size:22px;color:#1D9E75;margin-bottom:8px;font-weight:500}
 .rank-list{margin:12px auto 20px;max-width:280px;text-align:left}
 .rank-row{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:var(--border-radius-md);margin-bottom:4px;background:var(--color-background-secondary)}
-.rank-pos{font-size:18px;font-weight:500;width:28px;text-align:center}
-.rank-name{font-size:15px;flex:1}
+.rank-pos{font-size:18px;font-weight:500;width:28px;text-align:center}.rank-name{font-size:15px;flex:1}
 .wb{background:#1D9E75;color:#fff;border:none;border-radius:var(--border-radius-lg);padding:13px 24px;font-size:15px;font-weight:500;font-family:inherit;cursor:pointer;margin:4px}
 .wb.s{background:transparent;color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary)}
 .pll{padding:12px;display:flex;flex-direction:column;gap:8px}
 .pcc{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:12px}
-.pcc:hover{border-color:var(--color-border-secondary)}
 .pcav{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
-.pcn{font-size:15px;font-weight:500;color:var(--color-text-primary)}
-.pcs{font-size:12px;color:var(--color-text-secondary);margin-top:1px}
+.pcn{font-size:15px;font-weight:500;color:var(--color-text-primary)}.pcs{font-size:12px;color:var(--color-text-secondary);margin-top:1px}
 .est{text-align:center;padding:40px 20px;color:var(--color-text-secondary);font-size:14px}
 .phdr{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:16px;display:flex;align-items:center;gap:14px}
 .phav{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:500;flex-shrink:0}
-.phnm{font-size:20px;font-weight:500;color:var(--color-text-primary)}
-.phj{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.phnm{font-size:20px;font-weight:500;color:var(--color-text-primary)}.phj{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
 .sg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px}
 .sb{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center}
-.sv{font-size:22px;font-weight:500;color:var(--color-text-primary)}
-.sv.g{color:#1D9E75}.sv.am{color:#BA7517}.sv.or{color:#E07A20}
+.sv{font-size:22px;font-weight:500;color:var(--color-text-primary)}.sv.g{color:#1D9E75}.sv.or{color:#E07A20}
 .sl{font-size:11px;color:var(--color-text-secondary);margin-top:3px;line-height:1.3}
 .hs{margin:0 12px 12px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
 .hst{padding:9px 12px;font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.07em;text-transform:uppercase;border-bottom:0.5px solid var(--color-border-tertiary)}
-.hr2{display:flex;align-items:center;padding:8px 12px;border-bottom:0.5px solid var(--color-border-tertiary);gap:10px}
-.hr2:last-child{border-bottom:none}
-.hn2{font-size:13px;color:var(--color-text-primary);width:100px;flex-shrink:0}
-.hbg{flex:1;height:4px;background:var(--color-border-tertiary);border-radius:2px;overflow:hidden}
-.hf{height:100%;border-radius:2px}
-.hp{font-size:13px;font-weight:500;color:var(--color-text-secondary);width:32px;text-align:right}
+.hr2{display:flex;align-items:center;padding:8px 12px;border-bottom:0.5px solid var(--color-border-tertiary);gap:10px}.hr2:last-child{border-bottom:none}
+.hn2{font-size:13px;color:var(--color-text-primary);width:100px;flex-shrink:0}.hbg{flex:1;height:4px;background:var(--color-border-tertiary);border-radius:2px;overflow:hidden}.hf{height:100%;border-radius:2px}.hp{font-size:13px;font-weight:500;color:var(--color-text-secondary);width:32px;text-align:right}
 .fwtable{margin:0 12px 12px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
 .fwtitle{padding:9px 12px;font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.07em;text-transform:uppercase;border-bottom:0.5px solid var(--color-border-tertiary)}
-.fw-row{display:flex;align-items:center;padding:8px 12px;border-bottom:0.5px solid var(--color-border-tertiary);gap:8px}
-.fw-row:last-child{border-bottom:none}
-.fw-game{font-size:13px;color:var(--color-text-primary);flex:1}
-.fw-val{font-size:14px;font-weight:500;color:#BA7517}
-.mover{display:none;position:absolute;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center;z-index:30;padding:16px;min-height:400px}
+.fw-row{display:flex;align-items:center;padding:8px 12px;border-bottom:0.5px solid var(--color-border-tertiary);gap:8px}.fw-row:last-child{border-bottom:none}
+.fw-game{font-size:13px;color:var(--color-text-primary);flex:1}.fw-val{font-size:14px;font-weight:500;color:#BA7517}
+.mover{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center;z-index:200;padding:16px}
 .mover.open{display:flex}
 .mdl{background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:18px;width:100%;max-width:360px}
 .mdl h3{font-size:17px;font-weight:500;margin-bottom:14px;color:var(--color-text-primary)}
@@ -143,45 +139,26 @@
 .order-banner{background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-tertiary);padding:7px 14px;font-size:12px;color:var(--color-text-secondary);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .golf-btns{display:flex;gap:10px;padding:16px;justify-content:center}
 .golf-btn{flex:1;max-width:80px;padding:18px 0;font-size:22px;font-weight:500;font-family:inherit;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;text-align:center}
-.golf-btn.sel{background:#E1F5EE;border-color:#1D9E75;color:#0F6E56}
-.golf-label{font-size:11px;color:var(--color-text-secondary);margin-top:4px}
-.kd-area{padding:12px 16px}.kd-section{margin-bottom:12px}
-.kd-player-label{font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px}
+.golf-btn.sel{background:#E1F5EE;border-color:#1D9E75;color:#0F6E56}.golf-label{font-size:11px;color:var(--color-text-secondary);margin-top:4px}
+.kd-area{padding:12px 16px}.kd-section{margin-bottom:12px}.kd-player-label{font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px}
 .kd-grid{display:flex;flex-wrap:wrap;gap:10px}
 .kd-target{width:60px;height:60px;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;border:2px solid transparent;position:relative}
-.kd-target.up{background:#E1F5EE;border-color:#1D9E75;color:#085041}
-.kd-target.down{background:var(--color-background-secondary);border-color:var(--color-border-secondary);color:var(--color-text-tertiary)}
+.kd-target.up{background:#E1F5EE;border-color:#1D9E75;color:#085041}.kd-target.down{background:var(--color-background-secondary);border-color:var(--color-border-secondary);color:var(--color-text-tertiary)}
 .kd-x{position:absolute;font-size:28px;color:#E24B4A;font-weight:700;top:50%;left:50%;transform:translate(-50%,-50%)}
 .j-grid{padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px}
 .j-cell{min-width:52px;height:60px;border-radius:var(--border-radius-md);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);position:relative}
-.j-cell.tgt{background:#E1F5EE;border-color:#1D9E75;border-width:2px}
-.j-cell.past{opacity:.3}
-.j-cell.hasPris{border-color:#E24B4A;background:#FCEBEB}
-.j-num{font-size:15px;font-weight:600;color:var(--color-text-primary)}
-.j-cell.tgt .j-num{color:#085041;font-size:17px}
-.j-cell.hasPris .j-num{color:#791F1F}
-.j-avs{display:flex;flex-wrap:wrap;gap:1px;justify-content:center}
-.j-av{width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700}
-.j-lock{position:absolute;top:2px;right:3px;font-size:10px}
-/* Varas taulukko */
-.thief-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:8px 12px}
-.thief-cell{border-radius:var(--border-radius-md);padding:6px 4px;text-align:center;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);position:relative;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
-.thief-cell.mine{border-color:#1D9E75;background:#E1F5EE}
-.thief-cell.others{border-color:#E24B4A;background:#FCEBEB}
-.thief-cell-num{font-size:13px;font-weight:600;color:var(--color-text-primary)}
-.thief-cell.mine .thief-cell-num{color:#085041}
-.thief-cell.others .thief-cell-num{color:#791F1F}
-.thief-cell-hits{font-size:10px;color:var(--color-text-tertiary)}
-.thief-cell-owner{font-size:9px;font-weight:500;margin-top:1px}
+.j-cell.tgt{background:#E1F5EE;border-color:#1D9E75;border-width:2px}.j-cell.past{opacity:.3}.j-cell.hasPris{border-color:#E24B4A;background:#FCEBEB}
+.j-num{font-size:15px;font-weight:600;color:var(--color-text-primary)}.j-cell.tgt .j-num{color:#085041;font-size:17px}.j-cell.hasPris .j-num{color:#791F1F}
+.j-avs{display:flex;flex-wrap:wrap;gap:1px;justify-content:center}.j-av{width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700}.j-lock{position:absolute;top:2px;right:3px;font-size:10px}
 .b-ship{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:var(--border-radius-md);font-size:13px;font-weight:500;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);margin:3px}
-.b-ship.h1{border-color:#BA7517;background:#FAEEDA;color:#633806}
-.b-ship.h2{border-color:#E24B4A;background:#FCEBEB;color:#791F1F}
-.b-ship.sunk{border-color:#444;background:#222;color:#888}
-.b-ship.hidden{border-color:var(--color-border-tertiary);color:var(--color-text-tertiary)}
+.b-ship.h1{border-color:#BA7517;background:#FAEEDA;color:#633806}.b-ship.h2{border-color:#E24B4A;background:#FCEBEB;color:#791F1F}.b-ship.sunk{border-color:#444;background:#222;color:#888}.b-ship.hidden{border-color:var(--color-border-tertiary);color:var(--color-text-tertiary)}
+.thief-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:8px 12px}
+.thief-cell{border-radius:var(--border-radius-md);padding:6px 4px;text-align:center;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.thief-cell.mine{border-color:#1D9E75;background:#E1F5EE}.thief-cell.others{border-color:#E24B4A;background:#FCEBEB}
+.thief-cell-num{font-size:13px;font-weight:600}.thief-cell.mine .thief-cell-num{color:#085041}.thief-cell.others .thief-cell-num{color:#791F1F}
+.thief-cell-hits{font-size:10px;color:var(--color-text-tertiary)}.thief-cell-owner{font-size:9px;font-weight:500;margin-top:1px}
 .ai-turn-overlay{position:absolute;inset:0;background:rgba(0,0,0,.75);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:25;gap:16px}
-.ai-throw-display{font-size:52px;font-weight:500;color:#fff;text-align:center;min-height:64px}
-.ai-name-display{font-size:18px;color:rgba(255,255,255,.8)}
-.ai-thinking{font-size:14px;color:rgba(255,255,255,.5);animation:pulse 1s infinite}
+.ai-throw-display{font-size:52px;font-weight:500;color:#fff;text-align:center;min-height:64px}.ai-name-display{font-size:18px;color:rgba(255,255,255,.8)}.ai-thinking{font-size:14px;color:rgba(255,255,255,.5);animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
 .ai-selector{margin-top:10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px}
 .ai-selector h4{font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
@@ -190,12 +167,10 @@
 .ai-add-btn.beginner{border-color:#1D9E75;color:#0F6E56}.ai-add-btn.medium{border-color:#BA7517;color:#633806}.ai-add-btn.expert{border-color:#E24B4A;color:#A32D2D}
 .ai-added{display:flex;flex-direction:column;gap:4px;margin-top:8px}
 .ai-added-item{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--color-background-primary);border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary)}
-.ai-added-name{flex:1;font-size:13px;color:var(--color-text-primary)}
-.ai-remove{background:none;border:none;color:var(--color-text-danger);cursor:pointer;font-size:16px;padding:0 4px}
+.ai-added-name{flex:1;font-size:13px;color:var(--color-text-primary)}.ai-remove{background:none;border:none;color:#c00;cursor:pointer;font-size:16px;padding:0 4px}
 .settings-body{padding:12px;display:flex;flex-direction:column;gap:8px}
 .setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--color-background-primary);border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary)}
-.setting-label{font-size:14px;color:var(--color-text-primary)}
-.setting-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.setting-label{font-size:14px;color:var(--color-text-primary)}.setting-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
 .toggle{width:44px;height:24px;border-radius:12px;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
 .toggle.on{background:#1D9E75}.toggle.off{background:var(--color-border-secondary)}
 .toggle::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;transition:left .2s}
@@ -210,40 +185,50 @@
 .graph-game-sel{display:flex;gap:6px;padding:10px 14px 0;flex-wrap:wrap}
 .graph-game-btn{padding:5px 10px;border-radius:var(--border-radius-md);font-size:12px;font-family:inherit;cursor:pointer;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-secondary)}
 .graph-game-btn.on{background:#E1F5EE;border-color:#1D9E75;color:#0F6E56}
-.graph-canvas-wrap{padding:8px 14px 12px}
-.no-data{padding:20px;text-align:center;color:var(--color-text-tertiary);font-size:13px}
+.graph-canvas-wrap{padding:8px 14px 12px}.no-data{padding:20px;text-align:center;color:var(--color-text-tertiary);font-size:13px}
 .qbtn{background:none;border:0.5px solid var(--color-border-secondary);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;cursor:pointer;color:var(--color-text-secondary);font-family:inherit;flex-shrink:0}
-.rules-overlay{display:none;position:absolute;inset:0;background:var(--color-background-primary);z-index:50;flex-direction:column;overflow-y:auto}
+.rules-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--color-background-primary);z-index:500;flex-direction:column;overflow-y:auto}
 .rules-overlay.open{display:flex}
 .ro-bar{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:0 14px;height:48px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:2;flex-shrink:0}
 .ro-body{padding:16px;flex:1}
 .rule-goal{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:14px;padding:10px 14px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);border-left:3px solid #1D9E75;line-height:1.55}
-.rule-sec{margin-bottom:14px}
-.rule-sec-t{font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.07em;text-transform:uppercase;margin-bottom:7px}
-.rule-items{display:flex;flex-direction:column;gap:6px}
-.rule-item{display:flex;gap:8px;font-size:13px;color:var(--color-text-secondary);line-height:1.55}
-.rule-item::before{content:"•";color:#1D9E75;flex-shrink:0;font-size:15px;line-height:1.4}
-.rule-item b{color:var(--color-text-primary)}
+.rule-sec{margin-bottom:16px}.rule-sec-t{font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.rule-items{display:flex;flex-direction:column;gap:7px}
+.rule-item{display:flex;gap:8px;font-size:13px;color:var(--color-text-secondary);line-height:1.6}
+.rule-item::before{content:"•";color:#1D9E75;flex-shrink:0;font-size:15px;line-height:1.4}.rule-item b{color:var(--color-text-primary)}
+.rule-example{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 13px;margin-top:8px;font-size:12px;color:var(--color-text-secondary);line-height:1.6;border-left:2px solid var(--color-border-secondary)}
 .rule-tip{display:flex;gap:8px;font-size:13px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;margin-top:10px;line-height:1.5}
 .rule-tip::before{content:"💡";flex-shrink:0}
 .rlist-item{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:10px 12px;margin-bottom:7px;cursor:pointer;display:flex;align-items:center;gap:10px}
-.rlist-item:hover{border-color:var(--color-border-secondary)}
 .back-game-btn{width:100%;padding:14px;background:#1D9E75;color:#fff;border:none;border-radius:var(--border-radius-lg);font-size:15px;font-weight:500;font-family:inherit;cursor:pointer;margin-top:16px}
+.nines-grid{display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px}
+.nines-btn{width:60px;height:60px;border-radius:var(--border-radius-lg);border:1.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:18px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--color-text-primary);font-family:inherit}
+.nines-btn.D{border-color:#BA7517;background:#FAEEDA;color:#633806}
+.nines-btn.T{border-color:#9b59b6;background:#EEEDFE;color:#3C3489}
+.nines-btn.muu{border-color:var(--color-border-tertiary);background:var(--color-background-secondary);color:var(--color-text-tertiary);font-size:14px}
+.nines-sub{font-size:9px;color:inherit;opacity:.7}
 </style>
-
+</head>
+<body>
 <div id="app">
 <div id="pg-home" class="pg on">
-  <div class="bar"><span class="bar-title">DartsScore</span></div>
+  <div class="bar"><span class="bar-title">DartsScore v22</span></div>
   <div class="hero">
     <svg width="80" height="80" viewBox="0 0 90 90" style="display:block;margin:auto">
-      <circle cx="45" cy="45" r="43" fill="#1a1a1a"/><circle cx="45" cy="45" r="36" fill="#1D9E75" opacity=".8"/><circle cx="45" cy="45" r="28" fill="#1a1a1a"/><circle cx="45" cy="45" r="21" fill="#E24B4A" opacity=".8"/><circle cx="45" cy="45" r="13" fill="#1a1a1a"/><circle cx="45" cy="45" r="8" fill="#1D9E75"/><circle cx="45" cy="45" r="3.5" fill="#E24B4A"/>
+      <circle cx="45" cy="45" r="43" fill="#1a1a1a"/>
+      <circle cx="45" cy="45" r="36" fill="#1D9E75" opacity=".8"/>
+      <circle cx="45" cy="45" r="28" fill="#1a1a1a"/>
+      <circle cx="45" cy="45" r="21" fill="#E24B4A" opacity=".8"/>
+      <circle cx="45" cy="45" r="13" fill="#1a1a1a"/>
+      <circle cx="45" cy="45" r="8" fill="#1D9E75"/>
+      <circle cx="45" cy="45" r="3.5" fill="#E24B4A"/>
     </svg>
     <div class="hero-title">DartsScore</div>
     <div class="hero-sub">20 peliä · AI · äänet · tilastot</div>
   </div>
   <div class="hbtns">
-    <button class="bm g" onclick="navTo('pg-games')">Pelaa</button>
-    <button class="bm o" onclick="navTo('pg-profiles')">Profiilit</button>
+    <button class="bm g" onclick="navTo('pg-games')">🎯 Pelaa</button>
+    <button class="bm o" onclick="navTo('pg-profiles')">👤 Profiilit</button>
     <button class="bm o" onclick="navTo('pg-settings')">⚙️ Asetukset</button>
   </div>
 </div>
@@ -252,7 +237,7 @@
   <div class="bar"><button class="bbtn" onclick="navTo('pg-home')">← Takaisin</button><span class="bar-title">Asetukset</span><span class="sp"></span></div>
   <div class="settings-body">
     <div class="settings-section-title">Äänet</div>
-    <div class="setting-row"><div><div class="setting-label">Kaikki äänet</div><div class="setting-sub">Pääkytkin</div></div><button id="tog-allSound" class="toggle on" onclick="toggleCfg('allSound')"></button></div>
+    <div class="setting-row"><div><div class="setting-label">Kaikki äänet</div></div><button id="tog-allSound" class="toggle on" onclick="toggleCfg('allSound')"></button></div>
     <div class="setting-row"><div><div class="setting-label">Tikka osuu</div></div><button id="tog-hitSound" class="toggle on" onclick="toggleCfg('hitSound')"></button></div>
     <div class="setting-row"><div><div class="setting-label">Ohiheitto</div></div><button id="tog-missSound" class="toggle on" onclick="toggleCfg('missSound')"></button></div>
     <div class="setting-row"><div><div class="setting-label">Häränsilmä</div></div><button id="tog-bullSound" class="toggle on" onclick="toggleCfg('bullSound')"></button></div>
@@ -263,8 +248,12 @@
     <div class="settings-section-title">Tikkataulu</div>
     <div class="sc" style="margin:0"><h3>Numeroiden järjestys</h3>
       <div class="board-preview-row">
-        <div style="flex:1"><div class="board-preview sel" id="prev-classic" onclick="setBoardLayout('classic')"><svg width="100%" viewBox="0 0 120 120"><circle cx="60" cy="60" r="58" fill="#1a1a1a"/><circle cx="60" cy="60" r="48" fill="#1D9E75" opacity=".5"/><circle cx="60" cy="60" r="37" fill="#1a1a1a"/><circle cx="60" cy="60" r="27" fill="#E24B4A" opacity=".5"/><circle cx="60" cy="60" r="17" fill="#1a1a1a"/><circle cx="60" cy="60" r="9" fill="#1D9E75"/><circle cx="60" cy="60" r="4" fill="#E24B4A"/><text x="60" y="9" text-anchor="middle" font-size="8" fill="#e8e8e8" font-family="sans-serif" font-weight="700">20</text></svg></div><div class="board-preview-label" id="lbl-classic" style="color:#0F6E56">Standardi</div></div>
-        <div style="flex:1"><div class="board-preview" id="prev-numeric" onclick="setBoardLayout('numeric')"><svg width="100%" viewBox="0 0 120 120"><circle cx="60" cy="60" r="58" fill="#1a1a1a"/><circle cx="60" cy="60" r="48" fill="#1D9E75" opacity=".5"/><circle cx="60" cy="60" r="37" fill="#1a1a1a"/><circle cx="60" cy="60" r="27" fill="#E24B4A" opacity=".5"/><circle cx="60" cy="60" r="17" fill="#1a1a1a"/><circle cx="60" cy="60" r="9" fill="#1D9E75"/><circle cx="60" cy="60" r="4" fill="#E24B4A"/><text x="60" y="9" text-anchor="middle" font-size="8" fill="#e8e8e8" font-family="sans-serif" font-weight="700">1</text></svg></div><div class="board-preview-label" id="lbl-numeric">Numerojärjestys</div></div>
+        <div style="flex:1"><div class="board-preview sel" id="prev-classic" onclick="setBoardLayout('classic')">
+          <svg width="100%" viewBox="0 0 120 120"><circle cx="60" cy="60" r="58" fill="#1a1a1a"/><circle cx="60" cy="60" r="48" fill="#1D9E75" opacity=".5"/><circle cx="60" cy="60" r="37" fill="#1a1a1a"/><circle cx="60" cy="60" r="27" fill="#E24B4A" opacity=".5"/><circle cx="60" cy="60" r="17" fill="#1a1a1a"/><circle cx="60" cy="60" r="9" fill="#1D9E75"/><circle cx="60" cy="60" r="4" fill="#E24B4A"/><text x="60" y="9" text-anchor="middle" font-size="8" fill="#e8e8e8" font-family="sans-serif" font-weight="700">20</text></svg>
+        </div><div class="board-preview-label" id="lbl-classic" style="color:#0F6E56">Standardi</div></div>
+        <div style="flex:1"><div class="board-preview" id="prev-numeric" onclick="setBoardLayout('numeric')">
+          <svg width="100%" viewBox="0 0 120 120"><circle cx="60" cy="60" r="58" fill="#1a1a1a"/><circle cx="60" cy="60" r="48" fill="#1D9E75" opacity=".5"/><circle cx="60" cy="60" r="37" fill="#1a1a1a"/><circle cx="60" cy="60" r="27" fill="#E24B4A" opacity=".5"/><circle cx="60" cy="60" r="17" fill="#1a1a1a"/><circle cx="60" cy="60" r="9" fill="#1D9E75"/><circle cx="60" cy="60" r="4" fill="#E24B4A"/><text x="60" y="9" text-anchor="middle" font-size="8" fill="#e8e8e8" font-family="sans-serif" font-weight="700">1</text></svg>
+        </div><div class="board-preview-label" id="lbl-numeric">Numerojärjestys</div></div>
       </div>
     </div>
   </div>
@@ -278,8 +267,19 @@
 <div id="pg-setup" class="pg">
   <div class="bar"><button class="bbtn" onclick="navTo('pg-games')">← Pelit</button><span class="bar-title" id="setup-title">Peli</span><button class="qbtn" onclick="openSetupRules()">?</button></div>
   <div class="sbody">
-    <div class="sc"><h3 id="players-header">Pelaajat (1–8)</h3><div id="setup-plist"></div><div id="nop-msg" class="nop" style="display:none">Lisää ensin pelaajia Profiilit-sivulta.</div>
-      <div class="ai-selector" id="ai-selector"><h4>Lisää AI-vastustaja</h4><div class="ai-btn-row"><button class="ai-add-btn beginner" onclick="addAI('beginner')">🟢 Aloittelija</button><button class="ai-add-btn medium" onclick="addAI('medium')">🟡 Keskitaso</button><button class="ai-add-btn expert" onclick="addAI('expert')">🔴 Ekspertti</button></div><div class="ai-added" id="ai-added-list"></div></div>
+    <div class="sc">
+      <h3 id="players-header">Pelaajat (1–8)</h3>
+      <div id="setup-plist"></div>
+      <div id="nop-msg" class="nop" style="display:none">Lisää ensin pelaajia Profiilit-sivulta.</div>
+      <div class="ai-selector" id="ai-selector">
+        <h4>Lisää AI-vastustaja</h4>
+        <div class="ai-btn-row">
+          <button class="ai-add-btn beginner" onclick="addAI('beginner')">🟢 Aloittelija</button>
+          <button class="ai-add-btn medium" onclick="addAI('medium')">🟡 Keskitaso</button>
+          <button class="ai-add-btn expert" onclick="addAI('expert')">🔴 Ekspertti</button>
+        </div>
+        <div class="ai-added" id="ai-added-list"></div>
+      </div>
     </div>
     <div class="sc" id="opts-card"><h3 id="opts-title">Asetukset</h3><div id="opts-body"></div></div>
     <button class="sbtn" id="start-btn" onclick="startGame()" disabled>Aloita peli</button>
@@ -298,122 +298,133 @@
 </div>
 
 <div id="pg-pdetail" class="pg">
-  <div class="bar"><button class="bbtn" onclick="navTo('pg-profiles')">← Profiilit</button><span class="bar-title" id="pd-title">Pelaaja</span><button class="bbtn" style="color:var(--color-text-danger)" onclick="delProfile()">Poista</button></div>
+  <div class="bar"><button class="bbtn" onclick="navTo('pg-profiles')">← Profiilit</button><span class="bar-title" id="pd-title">Pelaaja</span><button class="bbtn" style="color:#c00" onclick="delProfile()">Poista</button></div>
   <div id="pd-body"></div>
 </div>
 
-<div class="mover" id="modal-add"><div class="mdl"><h3>Uusi pelaaja</h3><label class="fl">Nimi</label><input class="fi" id="inp-name" type="text" placeholder="esim. Matti" maxlength="16"/><label class="fl">Lempinimi</label><input class="fi" id="inp-nick" type="text" placeholder="valinnainen" maxlength="16"/><div class="ma"><button class="mc" onclick="closeModal('modal-add')">Peruuta</button><button class="mok" onclick="addPlayer()">Lisää</button></div></div></div>
-<div class="mover" id="modal-quit"><div class="mdl"><h3>Lopeta peli?</h3><p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:16px">Peli keskeytyy.</p><div class="ma"><button class="mc" onclick="closeModal('modal-quit')">Jatka</button><button class="mok" style="background:var(--color-background-danger);color:var(--color-text-danger)" onclick="quitGame()">Lopeta</button></div></div></div>
-<div class="mover" id="modal-notify"><div class="mdl"><h3 id="notify-title">Ilmoitus</h3><p id="notify-msg" style="font-size:14px;color:var(--color-text-secondary);margin-bottom:16px"></p><div class="ma"><button class="mok" onclick="closeModal('modal-notify')">OK</button></div></div></div>
+<div class="mover" id="modal-add">
+  <div class="mdl"><h3>Uusi pelaaja</h3>
+    <label class="fl">Nimi</label><input class="fi" id="inp-name" type="text" placeholder="esim. Matti" maxlength="16"/>
+    <label class="fl">Lempinimi</label><input class="fi" id="inp-nick" type="text" placeholder="valinnainen" maxlength="16"/>
+    <div class="ma"><button class="mc" onclick="closeModal('modal-add')">Peruuta</button><button class="mok" onclick="addPlayer()">Lisää</button></div>
+  </div>
+</div>
+<div class="mover" id="modal-quit">
+  <div class="mdl"><h3>Lopeta peli?</h3><p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:16px">Peli keskeytyy.</p>
+    <div class="ma"><button class="mc" onclick="closeModal('modal-quit')">Jatka</button><button class="mok" style="background:#fff0f0;color:#c00" onclick="quitGame()">Lopeta</button></div>
+  </div>
+</div>
+<div class="mover" id="modal-notify">
+  <div class="mdl"><h3 id="notify-title">Ilmoitus</h3><p id="notify-msg" style="font-size:14px;color:var(--color-text-secondary);margin-bottom:16px"></p>
+    <div class="ma"><button class="mok" onclick="closeModal('modal-notify')">OK</button></div>
+  </div>
+</div>
 
 <div class="rules-overlay" id="rules-overlay">
-  <div class="ro-bar"><button class="bbtn" id="ro-back-btn" onclick="closeRules()">← Takaisin</button><span class="bar-title" id="ro-title">Säännöt</span><span class="sp"></span></div>
+  <div class="ro-bar">
+    <button class="bbtn" id="ro-back-btn" onclick="closeRules()">← Takaisin</button>
+    <span class="bar-title" id="ro-title">Säännöt</span>
+    <span class="sp"></span>
+  </div>
   <div class="ro-body" id="ro-body"></div>
 </div>
 </div>
-
 <script>
+
 // ===== SETTINGS =====
-let CFG=JSON.parse(localStorage.getItem('darts_cfg')||'{}');
-const DEFS={allSound:true,hitSound:true,missSound:true,bullSound:true,turnSound:true,winSound:true,speechSound:true,winSpeech:true,boardLayout:'classic'};
+var CFG=JSON.parse(localStorage.getItem('darts_cfg')||'{}');
+var DEFS={allSound:true,hitSound:true,missSound:true,bullSound:true,turnSound:true,winSound:true,speechSound:true,winSpeech:true,boardLayout:'classic'};
 function cfgGet(k){return CFG[k]!==undefined?CFG[k]:DEFS[k];}
 function saveCfg(){localStorage.setItem('darts_cfg',JSON.stringify(CFG));}
 function toggleCfg(k){CFG[k]=!cfgGet(k);saveCfg();syncSettingsUI();}
 function setBoardLayout(v){CFG.boardLayout=v;saveCfg();syncSettingsUI();}
-function syncSettingsUI(){Object.keys(DEFS).forEach(k=>{if(k==='boardLayout')return;const el=document.getElementById('tog-'+k);if(el)el.className='toggle '+(cfgGet(k)?'on':'off');});const cl=cfgGet('boardLayout')==='classic';const pc=document.getElementById('prev-classic'),pn=document.getElementById('prev-numeric');if(pc)pc.className='board-preview'+(cl?' sel':'');if(pn)pn.className='board-preview'+(!cl?' sel':'');const lc=document.getElementById('lbl-classic'),ln=document.getElementById('lbl-numeric');if(lc)lc.style.color=cl?'#0F6E56':'';if(ln)ln.style.color=!cl?'#0F6E56':'';}
+function syncSettingsUI(){
+  Object.keys(DEFS).forEach(function(k){if(k==='boardLayout')return;var el=document.getElementById('tog-'+k);if(el)el.className='toggle '+(cfgGet(k)?'on':'off');});
+  var cl=cfgGet('boardLayout')==='classic';
+  var pc=document.getElementById('prev-classic'),pn=document.getElementById('prev-numeric');
+  if(pc)pc.className='board-preview'+(cl?' sel':'');
+  if(pn)pn.className='board-preview'+(!cl?' sel':'');
+  var lc=document.getElementById('lbl-classic'),ln=document.getElementById('lbl-numeric');
+  if(lc)lc.style.color=cl?'#0F6E56':'';
+  if(ln)ln.style.color=!cl?'#0F6E56':'';
+}
 
 // ===== SOUND =====
-let AC=null;
+var AC=null;
 function getAC(){if(!AC&&window.AudioContext)try{AC=new AudioContext();}catch(e){}return AC;}
-function playTone(freq,dur,type='sine',vol=.3,delay=0){const ac=getAC();if(!ac||!cfgGet('allSound'))return;const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.type=type;o.frequency.setValueAtTime(freq,ac.currentTime+delay);g.gain.setValueAtTime(0,ac.currentTime+delay);g.gain.linearRampToValueAtTime(vol,ac.currentTime+delay+.01);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+delay+dur);o.start(ac.currentTime+delay);o.stop(ac.currentTime+delay+dur+.05);}
+function playTone(freq,dur,type,vol,delay){type=type||'sine';vol=vol||.3;delay=delay||0;var ac=getAC();if(!ac||!cfgGet('allSound'))return;var o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.type=type;o.frequency.setValueAtTime(freq,ac.currentTime+delay);g.gain.setValueAtTime(0,ac.currentTime+delay);g.gain.linearRampToValueAtTime(vol,ac.currentTime+delay+.01);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+delay+dur);o.start(ac.currentTime+delay);o.stop(ac.currentTime+delay+dur+.05);}
 function playHit(){if(!cfgGet('hitSound'))return;playTone(440,.08,'square',.15);playTone(550,.06,'square',.1,.07);}
-function playMiss(){if(!cfgGet('missSound'))return;playTone(180,.2,'sawtooth',.12);playTone(150,.15,'sawtooth',.1,.15);}
+function playMiss(){if(!cfgGet('missSound'))return;playTone(180,.2,'sawtooth',.12);}
 function playBull(){if(!cfgGet('bullSound'))return;playTone(660,.1,'sine',.2);playTone(880,.1,'sine',.2,.1);playTone(1100,.15,'sine',.2,.2);}
-function playWin(){if(!cfgGet('winSound'))return;[523,659,784,1047].forEach((f,i)=>playTone(f,.25,'sine',.25,i*.18));setTimeout(()=>[784,1047,1319,1568].forEach((f,i)=>playTone(f,.3,'sine',.3,i*.15)),900);}
+function playWin(){if(!cfgGet('winSound'))return;[523,659,784,1047].forEach(function(f,i){playTone(f,.25,'sine',.25,i*.18);});setTimeout(function(){[784,1047,1319,1568].forEach(function(f,i){playTone(f,.3,'sine',.3,i*.15);});},900);}
 function playTurnChange(){if(!cfgGet('turnSound'))return;playTone(330,.1,'sine',.15);playTone(440,.12,'sine',.15,.1);}
 function playSfx(miss,bull){if(miss)playMiss();else if(bull)playBull();else playHit();}
 
 // ===== SPEECH =====
-let spQ=[],speaking=false;
-function speak(text,rate=.85,isWin=false){if(!cfgGet('allSound'))return;if(isWin&&!cfgGet('winSpeech'))return;if(!isWin&&!cfgGet('speechSound'))return;if(!window.speechSynthesis)return;spQ.push({text,rate});if(!speaking)nextSp();}
-function nextSp(){if(!spQ.length){speaking=false;return;}speaking=true;const{text,rate}=spQ.shift();const u=new SpeechSynthesisUtterance(text);u.lang='fi-FI';u.rate=rate;u.onend=()=>setTimeout(nextSp,200);u.onerror=()=>{speaking=false;nextSp();};window.speechSynthesis.speak(u);}
+var spQ=[],speaking=false;
+function speak(text,rate,isWin){rate=rate||.85;if(!cfgGet('allSound'))return;if(isWin&&!cfgGet('winSpeech'))return;if(!isWin&&!cfgGet('speechSound'))return;if(!window.speechSynthesis)return;spQ.push({text:text,rate:rate});if(!speaking)nextSp();}
+function nextSp(){if(!spQ.length){speaking=false;return;}speaking=true;var it=spQ.shift();var u=new SpeechSynthesisUtterance(it.text);u.lang='fi-FI';u.rate=it.rate;u.onend=function(){setTimeout(nextSp,200);};u.onerror=function(){speaking=false;nextSp();};window.speechSynthesis.speak(u);}
 function clearSp(){if(window.speechSynthesis)window.speechSynthesis.cancel();spQ=[];speaking=false;}
-function tLabel(t){if(t.miss)return'ohitse';if(t.type==='bull_inner')return'häränsilmä';if(t.type==='bull_outer')return'ulko häränsilmä';if(t.type==='triple')return`tripla ${t.num}`;if(t.type==='double')return`tupla ${t.num}`;return String(t.num);}
+function tLabel(t){if(t.miss)return'ohitse';if(t.type==='bull_inner')return'häränsilmä';if(t.type==='bull_outer')return'ulko häränsilmä';if(t.type==='triple')return'tripla '+t.num;if(t.type==='double')return'tupla '+t.num;return String(t.num);}
 
 // ===== AI =====
-const AIL={beginner:{name:'Aloittelija',emoji:'🟢',hitRate:.45,bullRate:.05,doubleRate:.06,tripleRate:.04},medium:{name:'Keskitaso',emoji:'🟡',hitRate:.68,bullRate:.12,doubleRate:.14,tripleRate:.09},expert:{name:'Ekspertti',emoji:'🔴',hitRate:.88,bullRate:.22,doubleRate:.26,tripleRate:.18}};
-let aiPlayers=[],aiC=10000;
-function addAI(lv){const gdef=GAMES.find(x=>x.id===S.gid);if(S.sel.length+aiPlayers.length>=(gdef?.max||8))return;const l=AIL[lv];const id=-(++aiC);const names={beginner:['Tero-AI','Mikko-AI','Sanna-AI'],medium:['Kari-AI','Eeva-AI','Juhani-AI'],expert:['Pekka-AI','Liisa-AI','Veikko-AI']};const taken=aiPlayers.map(a=>a.name);const pool=names[lv].filter(n=>!taken.includes(n));const name=pool[0]||`${l.name}-${aiPlayers.length+1}`;aiPlayers.push({id,level:lv,name,isAI:true,emoji:l.emoji});renderAIAdded();updSBtn();}
-function removeAI(id){aiPlayers=aiPlayers.filter(a=>a.id!==id);renderAIAdded();updSBtn();}
-function renderAIAdded(){const el=document.getElementById('ai-added-list');if(!el)return;el.innerHTML=aiPlayers.map(a=>`<div class="ai-added-item"><span>${a.emoji}</span><span class="ai-added-name">${a.name} (${AIL[a.level].name})</span><button class="ai-remove" onclick="removeAI(${a.id})">✕</button></div>`).join('');}
-function aiThrow(player,G){const l=AIL[player.level];const r=Math.random();let num=20,type='big_single';if(G.gid==='g501'){const sc=G.scores[player.id];if(sc<=170&&sc>0){num=Math.min(20,Math.floor(sc/3));type=sc<=40?'double':'triple';}else type=r<l.tripleRate?'triple':r<l.tripleRate+l.doubleRate?'double':'big_single';}else type=r<l.tripleRate?'triple':r<l.tripleRate+l.doubleRate?'double':r<l.bullRate?'bull':'big_single';if(Math.random()>=l.hitRate){if(Math.random()<.5)return{num:0,type:'miss',label:'Ohi',pts:0,miss:true,bull:false};num=Math.floor(Math.random()*20)+1;type='big_single';}if(type==='bull'){const pts=Math.random()<.5?50:25;return{num:'B',type:pts===50?'bull_inner':'bull_outer',label:pts===50?'IB':'OB',pts,miss:false,bull:true};}const pts=type==='triple'?num*3:type==='double'?num*2:num;return{num,type,label:type==='triple'?`T${num}`:type==='double'?`D${num}`:String(num),pts,miss:false,bull:false};}
+var AIL={beginner:{name:'Aloittelija',emoji:'🟢',hitRate:.45,bullRate:.05,doubleRate:.06,tripleRate:.04},medium:{name:'Keskitaso',emoji:'🟡',hitRate:.68,bullRate:.12,doubleRate:.14,tripleRate:.09},expert:{name:'Ekspertti',emoji:'🔴',hitRate:.88,bullRate:.22,doubleRate:.26,tripleRate:.18}};
+var aiPlayers=[],aiC=10000;
+function addAI(lv){var gdef=GAMES.find(function(x){return x.id===S.gid;});if(S.sel.length+aiPlayers.length>=(gdef?gdef.max||8:8))return;var l=AIL[lv];var id=-(++aiC);var names={beginner:['Tero-AI','Mikko-AI','Sanna-AI'],medium:['Kari-AI','Eeva-AI','Juhani-AI'],expert:['Pekka-AI','Liisa-AI','Veikko-AI']};var taken=aiPlayers.map(function(a){return a.name;});var pool=names[lv].filter(function(n){return taken.indexOf(n)<0;});var name=pool[0]||(l.name+'-'+(aiPlayers.length+1));aiPlayers.push({id:id,level:lv,name:name,isAI:true,emoji:l.emoji});renderAIAdded();updSBtn();}
+function removeAI(id){aiPlayers=aiPlayers.filter(function(a){return a.id!==id;});renderAIAdded();updSBtn();}
+function renderAIAdded(){var el=document.getElementById('ai-added-list');if(!el)return;el.innerHTML=aiPlayers.map(function(a){return'<div class="ai-added-item"><span>'+a.emoji+'</span><span class="ai-added-name">'+a.name+' ('+AIL[a.level].name+')</span><button class="ai-remove" onclick="removeAI('+a.id+')">✕</button></div>';}).join('');}
+function aiThrow(player,G){var l=AIL[player.level];var r=Math.random();var num=20,type='big_single';if(G.gid==='g501'){var sc=G.scores[player.id];if(sc<=170&&sc>0){num=Math.min(20,Math.floor(sc/3));type=sc<=40?'double':'triple';}else type=r<l.tripleRate?'triple':r<l.tripleRate+l.doubleRate?'double':'big_single';}else type=r<l.tripleRate?'triple':r<l.tripleRate+l.doubleRate?'double':r<l.bullRate?'bull':'big_single';if(Math.random()>=l.hitRate){if(Math.random()<.5)return{num:0,type:'miss',label:'Ohi',pts:0,miss:true,bull:false};num=Math.floor(Math.random()*20)+1;type='big_single';}if(type==='bull'){var pts=Math.random()<.5?50:25;return{num:'B',type:pts===50?'bull_inner':'bull_outer',label:pts===50?'IB':'OB',pts:pts,miss:false,bull:true};}var pts2=type==='triple'?num*3:type==='double'?num*2:num;return{num:num,type:type,label:type==='triple'?'T'+num:type==='double'?'D'+num:String(num),pts:pts2,miss:false,bull:false};}
 
 // ===== RULES =====
-function openRulesList(){document.getElementById('ro-title').textContent='Säännöt';document.getElementById('ro-back-btn').textContent='← Pelit';document.getElementById('ro-back-btn').onclick=closeRules;let h='';['Perus','Haaste','Cricket','Erikois'].forEach(cat=>{h+=`<div style="font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.08em;text-transform:uppercase;margin:12px 0 8px">${cat}</div>`;GAMES.filter(g=>g.cat===cat).forEach(g=>{const r=getRules(g.id);h+=`<div class="rlist-item" onclick="showRules('${g.id}','← Kaikki pelit',false,openRulesList)"><div style="width:34px;height:34px;border-radius:var(--border-radius-md);background:${g.bg};color:${g.fc};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${g.ic}</div><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500;color:var(--color-text-primary)">${g.n}</div><div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px">${r.short}</div></div><span style="color:var(--color-text-tertiary);font-size:16px">›</span></div>`;});});document.getElementById('ro-body').innerHTML=h;document.getElementById('rules-overlay').classList.add('open');}
+function openRulesList(){document.getElementById('ro-title').textContent='Säännöt';document.getElementById('ro-back-btn').textContent='← Pelit';document.getElementById('ro-back-btn').onclick=closeRules;var h='';['Perus','Haaste','Cricket','Erikois'].forEach(function(cat){h+='<div style="font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.08em;text-transform:uppercase;margin:12px 0 8px">'+cat+'</div>';GAMES.filter(function(g){return g.cat===cat;}).forEach(function(g){var r=getRules(g.id);h+='<div class="rlist-item" onclick="showRules(\''+g.id+'\',\'← Kaikki pelit\',false,openRulesList)"><div style="width:34px;height:34px;border-radius:var(--border-radius-md);background:'+g.bg+';color:'+g.fc+';display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">'+g.ic+'</div><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">'+g.n+'</div><div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px">'+r.short+'</div></div><span style="color:var(--color-text-tertiary);font-size:16px">›</span></div>';});});document.getElementById('ro-body').innerHTML=h;document.getElementById('rules-overlay').classList.add('open');}
 function openSetupRules(){if(S.gid)showRules(S.gid,'← Asetukset',false);}
 function openGameRules(){if(G)showRules(G.gid,'← Peli',true);}
-function showRules(gid,backLabel,showReturn,backFn){const g=GAMES.find(x=>x.id===gid);const r=getRules(gid);document.getElementById('ro-title').textContent=g.n;document.getElementById('ro-back-btn').textContent=backLabel;document.getElementById('ro-back-btn').onclick=backFn||closeRules;let h=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="width:42px;height:42px;border-radius:var(--border-radius-md);background:${g.bg};color:${g.fc};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${g.ic}</div><div><div style="font-size:18px;font-weight:500;color:var(--color-text-primary)">${g.n}</div><div style="font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-top:2px">${g.cat}</div></div></div>`;h+=`<div class="rule-goal">${r.goal}</div>`;r.sections.forEach(sec=>{h+=`<div class="rule-sec"><div class="rule-sec-t">${sec.title}</div><div class="rule-items">`;sec.items.forEach(item=>{h+=`<div class="rule-item">${item}</div>`;});h+='</div></div>';});if(r.tip)h+=`<div class="rule-tip">${r.tip}</div>`;if(showReturn)h+=`<button class="back-game-btn" onclick="closeRules()">← Takaisin peliin</button>`;document.getElementById('ro-body').innerHTML=h;document.getElementById('rules-overlay').classList.add('open');document.getElementById('rules-overlay').scrollTop=0;}
+function showRules(gid,backLabel,showReturn,backFn){var g=GAMES.find(function(x){return x.id===gid;});var r=getRules(gid);document.getElementById('ro-title').textContent=g.n;document.getElementById('ro-back-btn').textContent=backLabel;document.getElementById('ro-back-btn').onclick=backFn||closeRules;var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="width:42px;height:42px;border-radius:var(--border-radius-md);background:'+g.bg+';color:'+g.fc+';display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">'+g.ic+'</div><div><div style="font-size:18px;font-weight:500">'+g.n+'</div><div style="font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-top:2px">'+g.cat+(g.min===2?' · 2 pelaajaa':'')+'</div></div></div>';h+='<div class="rule-goal">'+r.goal+'</div>';r.sections.forEach(function(sec){h+='<div class="rule-sec"><div class="rule-sec-t">'+sec.title+'</div><div class="rule-items">';sec.items.forEach(function(item){h+='<div class="rule-item">'+item+'</div>';});h+='</div>';if(sec.example)h+='<div class="rule-example">'+sec.example+'</div>';h+='</div>';});if(r.tip)h+='<div class="rule-tip">'+r.tip+'</div>';if(showReturn)h+='<button class="back-game-btn" onclick="closeRules()">← Takaisin peliin</button>';document.getElementById('ro-body').innerHTML=h;document.getElementById('rules-overlay').classList.add('open');document.getElementById('rules-overlay').scrollTop=0;}
 function closeRules(){document.getElementById('rules-overlay').classList.remove('open');}
-
 function getRules(gid){
-  const R={
-    g100:{short:'Kerää pisteitä tavoitteeseen.',goal:'🎯 Tavoite: Kerää ensimmäisenä asetettu pistemäärä.',sections:[{title:'Kulku',items:['3 heittoa per vuoro. Pisteet päivittyvät heti.','Double=arvo×2, Triple=arvo×3, OB=25p, IB=50p']}],tip:'Hyvä aloituspeli.'},
-    g501:{short:'Laske pisteesi täsmälleen nollaan.',goal:'🎯 Tavoite: Laske pisteesi täsmälleen nollaan.',sections:[{title:'Kulku',items:['Pisteet vähenevät heti jokaisesta heitosta.','Rikki (alle 0 tai jää 1) → koko vuoro palautetaan.']}],tip:'Klassikko!'},
-    gotcha:{short:'Sama pistemäärä puolittaa toisen pisteet.',goal:'💥 Pisteet kerätään, sama pistemäärä kuin toisella puolittaa hänen pisteensä!',sections:[{title:'Säännöt',items:['Pisteet lisätään heti. Puolitus tapahtuu vuoron lopussa.']}],tip:'Seuraa muiden pisteitä.'},
-    nines:{short:'Vähiten pisteitä kierroksella menettää elämän.',goal:'❤️ Tavoite: Selviytyjä.',sections:[{title:'Kulku',items:['3 heittoa per vuoro. Pienin kierrospisteet → menettää elämän.']}],tip:'Triple 20 on paras.'},
-    shanghai:{short:'7 kierrosta, vain kohdenumero pistyttää.',goal:'🏙️ Tavoite: 7 kierrosta tai Shanghai!',sections:[{title:'Kulku',items:['Kierros 1→num 1... Vain kohdenumero antaa pisteitä.','Single+Double+Triple samaan → SHANGHAI = voitto!']}],tip:'Kierros 7 on arvokkain.'},
-    halveit:{short:'Osumat normaalisti — ei osuma puolittaa KAIKKI pisteet.',goal:'✂️ Osuma kohteeseen = kaikki pisteet normaalisti. Ei osumaa = kaikki pisteet puolitetaan!',sections:[{title:'Kulku',items:['Satunnainen kohde joka kierroksella (numero/tupla/tripla/bull).','Osuma: saat kaikki kierroksen pisteet.','Ei osumaa: koko pelin pisteet puolitetaan!']}],tip:''},
-    fives:{short:'Heitä 3 tikan summa jaollisena viidellä.',goal:'5️⃣ Kerää pisteitä 5:llä jaollisista summista.',sections:[{title:'Säännöt',items:['Jaollinen 5:llä → saat summa÷5. Ei jaollinen → 0p.']}],tip:''},
-    clock:{short:'Osu numeroihin 1–20 järjestyksessä.',goal:'🕐 Ole ensimmäinen joka osuu kaikkiin numeroihin järjestyksessä.',sections:[{title:'Säännöt',items:['Vain iso single laskee.']}],tip:''},
-    shadow:{short:'Globaali puolitus — osumat puolitetaan kaikilta.',goal:'👥 Osumat puolitetaan globaalisti.',sections:[{title:'Puolitus',items:['1.osuma=100%, 2.=50%, 3.=25%...']}],tip:''},
-    stairs:{short:'Tavoite nousee — alle tavoitteen tippuu mutta peli jatkuu.',goal:'🪜 Selviytyjä. Alle tavoitteen → merkitään tippuneeksi, peli jatkuu.',sections:[{title:'Kulku',items:['Alle tavoitteen → tippuu (merkitään ✗ mutta peli jatkuu).','Viimeisenä pystyssä → voittaa.']}],tip:'Peli jatkuu vaikka muut tippuisivat.'},
-    scrkt:{short:'Sulje 15–20 ja bull.',goal:'🏏 Sulje kaikki kohteet.',sections:[{title:'Sulkeminen',items:['Single=1, Double=2, Triple=3. 3 merkkiä=suljettu.']}],tip:''},
-    ptscrkt:{short:'Sulje ja kerää pisteitä.',goal:'🏏 Eniten pisteitä.',sections:[{title:'Säännöt',items:['Suljettu + vastustaja auki → pisteitä sinulle.']}],tip:''},
-    ctcrkt:{short:'Sulje ja anna pisteitä vastustajille.',goal:'⚔️ Vähiten pisteitä.',sections:[{title:'Säännöt',items:['Suljettu + vastustaja auki → pisteitä hänelle.']}],tip:''},
-    engcrkt:{short:'Lyöjä vs Keilaaja, 2 innings.',goal:'🏏 Eniten pisteitä 2 inningsissä.',sections:[{title:'Roolit',items:['Lyöjä: pts=summa−40. Keilaaja: bull poistaa hiloja.']}],tip:''},
-    golf:{short:'Vähiten lyöntejä.',goal:'⛳ Vähiten pisteitä.',sections:[{title:'Pisteytys',items:['1=Tripla, 2=Tupla, 3=Small, 4=Big, 5=Ohi']}],tip:''},
-    killer:{short:'Tule Killeriksi ja eliminoi muut.',goal:'☠️ Tule Killeriksi ja eliminoi kaikki.',sections:[{title:'Vaiheet',items:['Valitse numero. 3 osumaa omaan → KILLER! Osu muiden numeroon → vie elämiä.']}],tip:''},
-    jailer:{short:'Ohiheitto vangitsee tikan — vapautus tai häviö!',goal:'🔒 Tavoite: Kierrä numerot 1–N. Ohiheitot vangitsevat tikkoja!',sections:[{title:'Kulku',items:['Ohiheitto → tikka vangitaan kohdenumeroon.','Osuma numeroon jossa tikka → vapautus!','Häränsilmä → vapauttaa kaikkien kaikki tikat.','Kaikilla tikat vangittu → vanginvartija voittaa.']}],tip:'Vapautuksia ei lasketa pisteytykseen — se on selviytymistä.'},
-    // VARAS — päivitetty sääntö
-    thief:{short:'Enemmän osumia valtaa numeron.',goal:'🦹 Tavoite: Eniten pisteitä. Valtaa numerot osumalla enemmän kuin omistajalla!',sections:[{title:'Säännöt',items:['Ensimmäinen osuma numeroon → olet omistaja, saat pisteet.','<b>Enemmän osumia</b> kuin omistajalla yhteensä → valtaat numeron!','Valtauksessa: omistajan pisteet vähenevät heidän pisteillään kyseisestä numerosta.','Peli päättyy kun ensimmäinen saavuttaa pisterajan.']},{title:'Esimerkki',items:['Matti osuu 5:een kerran (1 osuma, omistaja).','Sanna osuu 5:een kahdesti (2 > 1) → Sanna valtaa!']}],tip:'Kolmesta triplasta saat paljon osumia nopeasti.'},
-    knockdown:{short:'Kaada kaikki 5 omaa kohdettasi.',goal:'🎳 Kaada kaikki 5 omaa kohdettasi.',sections:[{title:'Kulku',items:['Osumat omaan kohteeseen → kaatuu. Osumat vastustajan kaatuneeseen → nousee.']}],tip:''},
-    battle:{short:'Upota vastustajan 3 laivaa.',goal:'🚢 P1 valitsee 1–10 ja heittää 11–20. P2 valitsee 11–20 ja heittää 1–10.',sections:[{title:'Säännöt',items:['3 laivaa, 3 osumaa → uppoaa. Omat laivat piilotettu.']}],tip:''},
+  var R={
+    g100:{short:'Kerää pisteitä — ensimmäinen tavoitteeseen voittaa.',goal:'🎯 Kerää pisteitä nollasta ylöspäin. Ensimmäinen joka saavuttaa tavoitepisteet voittaa.',sections:[{title:'Pisteytys',items:['Single: numeron arvo. Double: arvo×2. Triple: arvo×3. OB=25p, IB=50p.']},{title:'Kulku',items:['3 tikkaa per vuoro. Pisteet lisätään heti. Saavuttaa tavoitteen → peli loppuu heti.'],example:'Tavoite 100p. T20+T20=120p → voitto toisella tikalla!'}],tip:'T20 (60p) paras heitto.'},
+    g501:{short:'Laske 501:stä täsmälleen nollaan.',goal:'🎯 Laske pisteet 501:stä nollaan. Rikki (alle 0 tai jää 1) → koko vuoro peruutetaan.',sections:[{title:'Rikki',items:['Alle 0 tai jää 1p → vuoro peruutetaan ja pisteet palautuvat.'],example:'Saldo 32p. 20+20 → -8p → RIKKI → palataan 32p.'}],tip:'D16=32, D10=20, IB=50.'},
+    gotcha:{short:'Sama saldo kuin toisella puolittaa hänet!',goal:'💥 Sama pistemäärä kuin toisella vuoron lopussa → toisen pisteet puolitetaan!',sections:[{title:'Gotcha',items:['Vuoron lopussa: sama pistemäärä → puolitus!'],example:'Matti 120p, Sanna 120p → Matti: 60p.'}],tip:'Seuraa muiden pisteitä jatkuvasti.'},
+    nines:{short:'Pienin pistemäärä menettää elämän.',goal:'❤️ Pienin kierrospisteet → -1 elämä. Peli loppuu kun yhdellä on elämiä.',sections:[{title:'Kulku',items:['3 tikkaa. Pienin → menettää elämän. Ei tikkataulua — paina numeronappeja.','Peli loppuu kun enää yhdellä on elämiä.'],example:'Matti 45p, Sanna 20p → Sanna menettää.'}],tip:'T20=60p paras. Ohi=0p=varmasti pienin!'},
+    shanghai:{short:'7 kierrosta, kohdenumero pistyttää. Shanghai = välitön voitto!',goal:'🏙️ 7 kierrosta, vain kohdenumero pistyttää. S+D+T samaan = SHANGHAI = välitön voitto!',sections:[{title:'Kulku',items:['Kierros N: kohde N. Tasatilanne → lisäkierroksia.'],example:'Kierros 5: S5=5p, D5=10p, T5=15p. T20=0p.'}],tip:'Pienillä numeroilla kannattaa yrittää Shanghaitä.'},
+    halveit:{short:'Ei osuma kohteeseen puolittaa kaikki pisteesi!',goal:'✂️ Satunnainen kohde. Osuma → kaikki pisteet. Ei osumaa → kaikki puolitetaan!',sections:[{title:'Kulku',items:['Yksikin osuma riittää. Kaikki heitetyt pisteet lasketaan.'],example:'Kohde Tupla. T20+D10+S15=95p. D10 on tupla → saat 95p.'}],tip:'Heitä kohteeseen ensin.'},
+    fives:{short:'Summa jaollinen viidellä → saat summa÷5 pistettä.',goal:'5️⃣ Summa jaollinen 5 → summa÷5 pistettä. Muuten 0p.',sections:[{title:'Laskeminen',items:['Jaollinen 5 → summa÷5p. Muuten 0.'],example:'60÷5=12p. 47 → 0p.'}],tip:'5,10,15,20 aina jaollisia. OB=25✓ IB=50✓'},
+    clock:{short:'Numerot 1–20 järjestyksessä (iso single).',goal:'🕐 Käy numerot 1–20 järjestyksessä. Vain iso single!',sections:[{title:'Säännöt',items:['Järjestyksessä 1→20. Double/triple ei edistä.'],example:'Tavoite 5. S5→6, S6→7.'}],tip:'Tikkataulun järjestys: 20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5'},
+    shadow:{short:'Osumat puolittavat ruudun arvon kaikille.',goal:'👥 Jokainen osuma puolittaa ruudun arvon kaikille. 1.=100%, 2.=50%...',sections:[{title:'Kulku',items:['1. osuma täysi arvo, 2.→50%, 3.→25%. Koskee kaikkia!'],example:'T20: Matti→60p (arvo 30p nyt). Sanna→30p.'}],tip:'Tähtää koskemattomiin tai sabotoi!'},
+    stairs:{short:'Tavoite nousee — alle tippuu, peli jatkuu.',goal:'🪜 Alle kierrostavoitteen → tippuu (✗) mutta peli jatkuu. Viimeisenä selvinnyt voittaa.',sections:[{title:'Kulku',items:['Alle tavoitteen → tippuu. Viimeinen selvinnyt voittaa.'],example:'Tavoite 30p: Matti 45✓, Sanna 28✗.'}],tip:'Peli jatkuu vaikka pelaajia tippuu.'},
+    scrkt:{short:'Sulje 15–20 ja Bull (3 merkkiä).',goal:'🏏 Sulje kaikki: 15,16,17,18,19,20,Bull. 3 merkkiä sulkee.',sections:[{title:'Merkit',items:['S=1, D=2, T=3 (sulkee heti!). OB=1, IB=2.'],example:'T20 → suljettu heti!'}],tip:'Aloita 20:sta.'},
+    ptscrkt:{short:'Sulje ja kerää pisteitä.',goal:'🏏 Sulje kohteet, kerää pisteitä kun vastustajalla auki.',sections:[{title:'Pisteet',items:['Sinä sulkenut, vastustaja ei → ylimääräiset antavat pisteitä.'],example:'Olet sulkenut 20. T20 → +60p!'}],tip:'Sulje 20,19 nopeasti.'},
+    ctcrkt:{short:'Käänteinen — osumasi antavat pisteitä VASTUSTAJILLE.',goal:'⚔️ Ylimääräiset osumasi antavat pisteitä VASTUSTAJILLE. Vähiten voittaa!',sections:[{title:'Käänteinen',items:['Sinä sulkenut, vastustaja ei → VASTUSTAJALLE pisteitä.'],example:'Olet sulkenut 20, Matilla auki. T20 → Matti +60p.'}],tip:'Sulje nopeasti, hyökkää sitten.'},
+    engcrkt:{short:'Lyöjä vs Keilaaja — 2 innings.',goal:'🏏 Lyöjä (summa-40), Keilaaja (OB=1, IB=2 hilaa). Innings vaihtu kun hilat loppuvat.',sections:[{title:'Roolit',items:['Lyöjä: p=kaikki-40. Keilaaja: OB=1 hila, IB=2. Hilat loppuu → vaihtu heti!'],example:'T20+S18+S10=88-40=48p. Keilaaja: IB→2 hilaa.'}],tip:'Keilaajana tähtää bulliin.'},
+    golf:{short:'Vähiten lyöntejä voittaa!',goal:'⛳ Valitse tulos (1-5) per reikä. Vähiten pisteitä voittaa!',sections:[{title:'Pisteytys',items:['1=Tripla, 2=Tupla, 3=Small, 4=Big, 5=Ohi.'],example:'Matti 20p vs Sanna 23p → Matti voittaa.'}],tip:'T=1p, Ohi=5p → 4p ero per reikä!'},
+    killer:{short:'Tule Killeriksi ja eliminoi muut.',goal:'☠️ 3 osumaa omaan → KILLER! Killerinä osu vastustajan numeroon → vie elämiä.',sections:[{title:'Vaiheet',items:['1. Valitse numero. 2. 3 osumaa → KILLER. 3. Osu vastustajan numeroon.','Killerinä osutat omaan → menetät itse elämän!'],example:'T17 → Killer heti!'}],tip:'Triple omaan = Killer yhdellä tikalla.'},
+    jailer:{short:'Tikat vangittuvat — vapauta tai menetät heittovuoroja!',goal:'🔒 Osumat muihin vangitsevat. Jokainen vanki = 1 heitto vähemmän.',sections:[{title:'Vapautus',items:['Kohdenumero → kaikki omat vapautuvat. IB/OB → kaikki vapautuvat.','Toisen tikka samassa numerossa → vaihto.'],example:'1 vanki = vain 2 heittoa.'}],tip:'Priorisoi vapautuminen.'},
+    thief:{short:'Enemmän osumia valtaa numeron.',goal:'🦹 Omistajana saat pisteet. Valtaa osumalla enemmän.',sections:[{title:'Valtaus',items:['Enemmän osumia → valtaat. Ilman valtausta ei pisteitä.'],example:'Matti 1 osuma. Sanna 2 osumaa → valtaus!'}],tip:'Triple = 3 osumaa yhdellä tikalla.'},
+    knockdown:{short:'Kaada kaikki omat — muut pystyttävät niitä!',goal:'🎳 Kaada kaikki omat. Muut voivat pystyttää kaatuneet!',sections:[{title:'Kohteet',items:['Osumat omaan → kaatuu. Osumat vastustajan kaatuneeseen → nousee!'],example:'Matin kohde 3 kaatunut. Sanna osuu 3 → nousee!'}],tip:'Sabotoi johtajaa ennen voittoa.'},
+    battle:{short:'Upota kaikki 3 vastustajan laivaa.',goal:'🚢 3 osumaa = laiva uppoaa. Kaikki 3 uppoaa → välitön voitto!',sections:[{title:'Kulku',items:['Laivat valitaan salaa. 3 osumaa = uppoaa. Peli loppuu heti!'],example:'P2 laivat: 12,15,19. P1: 12,12,12 → laiva uppoaa!'}],tip:'Etsi systemaattisesti.'}
   };
   return R[gid]||{short:'',goal:'',sections:[],tip:''};
 }
 
-// ===== PERF GRAPH — korjattu =====
-function computePerfIdx(pid,gid){
-  const p=PL.find(x=>x.id===pid);if(!p)return[];
-  const hist=(p.stats?.gameHistory||{})[gid]||[];
-  if(!hist.length)return[];
-  if(hist.length===1)return[{x:1,y:hist[0].won?90:20,won:hist[0].won}];
-  const scores=hist.map(h=>h.score||0);
-  const mean=scores.reduce((a,b)=>a+b,0)/scores.length;
-  const std=Math.sqrt(scores.map(s=>(s-mean)**2).reduce((a,b)=>a+b,0)/scores.length)||1;
-  const minWonRound=Math.min(...hist.filter(h=>h.won).map(h=>h.round||999));
-  return hist.map((h,i)=>{
-    const z=((h.score||0)-mean)/std;
-    let y=50+z*25;
-    if(h.won){y=Math.max(y,62);if((h.round||999)===minWonRound)y=Math.min(100,y+15);}
-    else y=Math.min(y,44);
-    return{x:i+1,y:Math.round(Math.min(100,Math.max(0,y))),won:h.won};
-  });
-}
-function renderPerfGraph(pid){const p=PL.find(x=>x.id===pid);if(!p)return'';const hist=p.stats?.gameHistory||{};const gids=Object.keys(hist).filter(g=>hist[g]?.length>=1);if(!gids.length)return`<div class="graph-section"><div class="graph-title">Suoritusgraafi</div><div class="no-data">Pelaa ensin peli.</div></div>`;const sel=p._gSel||gids[0];const pts=computePerfIdx(pid,sel);const W=340,H=140,P={t:10,r:10,b:28,l:36};const iW=W-P.l-P.r,iH=H-P.t-P.b;const n=pts.length;const xS=i=>P.l+i*(iW/Math.max(n-1,1));const yS=v=>P.t+iH*(1-v/100);let s='';[0,25,50,75,100].forEach(v=>{const y=yS(v);s+=`<line x1="${P.l}" y1="${y}" x2="${W-P.r}" y2="${y}" stroke="var(--color-border-tertiary)" stroke-width=".5"/>`;s+=`<text x="${P.l-4}" y="${y+4}" text-anchor="end" font-size="9" fill="var(--color-text-tertiary)" font-family="sans-serif">${v}</text>`;});pts.forEach((pt,i)=>{if(i===0||i===pts.length-1||(i+1)%Math.max(1,Math.ceil(pts.length/6))===0)s+=`<text x="${xS(i)}" y="${H-4}" text-anchor="middle" font-size="9" fill="var(--color-text-tertiary)" font-family="sans-serif">${pt.x}</text>`;});if(pts.length>1){const pp=pts.map((pt,i)=>`${i===0?'M':'L'}${xS(i)},${yS(pt.y)}`).join(' ');s+=`<path d="${pp} L${xS(pts.length-1)},${yS(0)} L${xS(0)},${yS(0)} Z" fill="#1D9E75" opacity=".1"/>`;s+=`<path d="${pp}" fill="none" stroke="#1D9E75" stroke-width="2"/>`;}s+=`<line x1="${P.l}" y1="${yS(50)}" x2="${W-P.r}" y2="${yS(50)}" stroke="#BA7517" stroke-width="1" stroke-dasharray="4,3" opacity=".6"/>`;pts.forEach((pt,i)=>{s+=`<circle cx="${xS(i)}" cy="${yS(pt.y)}" r="3.5" fill="${pt.won?'#1D9E75':'#E24B4A'}" stroke="var(--color-background-primary)" stroke-width="1.5"/>`;});const btns=gids.map(g=>`<button class="graph-game-btn${g===sel?' on':''}" onclick="selGraph('${pid}','${g}')">${GAMES.find(x=>x.id===g)?.ic||''} ${(GAMES.find(x=>x.id===g)?.n||g).slice(0,12)}</button>`).join('');return`<div class="graph-section"><div class="graph-title"><span>Suoritusgraafi</span><span style="font-size:11px;color:var(--color-text-tertiary)">${(GAMES.find(g=>g.id===sel)?.n||sel).split('–')[0].trim()}</span></div><div class="graph-game-sel">${btns}</div><div class="graph-canvas-wrap"><svg width="100%" viewBox="0 0 ${W} ${H}" style="overflow:visible">${s}</svg><div style="display:flex;gap:12px;justify-content:center;margin-top:6px;font-size:11px;color:var(--color-text-secondary)"><span><svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#1D9E75"/></svg> Voitto</span><span><svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#E24B4A"/></svg> Häviö</span><span style="color:#BA7517">— avg</span></div></div></div>`;}
-function selGraph(pid,gid){const p=PL.find(x=>x.id===pid);if(!p)return;p._gSel=gid;renderPDetail(pid);}
+// ===== PERF GRAPH =====
+function computePerfScore(h,gid){var r=h.round||1,s=h.score||0;if(gid==='g100'||gid==='gotcha'||gid==='shadow'||gid==='fives'||gid==='thief')return s/Math.max(r,1);if(gid==='g501')return(501-s)/Math.max(r,1);if(gid==='nines'||gid==='stairs'||gid==='killer')return r;if(gid==='shanghai'||gid==='halveit')return s/Math.max(r,1);if(gid==='golf')return Math.max(0,5-s/Math.max(r,1));if(gid==='scrkt'||gid==='ptscrkt'||gid==='ctcrkt')return 1/Math.max(r,1);if(gid==='jailer')return r;if(gid==='knockdown')return 1/Math.max(r,1);return s/Math.max(r,1);}
+function getPerfLabel(gid){var m={g100:'Pisteet/kierros',g501:'Edistyminen/kierros',gotcha:'Pisteet/kierros',nines:'Selviytymiskierrokset',stairs:'Selviytymiskierrokset',killer:'Selviytymiskierrokset',shanghai:'Pistetehokkuus',halveit:'Pistetehokkuus',fives:'Pisteet/kierros',golf:'Reikätehokkuus',scrkt:'Sulkemisnopeus',ptscrkt:'Sulkemisnopeus',ctcrkt:'Sulkemisnopeus',engcrkt:'Lyöjäpisteet/krt',jailer:'Kierroksia selvitty',knockdown:'Kaatamisnopeus',clock:'Numerot/kierros',thief:'Pisteet/kierros',battle:'Tehokkuus',shadow:'Pisteet/kierros'};return m[gid]||'Suoritusindeksi';}
+function computePerfIdx(pid,gid){var p=PL.find(function(x){return x.id===pid;});if(!p)return[];var hist=(p.stats&&p.stats.gameHistory&&p.stats.gameHistory[gid])||[];if(!hist.length)return[];var raws=hist.map(function(h){return computePerfScore(h,gid);});var mn=Math.min.apply(null,raws),mx=Math.max.apply(null,raws),range=mx-mn;return hist.map(function(h,i){var y=range<0.001?50:Math.round(10+((raws[i]-mn)/range)*85);return{x:i+1,y:Math.min(100,Math.max(0,y)),won:h.won};});}
+function renderPerfGraph(pid){var p=PL.find(function(x){return x.id===pid;});if(!p)return'';var hist=p.stats&&p.stats.gameHistory||{};var gids=Object.keys(hist).filter(function(g){return hist[g]&&hist[g].length>=1;});if(!gids.length)return'<div class="graph-section"><div class="graph-title">Suoritusgraafi</div><div class="no-data">Pelaa ensin peli.</div></div>';var sel=p._gSel||gids[0];var pts=computePerfIdx(pid,sel);var label=getPerfLabel(sel);var W=340,H=140,Pl={t:10,r:10,b:28,l:36};var iW=W-Pl.l-Pl.r,iH=H-Pl.t-Pl.b;var n=pts.length;var xS=function(i){return Pl.l+i*(iW/Math.max(n-1,1));};var yS=function(v){return Pl.t+iH*(1-v/100);};var s='';[0,25,50,75,100].forEach(function(v){var y=yS(v);s+='<line x1="'+Pl.l+'" y1="'+y+'" x2="'+(W-Pl.r)+'" y2="'+y+'" stroke="#e0e0e0" stroke-width=".5"/>';s+='<text x="'+(Pl.l-4)+'" y="'+(y+4)+'" text-anchor="end" font-size="9" fill="#888" font-family="sans-serif">'+v+'</text>';});pts.forEach(function(pt,i){if(i===0||i===pts.length-1||(i+1)%Math.max(1,Math.ceil(pts.length/6))===0)s+='<text x="'+xS(i)+'" y="'+(H-4)+'" text-anchor="middle" font-size="9" fill="#888" font-family="sans-serif">'+pt.x+'</text>';});if(pts.length>1){var pp=pts.map(function(pt,i){return(i===0?'M':'L')+xS(i)+','+yS(pt.y);}).join(' ');s+='<path d="'+pp+' L'+xS(pts.length-1)+','+yS(0)+' L'+xS(0)+','+yS(0)+' Z" fill="#1D9E75" opacity=".1"/>';s+='<path d="'+pp+'" fill="none" stroke="#1D9E75" stroke-width="2"/>';}pts.forEach(function(pt,i){var col=pt.won?'#1D9E75':'#BA7517';s+='<circle cx="'+xS(i)+'" cy="'+yS(pt.y)+'" r="3.5" fill="'+col+'" stroke="#fff" stroke-width="1.5"/>';s+='<text x="'+xS(i)+'" y="'+(yS(pt.y)-8)+'" text-anchor="middle" font-size="9" fill="'+col+'" font-family="sans-serif">'+pt.y+'</text>';});var btns=gids.map(function(g){var go=GAMES.find(function(x){return x.id===g;});return'<button class="graph-game-btn'+(g===sel?' on':'')+'" onclick="selGraph(\''+pid+'\',\''+g+'\')">'+(go?go.ic:'')+' '+(go?go.n.split('–')[0].trim().slice(0,12):g)+'</button>';}).join('');var gn=GAMES.find(function(g){return g.id===sel;});return'<div class="graph-section"><div class="graph-title"><span>Suoritusgraafi</span><span style="font-size:10px;color:var(--color-text-tertiary)">'+(gn?gn.n.split('–')[0].trim():'')+'</span></div><div class="graph-game-sel">'+btns+'</div><div class="graph-canvas-wrap"><svg width="100%" viewBox="0 0 '+W+' '+H+'" style="overflow:visible">'+s+'</svg><div style="display:flex;gap:12px;justify-content:center;margin-top:6px;font-size:11px;color:var(--color-text-secondary)"><span><svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#1D9E75"/></svg> Voitto</span><span><svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#BA7517"/></svg> Häviö</span><span style="color:var(--color-text-tertiary)">'+label+'</span></div></div></div>';}
+function selGraph(pid,gid){var p=PL.find(function(x){return x.id===pid;});if(!p)return;p._gSel=gid;renderPDetail(pid);}
 
 // ===== DATA =====
-const AVC=['av0','av1','av2','av3','av4','av5','av6','av7'];
-let PL=JSON.parse(localStorage.getItem('ds_pl10')||'[]');
+var AVC=['av0','av1','av2','av3','av4','av5','av6','av7'];
+var PL=JSON.parse(localStorage.getItem('ds_pl10')||'[]');
 function saveP(){localStorage.setItem('ds_pl10',JSON.stringify(PL));}
-function inits(n){return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
-let tmr=null,tsecs=0;
+function inits(n){return n.split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);}
+var tmr=null,tsecs=0;
 function clearTmr(){if(tmr){clearInterval(tmr);tmr=null;tsecs=0;}}
 function showNotify(t,m){document.getElementById('notify-title').textContent=t;document.getElementById('notify-msg').textContent=m;document.getElementById('modal-notify').classList.add('open');}
-function navTo(id){clearTmr();clearSp();document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));document.getElementById(id)?.classList.add('on');if(id==='pg-profiles')renderProfiles();if(id==='pg-games')renderGamesList();if(id==='pg-settings')syncSettingsUI();}
+function navTo(id){clearTmr();clearSp();document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});var el=document.getElementById(id);if(el)el.classList.add('on');if(id==='pg-profiles')renderProfiles();if(id==='pg-games')renderGamesList();if(id==='pg-settings')syncSettingsUI();}
 
-const GAMES=[
+var GAMES=[
   {id:'g100',n:'100 – Kerää pisteitä',ic:'🎯',bg:'#E1F5EE',fc:'#085041',cat:'Perus'},
   {id:'g501',n:'501 – Laske nollaan',ic:'0️⃣',bg:'#E6F1FB',fc:'#0C447C',cat:'Perus'},
   {id:'gotcha',n:'Gotcha!',ic:'💥',bg:'#FAECE7',fc:'#712B13',cat:'Perus'},
@@ -433,402 +444,372 @@ const GAMES=[
   {id:'jailer',n:'Vanginvartija',ic:'🔒',bg:'#EEEDFE',fc:'#3C3489',cat:'Erikois'},
   {id:'thief',n:'Varas',ic:'🦹',bg:'#FAECE7',fc:'#712B13',cat:'Erikois'},
   {id:'knockdown',n:'Kaatokisa',ic:'🎳',bg:'#F1EFE8',fc:'#444441',cat:'Erikois'},
-  {id:'battle',n:'Taistelu',ic:'🚢',bg:'#E6F1FB',fc:'#0C447C',cat:'Erikois',min:2,max:2},
+  {id:'battle',n:'Taistelu',ic:'🚢',bg:'#E6F1FB',fc:'#0C447C',cat:'Erikois',min:2,max:2}
 ];
 
-function renderGamesList(){const el=document.getElementById('games-list');let h='';['Perus','Haaste','Cricket','Erikois'].forEach(cat=>{h+=`<div class="sec-lbl">${cat}</div><div class="gl">`;GAMES.filter(g=>g.cat===cat).forEach(g=>{const r=getRules(g.id);h+=`<div class="gc"><div class="gi" style="background:${g.bg};color:${g.fc}" onclick="openSetup('${g.id}')">${g.ic}</div><div style="flex:1;min-width:0;cursor:pointer" onclick="openSetup('${g.id}')"><div class="gn">${g.n}</div><div class="gd">${r.short}</div></div><button class="gc-qbtn" onclick="showRules('${g.id}','← Pelit',false);event.stopPropagation()">?</button><span style="color:var(--color-text-tertiary);font-size:16px;cursor:pointer;padding-left:4px" onclick="openSetup('${g.id}')">›</span></div>`;});h+='</div>';});el.innerHTML=h;}
+function renderGamesList(){var el=document.getElementById('games-list');var h='';['Perus','Haaste','Cricket','Erikois'].forEach(function(cat){h+='<div class="sec-lbl">'+cat+'</div><div class="gl">';GAMES.filter(function(g){return g.cat===cat;}).forEach(function(g){var r=getRules(g.id);h+='<div class="gc"><div class="gi" style="background:'+g.bg+';color:'+g.fc+'" onclick="openSetup(\''+g.id+'\')">'+g.ic+'</div><div style="flex:1;min-width:0;cursor:pointer" onclick="openSetup(\''+g.id+'\')"><div class="gn">'+g.n+'</div><div class="gd">'+r.short+'</div></div><button class="gc-qbtn" onclick="showRules(\''+g.id+'\',\'← Pelit\',false);event.stopPropagation()">?</button><span style="color:var(--color-text-tertiary);font-size:16px;cursor:pointer;padding-left:4px" onclick="openSetup(\''+g.id+'\')">›</span></div>';});h+='</div>';});el.innerHTML=h;}
 
-let S={gid:null,sel:[],opts:{}};
-function openSetup(gid){S={gid,sel:[],opts:{}};aiPlayers=[];const g=GAMES.find(x=>x.id===gid);document.getElementById('setup-title').textContent=g.n;document.getElementById('game-title').textContent=g.n;const f2=['engcrkt','battle'].includes(gid);document.getElementById('players-header').textContent=f2?'Pelaajat (täsmälleen 2)':'Pelaajat (1–8)';document.getElementById('ai-selector').style.display=f2?'none':'block';renderSetupP();renderOpts(gid);updSBtn();renderAIAdded();navTo('pg-setup');}
-function renderSetupP(){const el=document.getElementById('setup-plist'),nm=document.getElementById('nop-msg');if(!PL.length){el.innerHTML='';nm.style.display='block';return;}nm.style.display='none';el.innerHTML=PL.map((p,i)=>`<div class="pr" id="pr-${p.id}" onclick="toggleP(${p.id})"><div class="prav ${AVC[i%AVC.length]}">${inits(p.name)}</div><span class="prn">${p.name}${p.nick?` <span style="font-size:11px;color:var(--color-text-tertiary)">"${p.nick}"</span>`:''}</span><div class="prck">✓</div></div>`).join('');}
-function toggleP(id){const gdef=GAMES.find(x=>x.id===S.gid);const maxP=gdef?.max||8;const i=S.sel.indexOf(id);if(i>=0)S.sel.splice(i,1);else if(S.sel.length+aiPlayers.length<maxP)S.sel.push(id);document.querySelectorAll('.pr').forEach(r=>r.classList.remove('sel'));S.sel.forEach(pid=>{const el=document.getElementById('pr-'+pid);if(el)el.classList.add('sel');});updSBtn();}
-function updSBtn(){const gdef=GAMES.find(x=>x.id===S.gid);document.getElementById('start-btn').disabled=(S.sel.length+aiPlayers.length)<(gdef?.min||1);}
-function renderOpts(gid){const oc=document.getElementById('opts-card'),ob=document.getElementById('opts-body'),ot=document.getElementById('opts-title');const c=getOptsCfg(gid);if(!c){oc.style.display='none';return;}oc.style.display='block';ot.textContent=c.title||'Asetukset';ob.innerHTML=c.html;}
-function mkOpts(key,vals,def){S.opts[key]=def;return`<div class="orow" id="orow-${key}">${vals.map(v=>`<button class="ob${v===def?' on':''}" data-key="${key}" data-val="${v}" onclick="pickOpt(this)">${v}</button>`).join('')}</div>`;}
-function pickOpt(b){S.opts[b.dataset.key]=+b.dataset.val;const row=document.getElementById('orow-'+b.dataset.key);if(row)row.querySelectorAll('.ob').forEach(x=>x.classList.toggle('on',x===b));}
-function getOptsCfg(gid){switch(gid){case 'g100':return{title:'Tavoitepisteet',html:mkOpts('target',[100,200,300,400,500,600,700,800,900],100)};case 'g501':return{title:'Aloituspisteet',html:mkOpts('target',[101,201,301,401,501,601,701,801,901],501)};case 'gotcha':return{title:'Tavoite',html:mkOpts('target',[101,201,301,401,501,601,701,801,901],301)};case 'nines':return{title:'Elämät',html:mkOpts('lives',[3,6,9],3)};case 'clock':return{title:'Tavoitenumero',html:mkOpts('target',[5,10,15,20],20)};case 'golf':return{title:'Reikiä',html:mkOpts('holes',[9,18],9)};case 'killer':return{title:'Elämät',html:mkOpts('lives',[1,2,3,4,5,6,7,8,9],3)};case 'jailer':return{title:'Kohdenumeroita (1–?)',html:mkOpts('target',[5,10,15,20],10)};case 'halveit':return{title:'Kierroksia',html:mkOpts('rounds',[8,12,16,20],12)};case 'stairs':return{title:'Aloitus',html:mkOpts('start',[10,15,20],10)};case 'shadow':return{title:'Kierroksia',html:mkOpts('rounds',[5,10,15,20],10)};case 'fives':return{title:'Pisteraja',html:`<div class="orow"><input class="oi" type="number" min="10" max="500" value="50" oninput="S.opts.target=+this.value"></div>`};case 'engcrkt':return{title:'Hilat',html:mkOpts('wickets',[2,3,4,5,6,7,8,9,10],10)};case 'thief':return{title:'Pisteraja',html:mkOpts('target',[100,200,300,400,500,600,700,800,900],300)};default:return null;}}
+var S={gid:null,sel:[],opts:{}};
+function openSetup(gid){S={gid:gid,sel:[],opts:{}};aiPlayers=[];var g=GAMES.find(function(x){return x.id===gid;});document.getElementById('setup-title').textContent=g.n;document.getElementById('game-title').textContent=g.n;var f2=gid==='engcrkt'||gid==='battle';document.getElementById('players-header').textContent=f2?'Pelaajat (täsmälleen 2)':'Pelaajat (1–8)';document.getElementById('ai-selector').style.display=f2?'none':'block';renderSetupP();renderOpts(gid);updSBtn();renderAIAdded();navTo('pg-setup');}
+function renderSetupP(){var el=document.getElementById('setup-plist'),nm=document.getElementById('nop-msg');if(!PL.length){el.innerHTML='';nm.style.display='block';return;}nm.style.display='none';el.innerHTML=PL.map(function(p,i){return'<div class="pr" id="pr-'+p.id+'" onclick="toggleP('+p.id+')"><div class="prav '+AVC[i%AVC.length]+'">'+inits(p.name)+'</div><span class="prn">'+p.name+(p.nick?' <span style="font-size:11px;color:var(--color-text-tertiary)">"'+p.nick+'"</span>':'')+'</span><div class="prck">✓</div></div>';}).join('');}
+function toggleP(id){var gdef=GAMES.find(function(x){return x.id===S.gid;});var maxP=gdef?gdef.max||8:8;var i=S.sel.indexOf(id);if(i>=0)S.sel.splice(i,1);else if(S.sel.length+aiPlayers.length<maxP)S.sel.push(id);document.querySelectorAll('.pr').forEach(function(r){r.classList.remove('sel');});S.sel.forEach(function(pid){var el=document.getElementById('pr-'+pid);if(el)el.classList.add('sel');});updSBtn();}
+function updSBtn(){var gdef=GAMES.find(function(x){return x.id===S.gid;});document.getElementById('start-btn').disabled=(S.sel.length+aiPlayers.length)<(gdef?gdef.min||1:1);}
+function renderOpts(gid){var oc=document.getElementById('opts-card'),ob=document.getElementById('opts-body'),ot=document.getElementById('opts-title');var c=getOptsCfg(gid);if(!c){oc.style.display='none';return;}oc.style.display='block';ot.textContent=c.title||'Asetukset';ob.innerHTML=c.html;}
+function mkOpts(key,vals,def){S.opts[key]=def;return'<div class="orow" id="orow-'+key+'">'+vals.map(function(v){return'<button class="ob'+(v===def?' on':'')+'" data-key="'+key+'" data-val="'+v+'" onclick="pickOpt(this)">'+v+'</button>';}).join('')+'</div>';}
+function pickOpt(b){S.opts[b.dataset.key]=+b.dataset.val;var row=document.getElementById('orow-'+b.dataset.key);if(row)row.querySelectorAll('.ob').forEach(function(x){x.classList.toggle('on',x===b);});}
+function getOptsCfg(gid){switch(gid){case 'g100':return{title:'Tavoitepisteet',html:mkOpts('target',[100,200,300,400,500,600,700,800,900],100)};case 'g501':return{title:'Aloituspisteet',html:mkOpts('target',[101,201,301,401,501,601,701,801,901],501)};case 'gotcha':return{title:'Tavoite',html:mkOpts('target',[101,201,301,401,501,601,701,801,901],301)};case 'nines':return{title:'Elämät',html:mkOpts('lives',[3,6,9],3)};case 'clock':return{title:'Tavoitenumero',html:mkOpts('target',[5,10,15,20],20)};case 'golf':return{title:'Reikiä',html:mkOpts('holes',[9,18],9)};case 'killer':return{title:'Elämät',html:mkOpts('lives',[1,2,3,4,5,6,7,8,9],3)};case 'jailer':return{title:'Kohdenumeroita',html:mkOpts('target',[5,10,15,20],10)};case 'halveit':return{title:'Kierroksia',html:mkOpts('rounds',[8,12,16,20],12)};case 'stairs':return{title:'Aloitustavoite',html:mkOpts('start',[10,15,20],10)};case 'shadow':return{title:'Kierroksia',html:mkOpts('rounds',[5,10,15,20],10)};case 'fives':return{title:'Pisteraja',html:'<div class="orow"><input class="oi" type="number" min="10" max="500" value="50" oninput="S.opts.target=+this.value"></div>'};case 'engcrkt':return{title:'Hilat',html:mkOpts('wickets',[2,3,4,5,6,7,8,9,10],10)};case 'thief':return{title:'Pisteraja',html:mkOpts('target',[100,200,300,400,500,600,700,800,900],300)};default:return null;}}
 
-let G=null;
-function startGame(){const hs=S.sel.map(id=>PL.find(p=>p.id===id));const as=aiPlayers.map(a=>({id:a.id,name:a.name,isAI:true,level:a.level,emoji:a.emoji,nick:'',joined:'',stats:{}}));const all=[...hs,...as].sort(()=>Math.random()-.5);G=buildG(S.gid,all,S.opts);navTo('pg-game');renderG();if(G.players[G.ci]?.isAI)setTimeout(()=>runAITurn(),800);}
+var G=null;
+function startGame(){var hs=S.sel.map(function(id){return PL.find(function(p){return p.id===id;});});var as=aiPlayers.map(function(a){return{id:a.id,name:a.name,isAI:true,level:a.level,emoji:a.emoji,nick:'',joined:'',stats:{}};});var all=hs.concat(as).sort(function(){return Math.random()-.5;});G=buildG(S.gid,all,S.opts);navTo('pg-game');renderG();if(G.players[G.ci]&&G.players[G.ci].isAI)setTimeout(runAITurn,800);}
 
 function buildG(gid,ps,opts){
-  const g={gid,players:ps.map(p=>({...p})),ci:0,round:1,throws:[],opts,scores:{},done:false,finishOrder:[],ex:{}};
-  ps.forEach(p=>g.scores[p.id]=0);
+  var g={gid:gid,players:ps.map(function(p){return Object.assign({},p);}),ci:0,round:1,throws:[],opts:opts,scores:{},done:false,finishOrder:[],ex:{}};
+  ps.forEach(function(p){g.scores[p.id]=0;});
   switch(gid){
-    case 'g501':
-      ps.forEach(p=>g.scores[p.id]=opts.target||501);
-      g.ex.scoreSnapshot={};
-      ps.forEach(p=>g.ex.scoreSnapshot[p.id]=g.scores[p.id]);
-      break;
-    case 'nines':g.ex.lives={};g.ex.rs={};ps.forEach(p=>g.ex.lives[p.id]=opts.lives||3);break;
-    case 'killer':g.ex.nums={};g.ex.killers={};g.ex.lives={};g.ex.phase='assign';ps.forEach(p=>{g.ex.nums[p.id]=null;g.ex.killers[p.id]=false;g.ex.lives[p.id]=opts.lives||3;});break;
-    case 'scrkt':case 'ptscrkt':case 'ctcrkt':g.ex.marks={};ps.forEach(p=>{g.ex.marks[p.id]={};[15,16,17,18,19,20,'B'].forEach(n=>g.ex.marks[p.id][n]=0);});break;
-    case 'engcrkt':const bi=Math.random()<.5?0:1;g.ex.batter=ps[bi].id;g.ex.bowler=ps[1-bi].id;g.ex.wmax=opts.wickets||10;g.ex.wickets=opts.wickets||10;g.ex.inn=1;break;
-    case 'golf':g.ex.hole=1;g.ex.maxH=opts.holes||9;g.ex.gs={};g.ex.golfSel={};ps.forEach(p=>g.ex.gs[p.id]=[]);break;
-    case 'stairs':g.ex.target=opts.start||10;g.ex.step=opts.start||10;g.ex.eliminated={};g.ex.roundScores={};ps.forEach(p=>g.ex.eliminated[p.id]=false);break;
+    case 'g501':ps.forEach(function(p){g.scores[p.id]=opts.target||501;});g.ex.scoreSnapshot={};ps.forEach(function(p){g.ex.scoreSnapshot[p.id]=g.scores[p.id];});break;
+    case 'nines':g.ex.lives={};g.ex.rs={};ps.forEach(function(p){g.ex.lives[p.id]=opts.lives||3;});break;
+    case 'killer':g.ex.nums={};g.ex.killers={};g.ex.lives={};g.ex.phase='assign';ps.forEach(function(p){g.ex.nums[p.id]=null;g.ex.killers[p.id]=false;g.ex.lives[p.id]=opts.lives||3;});break;
+    case 'scrkt':case 'ptscrkt':case 'ctcrkt':g.ex.marks={};ps.forEach(function(p){g.ex.marks[p.id]={};[15,16,17,18,19,20,'B'].forEach(function(n){g.ex.marks[p.id][n]=0;});});break;
+    case 'engcrkt':{var bi=Math.random()<.5?0:1;g.ex.batter=ps[bi].id;g.ex.bowler=ps[1-bi].id;g.ex.wmax=opts.wickets||10;g.ex.wickets=opts.wickets||10;g.ex.inn=1;break;}
+    case 'golf':g.ex.hole=1;g.ex.maxH=opts.holes||9;g.ex.gs={};g.ex.golfSel={};ps.forEach(function(p){g.ex.gs[p.id]=[];});break;
+    case 'stairs':g.ex.target=opts.start||10;g.ex.step=opts.start||10;g.ex.eliminated={};g.ex.roundScores={};ps.forEach(function(p){g.ex.eliminated[p.id]=false;});break;
     case 'halveit':g.ex.targets=buildHT(opts.rounds||12);g.ex.hi=0;break;
     case 'shadow':g.ex.maxR=opts.rounds||10;g.ex.hits={};break;
-    case 'jailer':g.ex.tmax=opts.target||10;g.ex.tnum=1;g.ex.pris={};ps.forEach(p=>g.ex.pris[p.id]={});break;
-    case 'battle':g.ex.phase='setup';g.ex.ships={};g.ex.shipHits={};g.ex.bhits={};g.ex.hitLog=[];g.ex.si=0;ps.forEach(p=>{g.ex.ships[p.id]=[];g.ex.bhits[p.id]=0;});break;
-    // ===== VARAS — uusi rakenne =====
-    // hits[pid][numStr] = osumamäärä kyseisestä numerosta
-    // owner[numStr] = pid (kuka johtaa osumamäärissä)
-    // pts[pid][numStr] = kuinka paljon pisteitä on kerätty tästä numerosta
-    case 'thief':
-      g.ex.hits={};g.ex.owner={};g.ex.pts={};
-      ps.forEach(p=>{g.ex.hits[p.id]={};g.ex.pts[p.id]={};});
-      break;
-    case 'knockdown':g.ex.tgts={};ps.forEach(p=>{const ns=[];while(ns.length<5){const n=Math.floor(Math.random()*20)+1;if(!ns.includes(n))ns.push(n);}g.ex.tgts[p.id]=ns.map(n=>({n,up:true}));});break;
+    case 'jailer':g.ex.tmax=opts.target||10;g.ex.tnum=1;g.ex.pris={};g.ex.jailAtTurnStart={};ps.forEach(function(p){g.ex.pris[p.id]={};g.ex.jailAtTurnStart[p.id]=0;});break;
+    case 'battle':g.ex.phase='setup';g.ex.ships={};g.ex.shipHits={};g.ex.bhits={};g.ex.hitLog=[];g.ex.si=0;ps.forEach(function(p){g.ex.ships[p.id]=[];g.ex.bhits[p.id]=0;});break;
+    case 'thief':g.ex.hits={};g.ex.owner={};g.ex.pts={};ps.forEach(function(p){g.ex.hits[p.id]={};g.ex.pts[p.id]={};});break;
+    case 'knockdown':{g.ex.tgts={};var n=ps.length;var mpp=Math.min(5,Math.floor(20/n));ps.forEach(function(p,i){var nums=[];for(var k=0;k<mpp;k++){var num=i*mpp+k+1;if(num<=20)nums.push(num);}g.ex.tgts[p.id]=nums.map(function(num){return{n:num,up:true};});});break;}
     case 'fives':g.ex.win=opts.target||50;break;
-    case 'clock':g.ex.prog={};g.ex.tgt=opts.target||20;ps.forEach(p=>g.ex.prog[p.id]=0);break;
+    case 'clock':g.ex.prog={};g.ex.tgt=opts.target||20;ps.forEach(function(p){g.ex.prog[p.id]=0;});break;
     case 'gotcha':g.ex.win=opts.target||301;break;
   }
   return g;
 }
-function buildHT(count){const pool=[];for(let i=1;i<=20;i++)pool.push({type:'num',label:''+i,n:i});pool.push({type:'double',label:'Tupla'},{type:'triple',label:'Tripla'},{type:'bull',label:'Bull',n:'B'});return pool.sort(()=>Math.random()-.5).slice(0,count);}
+function buildHT(count){var pool=[];for(var i=1;i<=20;i++)pool.push({type:'num',label:''+i,n:i});pool.push({type:'double',label:'Tupla'},{type:'triple',label:'Tripla'},{type:'bull',label:'Bull',n:'B'});return pool.sort(function(){return Math.random()-.5;}).slice(0,count);}
 
-// ===== jailer helpers =====
-function jailPrisTotal(pid){return Object.values(G.ex.pris[pid]||{}).reduce((a,b)=>a+b,0);}
-function jailCanThrow(pid){return Math.max(0,3-G.throws.length-jailPrisTotal(pid));}
+function jailTotal(pid){return Object.values(G.ex.pris[pid]||{}).reduce(function(a,b){return a+b;},0);}
+function jailMaxThrows(pid){return Math.max(0,3-(G.ex.jailAtTurnStart[pid]||0));}
+function jailCanThrow(pid){return Math.max(0,jailMaxThrows(pid)-G.throws.length);}
 
-let aiActive=false;
-function runAITurn(){const cp=G.players[G.ci];if(!cp||!cp.isAI||G.done)return;aiActive=true;let done=0;showAIO(cp,'Mietitään...');
+var aiActive=false;
+function runAITurn(){var cp=G.players[G.ci];if(!cp||!cp.isAI||G.done)return;aiActive=true;var done=0;showAIO(cp,'Mietitään...');
   function next(){
-    if(!G||G.done||done>=3){hideAIO();aiActive=false;setTimeout(()=>confirmTurn(),400);return;}
-    if(G.gid==='jailer'&&jailCanThrow(cp.id)<=0){hideAIO();aiActive=false;setTimeout(()=>confirmTurn(),400);return;}
-    const t=aiThrow(cp,G);G.throws.push(t);applyThrow(t);playSfx(t.miss,t.bull);speak(tLabel(t),.8);showAIO(cp,t.miss?'Ohitse!':t.bull?'Häränsilmä!':t.label);done++;
+    if(!G||G.done||done>=3){hideAIO();aiActive=false;setTimeout(confirmTurn,400);return;}
+    if(G.gid==='jailer'&&jailCanThrow(cp.id)<=0){hideAIO();aiActive=false;setTimeout(confirmTurn,400);return;}
+    var t=aiThrow(cp,G);G.throws.push(t);applyThrow(t);playSfx(t.miss,t.bull);speak(tLabel(t),.8);showAIO(cp,t.miss?'Ohitse!':t.bull?'Häränsilmä!':t.label);done++;
     if(checkMidTurnWin()){hideAIO();aiActive=false;return;}
-    renderG();setTimeout(next,1600);}
-  setTimeout(next,900);}
-function showAIO(player,txt){const a=document.getElementById('game-area');let o=document.getElementById('ai-o');if(!o){o=document.createElement('div');o.id='ai-o';o.className='ai-turn-overlay';a.appendChild(o);}o.innerHTML=`<div class="ai-name-display">${player.emoji||'🤖'} ${player.name}</div><div class="ai-throw-display">${txt||''}</div><div class="ai-thinking">Heittää...</div>`;}
-function hideAIO(){const o=document.getElementById('ai-o');if(o)o.remove();}
-
-function startTmr(){clearTmr();if(!G||G.done)return;tsecs=5;updTmr();tmr=setInterval(()=>{tsecs--;if(tsecs<=0){clearTmr();confirmTurn();}else updTmr();},1000);}
-function updTmr(){const el=document.getElementById('tmr-n');if(el){el.textContent=tsecs;el.className='tnum '+(tsecs<=2?'urg':'ok');}}
+    renderG();setTimeout(next,1600);
+  }
+  setTimeout(next,900);
+}
+function showAIO(player,txt){var a=document.getElementById('game-area');var o=document.getElementById('ai-o');if(!o){o=document.createElement('div');o.id='ai-o';o.className='ai-turn-overlay';a.appendChild(o);}o.innerHTML='<div class="ai-name-display">'+(player.emoji||'🤖')+' '+player.name+'</div><div class="ai-throw-display">'+(txt||'')+'</div><div class="ai-thinking">Heittää...</div>';}
+function hideAIO(){var o=document.getElementById('ai-o');if(o)o.remove();}
+function startTmr(){clearTmr();if(!G||G.done)return;tsecs=5;updTmr();tmr=setInterval(function(){tsecs--;if(tsecs<=0){clearTmr();confirmTurn();}else updTmr();},1000);}
+function updTmr(){var el=document.getElementById('tmr-n');if(el){el.textContent=tsecs;el.className='tnum '+(tsecs<=2?'urg':'ok');}}
 function skipTmr(){clearTmr();confirmTurn();}
-function cancelTmr(){clearTmr();if(G&&G.throws.length>0){const t=G.throws.pop();revertThrow(t);}renderG();}
-function startWinTmr(player){clearTmr();if(!G||G.done)return;tsecs=5;tmr=setInterval(()=>{tsecs--;const el=document.getElementById('tmr-n');if(el){el.textContent=tsecs;el.className='tnum '+(tsecs<=2?'urg':'ok');}if(tsecs<=0){clearTmr();playerFinishes(player);}},1000);}
-function hasFinished(pid){return G.finishOrder.includes(pid);}
-function activePs(){return G.players.filter(p=>!hasFinished(p.id));}
-function getBoardNums(){return cfgGet('boardLayout')==='numeric'?Array.from({length:20},(_,i)=>i+1):[20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];}
+function cancelTmr(){clearTmr();if(G&&G.throws.length>0){var t=G.throws.pop();revertThrow(t);}if(G.gid==='jailer')renderJailer();else if(G.gid==='nines')renderNines();else renderG();}
+function startWinTmr(player){clearTmr();if(!G||G.done)return;tsecs=5;tmr=setInterval(function(){tsecs--;var el=document.getElementById('tmr-n');if(el){el.textContent=tsecs;el.className='tnum '+(tsecs<=2?'urg':'ok');}if(tsecs<=0){clearTmr();playerFinishes(player);}},1000);}
+function hasFinished(pid){return G.finishOrder.indexOf(pid)>=0;}
+function activePs(){return G.players.filter(function(p){return!hasFinished(p.id);});}
+function getBoardNums(){return cfgGet('boardLayout')==='numeric'?[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]:[20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];}
 
-// =====================================================================
-// applyThrow
-// =====================================================================
 function applyThrow(t){
-  const cp=G.players[G.ci];
+  var cp=G.players[G.ci];
   switch(G.gid){
-    // RYHMÄ A — live score
     case 'g100':if(!t.miss)G.scores[cp.id]+=t.pts;break;
-    case 'g501':{
-      if(G.throws.length===1)G.ex.scoreSnapshot[cp.id]=G.scores[cp.id]; // snapshot ennen 1. heittoa
-      if(!t.miss){const ns=G.scores[cp.id]-t.pts;if(ns<0||ns===1){G.scores[cp.id]=G.ex.scoreSnapshot[cp.id];t._bust=true;}else G.scores[cp.id]=ns;}
-      break;}
+    case 'g501':
+      if(G.throws.length===1)G.ex.scoreSnapshot[cp.id]=G.scores[cp.id];
+      if(!t.miss){var ns=G.scores[cp.id]-t.pts;if(ns<0||ns===1){G.scores[cp.id]=G.ex.scoreSnapshot[cp.id];t._bust=true;}else G.scores[cp.id]=ns;}
+      break;
     case 'gotcha':if(!t.miss)G.scores[cp.id]+=t.pts;break;
-    case 'shadow':if(!t.miss){const b=t.type==='double'?+t.num*2:t.type==='triple'?+t.num*3:t.bull?(t.type==='bull_inner'?50:25):+t.num||0;const key=`${t.type}_${t.num}`;const prev=G.ex.hits[key]||0;const pts2=Math.floor(b*Math.pow(.5,prev));G.ex.hits[key]=(prev||0)+1;G.scores[cp.id]+=pts2;t.pts=pts2;}break;
+    case 'shadow':
+      if(!t.miss){var sb=t.type==='double'?+t.num*2:t.type==='triple'?+t.num*3:t.bull?(t.type==='bull_inner'?50:25):+t.num||0;var sk=t.type+'_'+t.num;var sprev=G.ex.hits[sk]||0;var spts=Math.floor(sb*Math.pow(.5,sprev));G.ex.hits[sk]=(sprev||0)+1;G.scores[cp.id]+=spts;t.pts=spts;}
+      break;
     case 'clock':if(!t.miss&&+t.num===(G.ex.prog[cp.id]+1)&&t.type==='big_single')G.ex.prog[cp.id]++;break;
-    case 'scrkt':case 'ptscrkt':case 'ctcrkt':{if(t.miss)break;const CN=[15,16,17,18,19,20,'B'];const n=t.bull?'B':+t.num;if(!CN.includes(n))break;let add=t.type==='double'?2:t.type==='triple'?3:t.type==='bull_inner'?2:1;if(G.gid==='scrkt')G.ex.marks[cp.id][n]=Math.min(3,(G.ex.marks[cp.id][n]||0)+add);else if(G.gid==='ptscrkt'){const cm=G.ex.marks[cp.id][n]||0;if(cm>=3){const oo=G.players.some(p=>p.id!==cp.id&&(G.ex.marks[p.id][n]||0)<3);if(oo)G.scores[cp.id]+=add*(n==='B'?25:+n);}else{const nm=cm+add;G.ex.marks[cp.id][n]=Math.min(3,nm);if(nm>3){const oo=G.players.some(p=>p.id!==cp.id&&(G.ex.marks[p.id][n]||0)<3);if(oo)G.scores[cp.id]+=(nm-3)*(n==='B'?25:+n);}}}else{const cm=G.ex.marks[cp.id][n]||0;if(cm<3)G.ex.marks[cp.id][n]=Math.min(3,cm+add);else G.players.forEach(p=>{if(p.id!==cp.id&&(G.ex.marks[p.id][n]||0)<3)G.scores[p.id]+=add*(n==='B'?25:+n);});}break;}
-    case 'killer':{if(G.ex.phase!=='play')break;const isK=G.ex.killers[cp.id];if(!isK){if(+t.num===G.ex.nums[cp.id]&&!t.miss){let a=t.type==='double'?2:t.type==='triple'?3:1;G.scores[cp.id]=(G.scores[cp.id]||0)+a;if((G.scores[cp.id]||0)>=3)G.ex.killers[cp.id]=true;}}else if(!t.miss)G.players.forEach(p=>{if(G.ex.nums[p.id]===+t.num)G.ex.lives[p.id]=Math.max(0,G.ex.lives[p.id]-1);});break;}
-    // VANGINVARTIJA — ei pisteitä, vain tikkojen hallinta
+    case 'scrkt':case 'ptscrkt':case 'ctcrkt':{
+      if(t.miss)break;var CN=[15,16,17,18,19,20,'B'];var cn=t.bull?'B':+t.num;if(CN.indexOf(cn)<0)break;
+      var add=t.type==='double'?2:t.type==='triple'?3:t.type==='bull_inner'?2:1;
+      if(G.gid==='scrkt'){G.ex.marks[cp.id][cn]=Math.min(3,(G.ex.marks[cp.id][cn]||0)+add);}
+      else if(G.gid==='ptscrkt'){var cm=G.ex.marks[cp.id][cn]||0;if(cm>=3){var oo=G.players.some(function(p){return p.id!==cp.id&&(G.ex.marks[p.id][cn]||0)<3;});if(oo)G.scores[cp.id]+=add*(cn==='B'?25:+cn);}else{var nm=cm+add;G.ex.marks[cp.id][cn]=Math.min(3,nm);if(nm>3){var oo2=G.players.some(function(p){return p.id!==cp.id&&(G.ex.marks[p.id][cn]||0)<3;});if(oo2)G.scores[cp.id]+=(nm-3)*(cn==='B'?25:+cn);}}}
+      else{var cm2=G.ex.marks[cp.id][cn]||0;if(cm2<3)G.ex.marks[cp.id][cn]=Math.min(3,cm2+add);else G.players.forEach(function(p){if(p.id!==cp.id&&(G.ex.marks[p.id][cn]||0)<3)G.scores[p.id]+=add*(cn==='B'?25:+cn);});}
+      break;}
+    case 'killer':{
+      if(G.ex.phase!=='play')break;var isK=G.ex.killers[cp.id];
+      if(!isK){if(+t.num===G.ex.nums[cp.id]&&!t.miss){var ka=t.type==='double'?2:t.type==='triple'?3:1;G.scores[cp.id]=(G.scores[cp.id]||0)+ka;if((G.scores[cp.id]||0)>=3)G.ex.killers[cp.id]=true;}}
+      else if(!t.miss)G.players.forEach(function(p){if(G.ex.nums[p.id]===+t.num)G.ex.lives[p.id]=Math.max(0,G.ex.lives[p.id]-1);});
+      break;}
     case 'jailer':{
-      if(t.miss){const key=String(G.ex.tnum);G.ex.pris[cp.id][key]=(G.ex.pris[cp.id][key]||0)+1;}
-      else if(t.type==='bull_inner')G.players.forEach(p=>G.ex.pris[p.id]={});
-      else if(!t.bull){const key=String(+t.num);if((G.ex.pris[cp.id][key]||0)>0)G.ex.pris[cp.id][key]=0;}
+      var jIB=t.type==='bull_inner',jOB=t.type==='bull_outer',jBull=jIB||jOB;
+      var jHit=!jBull&&!t.miss&&(+t.num===G.ex.tnum);
+      if(jIB||jOB){G.players.forEach(function(p){G.ex.pris[p.id]={};});}
+      else if(t.miss){}
+      else if(jHit){G.ex.pris[cp.id]={};}
+      else if(!jBull){var jkey=String(+t.num);var jOwner=G.players.find(function(p){return p.id!==cp.id&&(G.ex.pris[p.id][jkey]||0)>0;});var jMine=(G.ex.pris[cp.id][jkey]||0)>0;if(jOwner){G.ex.pris[jOwner.id][jkey]=Math.max(0,(G.ex.pris[jOwner.id][jkey]||0)-1);G.ex.pris[cp.id][jkey]=(G.ex.pris[cp.id][jkey]||0)+1;}else if(jMine){G.ex.pris[cp.id][jkey]=Math.max(0,(G.ex.pris[cp.id][jkey]||0)-1);}else{G.ex.pris[cp.id][jkey]=(G.ex.pris[cp.id][jkey]||0)+1;}}
       break;}
-    // ===== VARAS — UUSI LOGIIKKA =====
-    // Valtaaminen perustuu OSUMAMÄÄRIIN, ei pisteytykseen.
-    // hits[pid][num] = osumakertoja
-    // Kuka osuu eniten = omistaja.
-    // Omistaja saa pisteet. Muut eivät saa pisteitä ellei valtaa.
+    case 'battle':{
+      if(t.miss)break;var bopp=G.players[1-G.ci];
+      if(G.ex.ships[bopp.id].indexOf(+t.num)>=0){var bsk=cp.id+'_'+t.num;G.ex.shipHits[bsk]=(G.ex.shipHits[bsk]||0)+1;var bsunk=G.ex.shipHits[bsk]===3;if(G.ex.shipHits[bsk]<=3)G.ex.hitLog.push({attacker:cp.id,target:+t.num,sunk:bsunk});if(bsunk)G.ex.bhits[cp.id]=(G.ex.bhits[cp.id]||0)+1;}
+      break;}
     case 'thief':{
-      if(t.miss)break;
-      const key=String(t.num);
-      // Kirjaa osuma
-      G.ex.hits[cp.id][key]=(G.ex.hits[cp.id][key]||0)+1;
-      G.ex.pts[cp.id][key]=(G.ex.pts[cp.id][key]||0)+t.pts;
-
-      // Laske kuka johtaa osumamäärissä
-      const myHits=G.ex.hits[cp.id][key];
-      const prevOwner=G.ex.owner[key];
-      const prevOwnerHits=prevOwner?G.ex.hits[prevOwner][key]||0:0;
-
-      if(!prevOwner){
-        // Ensimmäinen osuma — ota omistajuus
-        G.ex.owner[key]=cp.id;
-        G.scores[cp.id]+=t.pts;
-      } else if(prevOwner===cp.id){
-        // Olet jo omistaja — saat pisteet
-        G.scores[cp.id]+=t.pts;
-      } else if(myHits>prevOwnerHits){
-        // VALTAUS — enemmän osumia kuin omistajalla
-        // Omistajan pisteet tästä numerosta vähennetään
-        const ownerNumPts=G.ex.pts[prevOwner][key]||0;
-        G.scores[prevOwner]=Math.max(0,G.scores[prevOwner]-ownerNumPts);
-        // Uusi omistaja saa kaikki omat pisteensä tästä numerosta (yhteensä)
-        const myNumPts=G.ex.pts[cp.id][key]||0;
-        G.scores[cp.id]+=t.pts; // lisää tämän heiton pisteet
-        G.ex.owner[key]=cp.id;
-        t._stole=true;
-      }
-      // Muuten: toinen johtaa, ei pisteitä
+      if(t.miss)break;var tkey=String(t.num);G.ex.hits[cp.id][tkey]=(G.ex.hits[cp.id][tkey]||0)+1;G.ex.pts[cp.id][tkey]=(G.ex.pts[cp.id][tkey]||0)+t.pts;
+      var tmh=G.ex.hits[cp.id][tkey];var tprev=G.ex.owner[tkey];var tpoh=tprev?(G.ex.hits[tprev][tkey]||0):0;
+      if(!tprev){G.ex.owner[tkey]=cp.id;G.scores[cp.id]+=t.pts;}
+      else if(tprev===cp.id){G.scores[cp.id]+=t.pts;}
+      else if(tmh>tpoh){var top=G.ex.pts[tprev][tkey]||0;G.scores[tprev]=Math.max(0,G.scores[tprev]-top);G.scores[cp.id]+=t.pts;G.ex.owner[tkey]=cp.id;}
       break;}
-    case 'knockdown':{if(t.miss)break;const n=+t.num;G.players.forEach(p=>{if(p.id!==cp.id)G.ex.tgts[p.id].forEach(tg=>{if(tg.n===n&&!tg.up)tg.up=true;});});G.ex.tgts[cp.id].forEach(tg=>{if(tg.n===n&&tg.up)tg.up=false;else if(tg.n===n&&!tg.up)tg.up=true;});break;}
-    case 'battle':{if(t.miss)break;const opp=G.players[1-G.ci];if(G.ex.ships[opp.id].includes(+t.num)){const sk=`${cp.id}_${t.num}`;G.ex.shipHits[sk]=(G.ex.shipHits[sk]||0)+1;const sunk=G.ex.shipHits[sk]===3;if(G.ex.shipHits[sk]<=3)G.ex.hitLog.push({attacker:cp.id,target:+t.num,sunk});if(sunk)G.ex.bhits[cp.id]=(G.ex.bhits[cp.id]||0)+1;}break;}
+    case 'knockdown':{
+      if(t.miss)break;var kn=+t.num;
+      G.players.forEach(function(p){if(p.id!==cp.id)G.ex.tgts[p.id].forEach(function(tg){if(tg.n===kn&&!tg.up)tg.up=true;});});
+      G.ex.tgts[cp.id].forEach(function(tg){if(tg.n===kn&&tg.up)tg.up=false;else if(tg.n===kn&&!tg.up)tg.up=true;});
+      break;}
   }
 }
 
 function revertThrow(t){
-  const cp=G.players[G.ci];
+  var cp=G.players[G.ci];
   switch(G.gid){
     case 'g100':if(!t.miss)G.scores[cp.id]-=t.pts;break;
-    case 'g501':
-      if(t._bust){G.scores[cp.id]=G.ex.scoreSnapshot[cp.id];}
-      else if(!t.miss)G.scores[cp.id]+=t.pts;
-      break;
+    case 'g501':if(t._bust)G.scores[cp.id]=G.ex.scoreSnapshot[cp.id];else if(!t.miss)G.scores[cp.id]+=t.pts;break;
     case 'gotcha':if(!t.miss)G.scores[cp.id]-=t.pts;break;
-    case 'shadow':if(!t.miss){const key=`${t.type}_${t.num}`;G.ex.hits[key]=Math.max(0,(G.ex.hits[key]||1)-1);G.scores[cp.id]-=t.pts;}break;
-    case 'clock':if(!t.miss){const n=G.ex.prog[cp.id];if(+t.num===n&&t.type==='big_single')G.ex.prog[cp.id]=Math.max(0,n-1);}break;
-    case 'jailer':{if(t.miss){const key=String(G.ex.tnum);G.ex.pris[cp.id][key]=Math.max(0,(G.ex.pris[cp.id][key]||0)-1);}break;}
-    case 'battle':{if(!t.miss){const opp=G.players[1-G.ci];if(G.ex.ships[opp.id].includes(+t.num)){const sk=`${cp.id}_${t.num}`;if(G.ex.shipHits[sk]>0){const wasSunk=G.ex.shipHits[sk]>=3;G.ex.shipHits[sk]--;if(wasSunk)G.ex.bhits[cp.id]=Math.max(0,(G.ex.bhits[cp.id]||0)-1);for(let i=G.ex.hitLog.length-1;i>=0;i--){if(G.ex.hitLog[i].attacker===cp.id&&G.ex.hitLog[i].target===+t.num){G.ex.hitLog.splice(i,1);break;}}}}}break;}
-    // thief: complex, skip undo
+    case 'shadow':if(!t.miss){var sk2=t.type+'_'+t.num;G.ex.hits[sk2]=Math.max(0,(G.ex.hits[sk2]||1)-1);G.scores[cp.id]-=t.pts;}break;
+    case 'clock':if(!t.miss){var cn2=G.ex.prog[cp.id];if(+t.num===cn2&&t.type==='big_single')G.ex.prog[cp.id]=Math.max(0,cn2-1);}break;
+    case 'battle':{if(!t.miss){var bopp2=G.players[1-G.ci];if(G.ex.ships[bopp2.id].indexOf(+t.num)>=0){var bsk2=cp.id+'_'+t.num;if(G.ex.shipHits[bsk2]>0){var bws=G.ex.shipHits[bsk2]>=3;G.ex.shipHits[bsk2]--;if(bws)G.ex.bhits[cp.id]=Math.max(0,(G.ex.bhits[cp.id]||0)-1);for(var i=G.ex.hitLog.length-1;i>=0;i--){if(G.ex.hitLog[i].attacker===cp.id&&G.ex.hitLog[i].target===+t.num){G.ex.hitLog.splice(i,1);break;}}}}}break;}
   }
 }
 
 function checkMidTurnWin(){
   if(!G||G.done)return false;
-  const cp=G.players[G.ci];const ts=G.throws;
+  var cp=G.players[G.ci];var ts=G.throws;
   switch(G.gid){
     case 'g100':if(G.scores[cp.id]>=(G.opts.target||100)){startWinTmr(cp);renderG();return true;}break;
     case 'gotcha':if(G.scores[cp.id]>=G.ex.win){startWinTmr(cp);renderG();return true;}break;
     case 'g501':if(G.scores[cp.id]===0){playerFinishes(cp);renderG();return true;}break;
     case 'clock':if(G.ex.prog[cp.id]>=G.ex.tgt){startWinTmr(cp);renderG();return true;}break;
-    case 'scrkt':{const CN=[15,16,17,18,19,20,'B'];if(CN.every(n=>(G.ex.marks[cp.id][n]||0)>=3)){startWinTmr(cp);renderG();return true;}break;}
-    case 'ptscrkt':{const CN=[15,16,17,18,19,20,'B'];if(CN.every(n=>G.players.every(p=>(G.ex.marks[p.id][n]||0)>=3))){startWinTmr(G.players.reduce((a,b)=>G.scores[a.id]>G.scores[b.id]?a:b));renderG();return true;}break;}
-    case 'ctcrkt':{const CN=[15,16,17,18,19,20,'B'];if(CN.every(n=>G.players.every(p=>(G.ex.marks[p.id][n]||0)>=3))){startWinTmr(G.players.reduce((a,b)=>G.scores[a.id]<G.scores[b.id]?a:b));renderG();return true;}break;}
-    case 'killer':{if(G.ex.phase!=='play')break;const alive=G.players.filter(p=>G.ex.lives[p.id]>0);if(alive.length<=1){startWinTmr(alive[0]||cp);renderG();return true;}break;}
+    case 'scrkt':{var CN5=[15,16,17,18,19,20,'B'];if(CN5.every(function(n){return(G.ex.marks[cp.id][n]||0)>=3;})){startWinTmr(cp);renderG();return true;}break;}
+    case 'ptscrkt':{var CN6=[15,16,17,18,19,20,'B'];if(CN6.every(function(n){return G.players.every(function(p){return(G.ex.marks[p.id][n]||0)>=3;});})){startWinTmr(G.players.reduce(function(a,b){return G.scores[a.id]>G.scores[b.id]?a:b;}));renderG();return true;}break;}
+    case 'ctcrkt':{var CN7=[15,16,17,18,19,20,'B'];if(CN7.every(function(n){return G.players.every(function(p){return(G.ex.marks[p.id][n]||0)>=3;});})){startWinTmr(G.players.reduce(function(a,b){return G.scores[a.id]<G.scores[b.id]?a:b;}));renderG();return true;}break;}
+    case 'killer':{if(G.ex.phase!=='play')break;var alive=G.players.filter(function(p){return G.ex.lives[p.id]>0;});if(alive.length<=1){startWinTmr(alive[0]||cp);renderG();return true;}break;}
     case 'thief':if(G.scores[cp.id]>=(G.opts.target||300)){startWinTmr(cp);renderG();return true;}break;
-    case 'knockdown':if(G.ex.tgts[cp.id].every(t=>!t.up)){startWinTmr(cp);renderG();return true;}break;
+    case 'knockdown':if(G.ex.tgts[cp.id].every(function(t){return!t.up;})){startWinTmr(cp);renderG();return true;}break;
     case 'battle':if((G.ex.bhits[cp.id]||0)>=3){startWinTmr(cp);renderG();return true;}break;
-    case 'shanghai':{const rn=G.round;const hits=ts.filter(t=>!t.miss&&+t.num===rn);const types=new Set(hits.map(h=>h.type));if(types.has('big_single')&&types.has('double')&&types.has('triple')){startWinTmr(cp);renderG();return true;}break;}
+    case 'shanghai':{var rn=G.round;var shh=ts.filter(function(t){return!t.miss&&+t.num===rn;});var types={};shh.forEach(function(h){types[h.type]=true;});if(types['big_single']&&types['double']&&types['triple']){startWinTmr(cp);renderG();return true;}break;}
     case 'jailer':{
-      if(G.players.every(p=>jailPrisTotal(p.id)>=3)){G.done=true;clearSp();document.getElementById('game-area').innerHTML=`<div class="ww"><div class="wtr">🔒</div><div class="wt">Vanginvartija voitti!</div><div class="wn" style="color:#E24B4A">Kaikki tikat vangittu</div><button class="wb" onclick="openSetup('jailer')">Uusi peli</button><button class="wb s" onclick="navTo('pg-games')">Pelivalikko</button></div>`;return true;}
-      if(G.ex.tnum>G.ex.tmax){startWinTmr(G.players.reduce((a,b)=>G.scores[a.id]>G.scores[b.id]?a:b));renderG();return true;}
+      if(G.players.every(function(p){return jailTotal(p.id)>=3;})){G.done=true;clearSp();document.getElementById('game-area').innerHTML='<div class="ww"><div class="wtr">🔒</div><div class="wt">Vanginvartija voitti!</div><div class="wn" style="color:#E24B4A">Kaikki tikat vangittu</div><button class="wb" onclick="openSetup(\'jailer\')">Uusi peli</button><button class="wb s" onclick="navTo(\'pg-games\')">Pelivalikko</button></div>';return true;}
+      if(G.ex.tnum>G.ex.tmax){startWinTmr(G.players.reduce(function(a,b){return G.scores[a.id]>G.scores[b.id]?a:b;}));renderG();return true;}
+      break;}
+    case 'engcrkt':{
+      if(G.ex.wickets<=0){G.ex.inn++;if(G.ex.inn>2){var ewid=G.scores[G.ex.batter]>G.scores[G.ex.bowler]?G.ex.batter:G.ex.bowler;var ewinner=G.players.find(function(p){return p.id===ewid;});if(ewinner){playerFinishes(ewinner);return true;}}else{var etmp=G.ex.batter;G.ex.batter=G.ex.bowler;G.ex.bowler=etmp;G.ex.wickets=G.ex.wmax;G.throws=[];advanceTurn();return true;}}
       break;}
   }
   return false;
 }
 
-// ===== renderG =====
+function getTI(){switch(G.gid){case 'shanghai':return'Kierros '+G.round+(G.round>7?' (lisäkierros)':'/7')+' · Kohde: '+G.round;case 'halveit':return'Kierros '+(G.ex.hi+1)+'/'+G.opts.rounds+' · Kohde: '+(G.ex.targets[G.ex.hi]?G.ex.targets[G.ex.hi].label:'-');case 'jailer':return'Kierros '+G.round+' · Kohde ▶'+G.ex.tnum+'/'+G.ex.tmax+' · '+G.throws.length+'/'+jailMaxThrows(G.players[G.ci].id);default:return'Kierros '+G.round+' · '+G.throws.length+'/3';}}
+function getSD(p){var s=G.scores[p.id];switch(G.gid){case 'g501':return{m:s,e:s<=170&&s>1?'lopetus':''};case 'killer':return{m:G.ex.nums[p.id]||'?',e:G.ex.killers[p.id]?'KILLER ♥'+G.ex.lives[p.id]:s+'/3'};case 'stairs':return{m:s,e:G.ex.eliminated[p.id]?'tippui':''};case 'clock':return{m:G.ex.prog[p.id],e:'/'+G.ex.tgt};case 'scrkt':{var CN8=[15,16,17,18,19,20,'B'];return{m:CN8.filter(function(n){return(G.ex.marks[p.id][n]||0)>=3;}).length+'/7',e:''}}case 'ptscrkt':case 'ctcrkt':return{m:s,e:''};case 'engcrkt':return{m:s,e:p.id===G.ex.batter?'Lyöjä':'Keilaaja'};case 'jailer':return{m:jailTotal(p.id)>0?jailTotal(p.id)+'🔒':'OK',e:''};default:return{m:s,e:''};}}
+
+function renderBoard(){
+  var NUMS=getBoardNums();var isSh=G&&G.gid==='shadow';var CX=260,CY=260,SZ=520;
+  function toR(d){return d*Math.PI/180;}
+  var R_BI=18,R_BO=38,R_SI=0,R_SO=90,R_TI=90,R_TO=124,R_GI=124,R_GO=192,R_DI=192,R_DO=224,R_NL=238;
+  function arc(r1,r2,a1,a2){var s=toR(a1),e=toR(a2);if(r1===0){var x2=CX+r2*Math.cos(s),y2=CY+r2*Math.sin(s),x3=CX+r2*Math.cos(e),y3=CY+r2*Math.sin(e);return'M'+CX+','+CY+'L'+x2+','+y2+'A'+r2+','+r2+' 0 0,1 '+x3+','+y3+'Z';}var x1=CX+r1*Math.cos(s),y1=CY+r1*Math.sin(s),x22=CX+r2*Math.cos(s),y22=CY+r2*Math.sin(s),x33=CX+r2*Math.cos(e),y33=CY+r2*Math.sin(e),x4=CX+r1*Math.cos(e),y4=CY+r1*Math.sin(e);return'M'+x1+','+y1+'L'+x22+','+y22+'A'+r2+','+r2+' 0 0,1 '+x33+','+y33+'L'+x4+','+y4+'A'+r1+','+r1+' 0 0,0 '+x1+','+y1+'Z';}
+  function shTxt(num,type,base,r,aDeg){if(!isSh)return'';var key=type+'_'+num;var prev=G.ex.hits[key]||0;var eff=Math.floor(base*Math.pow(.5,prev));var rad=toR(aDeg),x=CX+r*Math.cos(rad),y=CY+r*Math.sin(rad);return'<text x="'+x+'" y="'+y+'" text-anchor="middle" dominant-baseline="middle" font-size="10" font-weight="700" fill="rgba(255,255,255,'+(eff>0?.92:.3)+')" font-family="sans-serif" pointer-events="none">'+eff+'</text>';}
+  var base=-99;var segs='';
+  NUMS.forEach(function(num,i){var a1=base+i*18,a2=a1+18,ev=i%2===0,mid=base+i*18+9;segs+='<path d="'+arc(R_SI,R_SO,a1,a2)+'" fill="'+(ev?'#1a1a1a':'#8a6040')+'" class="bs" data-n="'+num+'" data-t="small_single" data-l="'+num+'s" data-pts="'+num+'"/>';segs+=shTxt(num,'small_single',num,(R_SI+R_SO)/2+10,mid);});
+  NUMS.forEach(function(num,i){var a1=base+i*18,a2=a1+18,ev=i%2===0,mid=base+i*18+9;var dc=ev?'#1D9E75':'#E24B4A',bc=ev?'#282828':'#c0956a';segs+='<path d="'+arc(R_DI,R_DO,a1,a2)+'" fill="'+dc+'" class="bs" data-n="'+num+'" data-t="double" data-l="D'+num+'" data-pts="'+(num*2)+'"/>';segs+=shTxt(num,'double',num*2,(R_DI+R_DO)/2,mid);segs+='<path d="'+arc(R_GI,R_GO,a1,a2)+'" fill="'+bc+'" class="bs" data-n="'+num+'" data-t="big_single" data-l="'+num+'" data-pts="'+num+'"/>';segs+=shTxt(num,'big_single',num,(R_GI+R_GO)/2,mid);segs+='<path d="'+arc(R_TI,R_TO,a1,a2)+'" fill="'+dc+'" class="bs" data-n="'+num+'" data-t="triple" data-l="T'+num+'" data-pts="'+(num*3)+'"/>';segs+=shTxt(num,'triple',num*3,(R_TI+R_TO)/2,mid);var mr=toR(mid);segs+='<text x="'+(CX+R_NL*Math.cos(mr))+'" y="'+(CY+R_NL*Math.sin(mr))+'" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="700" fill="#e8e8e8" font-family="sans-serif" pointer-events="none">'+num+'</text>';});
+  segs+='<circle cx="'+CX+'" cy="'+CY+'" r="'+R_BO+'" fill="#1D9E75" class="bs" data-n="B" data-t="bull_outer" data-l="OB" data-pts="25"/>';
+  segs+='<circle cx="'+CX+'" cy="'+CY+'" r="'+R_BI+'" fill="#E24B4A" class="bs" data-n="B" data-t="bull_inner" data-l="IB" data-pts="50"/>';
+  return'<div class="bwrap"><svg id="bsvg" viewBox="0 0 '+SZ+' '+SZ+'" style="width:100%;max-width:520px;cursor:crosshair;touch-action:manipulation;display:block"><style>#bsvg *{stroke:none!important}</style><rect width="'+SZ+'" height="'+SZ+'" fill="#ebebed"/><circle cx="'+CX+'" cy="'+CY+'" r="250" fill="#111"/>'+segs+'</svg></div>';
+}
+function attachBoard(){document.querySelectorAll('#bsvg .bs').forEach(function(el){el.style.cursor='pointer';el.addEventListener('click',function(e){e.stopPropagation();if(G.throws.length>=3||(G.players[G.ci]&&G.players[G.ci].isAI))return;if(G.gid==='jailer'&&jailCanThrow(G.players[G.ci].id)<=0)return;if(G.gid==='battle'){var ci=G.ci;var mr=ci===0?[11,12,13,14,15,16,17,18,19,20]:[1,2,3,4,5,6,7,8,9,10];var rn2=this.dataset.n;if(rn2!=='B'&&mr.indexOf(parseInt(rn2))<0)return;}var rn=this.dataset.n,tp=this.dataset.t,l=this.dataset.l,pts=parseInt(this.dataset.pts,10);var n=rn==='B'?'B':parseInt(rn,10);reg(n,tp,l,pts);});});}
+
 function renderG(){
   if(!G||G.done)return;if(aiActive)return;
   if(G.gid==='golf'){renderGolf();return;}
   if(G.gid==='jailer'){renderJailer();return;}
   if(G.gid==='battle'){if(G.ex.phase==='setup'){renderBattleSetup();return;}renderBattlePlay();return;}
   if(G.gid==='killer'&&G.ex.phase==='assign'){renderKillerAssign();return;}
-  const cp=G.players[G.ci];
-  const isBust=G.gid==='g501'&&G.throws.some(t=>t._bust);
-  const done3=G.throws.length>=3||isBust;const isAI=cp.isAI;
-  let h='';
-  h+=`<div class="order-banner">Järjestys: ${G.players.map((p,i)=>{const isOut=G.gid==='stairs'&&G.ex.eliminated[p.id];return`<span style="${i===G.ci?'color:var(--color-text-primary);font-weight:500':isOut?'opacity:.4':''}">${p.isAI?p.emoji+' ':''}${p.name.split(' ')[0]}${isOut?' ✗':''}</span>`;}).join(' → ')}</div>`;
-  h+=`<div class="shdr"><div class="shdr-l"><div class="scp">${cp.isAI?cp.emoji+' ':''}${cp.name}</div><div class="sti">${getTI()}</div></div>`;
-  if(isBust)h+=`<div style="padding:0 4px;text-align:center"><div style="font-size:12px;font-weight:500;color:#E24B4A">Rikki!<br>Palautetaan</div></div>`;
-  else if(done3&&!isAI)h+=`<div class="tbox"><div class="tnum ok" id="tmr-n">5</div><div class="tbtns"><button class="tcancel" onclick="cancelTmr()">↩ Peruuta</button><button class="tskip" onclick="skipTmr()">Seuraava →</button></div></div>`;
+  if(G.gid==='nines'){renderNines();return;}
+  var cp=G.players[G.ci];
+  var isBust=G.gid==='g501'&&G.throws.some(function(t){return t._bust;});
+  var done3=G.throws.length>=3||isBust;var isAI=cp.isAI;var h='';
+  h+='<div class="order-banner">Järjestys: '+G.players.map(function(p,i){var isOut=G.gid==='stairs'&&G.ex.eliminated[p.id];return'<span style="'+(i===G.ci?'color:var(--color-text-primary);font-weight:500':isOut?'opacity:.4':'')+'">'+(p.isAI?p.emoji+' ':'')+p.name.split(' ')[0]+(isOut?' ✗':'')+'</span>';}).join(' → ')+'</div>';
+  h+='<div class="shdr"><div class="shdr-l"><div class="scp">'+(cp.isAI?cp.emoji+' ':'')+cp.name+'</div><div class="sti">'+getTI()+'</div></div>';
+  if(isBust)h+='<div style="padding:0 4px;text-align:center"><div style="font-size:12px;font-weight:500;color:#E24B4A">Rikki!<br>Palautetaan</div></div>';
+  else if(done3&&!isAI)h+='<div class="tbox"><div class="tnum ok" id="tmr-n">5</div><div class="tbtns"><button class="tcancel" onclick="cancelTmr()">↩ Peruuta</button><button class="tskip" onclick="skipTmr()">Seuraava →</button></div></div>';
   h+='</div>';
-
-  // Sbar
-  h+=`<div class="sbar">${G.players.map((p,i)=>{const sd=getSD(p);const fin=hasFinished(p.id);const isOut=G.gid==='stairs'&&G.ex.eliminated[p.id];return`<div class="chip${i===G.ci?' act':''}${fin?' fin':''}${p.isAI?' ai-chip':''}${isOut?' out':''}"><div class="cn">${p.isAI?p.emoji+' ':''}${p.name.split(' ')[0]}${fin?' ✓':''}${isOut?' ✗':''}</div><div class="cs">${sd.m}</div>${sd.e?`<div class="ce">${sd.e}</div>`:''}</div>`;}).join('')}</div>`;
-
-  if(['scrkt','ptscrkt','ctcrkt'].includes(G.gid))h+=renderCricket();
-
-  // Game info
-  if(G.gid==='halveit'){const tgt=G.ex.targets[G.ex.hi];const turnPts=G.throws.reduce((a,t)=>a+t.pts,0);let hitTarget=false;G.throws.forEach(t=>{if(t.miss)return;if(tgt?.type==='num'&&+t.num===tgt.n)hitTarget=true;if(tgt?.type==='double'&&t.type==='double')hitTarget=true;if(tgt?.type==='triple'&&t.type==='triple')hitTarget=true;if(tgt?.type==='bull'&&t.bull)hitTarget=true;});h+=`<div class="ib">Kohde: <b>${tgt?tgt.label:'-'}</b></div>`;if(G.throws.length>0)h+=hitTarget?`<div class="ib grn">Osuma! +${turnPts}p</div>`:`<div class="ib red">Ei osumaa — ${G.scores[cp.id]}p → ${Math.floor(G.scores[cp.id]/2)}p!</div>`;}
-  if(G.gid==='shanghai'){const rn=G.round;const pts=G.throws.filter(t=>!t.miss&&+t.num===rn).reduce((a,t)=>a+t.pts,0);h+=`<div class="ib">Heitä numeroon <b>${rn}</b>. Muut = 0p. Tällä: <b>+${pts}p</b></div>`;}
-  if(G.gid==='stairs'){const pts=G.throws.reduce((a,t)=>a+t.pts,0);const isOut=G.ex.eliminated[cp.id];h+=`<div class="ib${isOut?' red':''}">Tavoite: <b>${G.ex.target}p</b>. Tällä: <b>${pts}p</b>${isOut?' (tippunut)':''}</div>`;}
-  if(G.gid==='nines'){h+=`<div class="ib">`+G.players.map(p=>{const lv=G.ex.lives[p.id]||0,ml=G.opts.lives||3;const tPts=p.id===cp.id&&G.throws.length>0?G.throws.reduce((a,t)=>a+t.pts,0):0;return`<div style="margin-bottom:4px"><b>${p.name.split(' ')[0]}</b>: <span style="display:inline-flex;gap:3px">${Array.from({length:ml},(_,i)=>`<span class="life-heart${i>=lv?' lost':''}">♥</span>`).join('')}</span>${p.id===cp.id&&G.throws.length>0?` <span style="color:#1D9E75">${tPts}p</span>`:''}</div>`;}).join('')+'</div>';}
-  if(G.gid==='killer'){h+=`<div class="ib">`+G.players.map(p=>{const lv=G.ex.lives[p.id]||0,ml=G.opts.lives||3;const isK=G.ex.killers[p.id];return`<div style="margin-bottom:4px"><b>${p.name.split(' ')[0]}</b> [${G.ex.nums[p.id]||'?'}] ${isK?'<span style="color:#E24B4A;font-weight:500">KILLER</span>':'<span>['+G.scores[p.id]+'/3]</span>'}: <span style="display:inline-flex;gap:3px">${Array.from({length:ml},(_,i)=>`<span class="life-heart${i>=lv?' lost':''}">♥</span>`).join('')}</span></div>`;}).join('')+'</div>';}
-  if(G.gid==='engcrkt'){const bn=G.players.find(p=>p.id===G.ex.batter)?.name||'';const bwn=G.players.find(p=>p.id===G.ex.bowler)?.name||'';h+=`<div class="ib">Lyöjä: <b>${bn}</b> (${G.scores[G.ex.batter]}p) · Keilaaja: <b>${bwn}</b> · Hilat: <b>${G.ex.wickets}</b>/${G.ex.wmax}</div>`;}
+  h+='<div class="sbar">'+G.players.map(function(p,i){var sd=getSD(p);var fin=hasFinished(p.id);var isOut=G.gid==='stairs'&&G.ex.eliminated[p.id];return'<div class="chip'+(i===G.ci?' act':'')+(fin?' fin':'')+(p.isAI?' ai-chip':'')+(isOut?' out':'')+'"><div class="cn">'+(p.isAI?p.emoji+' ':'')+p.name.split(' ')[0]+(fin?' ✓':'')+(isOut?' ✗':'')+'</div><div class="cs">'+sd.m+'</div>'+(sd.e?'<div class="ce">'+sd.e+'</div>':'')+'</div>';}).join('')+'</div>';
+  if(G.gid==='scrkt'||G.gid==='ptscrkt'||G.gid==='ctcrkt')h+=renderCricket();
+  if(G.gid==='halveit'){var htgt=G.ex.targets[G.ex.hi];var htp=G.throws.reduce(function(a,t){return a+t.pts;},0);var hHit=false;G.throws.forEach(function(t){if(t.miss)return;if(htgt&&htgt.type==='num'&&+t.num===htgt.n)hHit=true;if(htgt&&htgt.type==='double'&&t.type==='double')hHit=true;if(htgt&&htgt.type==='triple'&&t.type==='triple')hHit=true;if(htgt&&htgt.type==='bull'&&t.bull)hHit=true;});h+='<div class="ib">Kohde: <b>'+(htgt?htgt.label:'-')+'</b></div>';if(G.throws.length>0)h+=hHit?'<div class="ib grn">Osuma! +'+htp+'p</div>':'<div class="ib red">Ei osumaa → pisteet puolitetaan!</div>';}
+  if(G.gid==='shanghai'){var srn=G.round;var spts=G.throws.filter(function(t){return!t.miss&&+t.num===srn;}).reduce(function(a,t){return a+t.pts;},0);h+='<div class="ib">Kohde: <b>'+srn+'</b>'+(srn>7?' (lisäkierros '+(srn-7)+')':' / 7')+'. Tällä: <b>+'+spts+'p</b></div>';}
+  if(G.gid==='stairs'){var stp=G.throws.reduce(function(a,t){return a+t.pts;},0);h+='<div class="ib">Tavoite: <b>'+G.ex.target+'p</b>. Tällä: <b>'+stp+'p</b></div>';}
+  if(G.gid==='killer'){h+='<div class="ib">'+G.players.map(function(p){var lv=G.ex.lives[p.id]||0,ml=G.opts.lives||3;var isK=G.ex.killers[p.id];return'<div style="margin-bottom:4px"><b>'+p.name.split(' ')[0]+'</b> ['+(G.ex.nums[p.id]||'?')+'] '+(isK?'<span style="color:#E24B4A;font-weight:500">KILLER</span>':'['+G.scores[p.id]+'/3]')+': '+Array.from({length:ml},function(_,i){return'<span class="life-heart'+(i>=lv?' lost':'')+'">♥</span>';}).join('')+'</div>';}).join('')+'</div>';}
+  if(G.gid==='engcrkt'){var ebn=G.players.find(function(p){return p.id===G.ex.batter;});var ebwn=G.players.find(function(p){return p.id===G.ex.bowler;});h+='<div class="ib">Lyöjä: <b>'+(ebn?ebn.name:'')+'</b> ('+G.scores[G.ex.batter]+'p) · Keilaaja: <b>'+(ebwn?ebwn.name:'')+'</b> · Hilat: <b>'+G.ex.wickets+'</b>/'+G.ex.wmax+'</div>';}
   if(G.gid==='knockdown')h+=renderKnockdown();
   if(G.gid==='thief')h+=renderThief();
-  if(G.gid==='fives')h+=`<div class="ib">Tavoite: <b>${G.ex.win}</b> p. Summa jaollinen 5:llä.</div>`;
-  if(G.gid==='gotcha')h+=`<div class="ib">Tavoite: <b>${G.ex.win}</b>. Kierros: +${G.throws.reduce((a,t)=>a+t.pts,0)}p</div>`;
-  if(G.gid==='g501'){const sc=G.scores[cp.id];const snap=G.ex.scoreSnapshot[cp.id]??sc;if(isBust)h+=`<div class="ib red"><b>Rikki!</b> Palautetaan: ${snap}p</div>`;}
-
+  if(G.gid==='fives')h+='<div class="ib">Tavoite: <b>'+G.ex.win+'p</b>. Summa jaollinen 5:llä. Tällä: '+G.throws.reduce(function(a,t){return a+t.pts;},0)+'p</div>';
+  if(G.gid==='gotcha')h+='<div class="ib">Tavoite: <b>'+G.ex.win+'</b>. Tällä: +'+G.throws.reduce(function(a,t){return a+t.pts;},0)+'p</div>';
+  if(G.gid==='g501'&&G.throws.some(function(t){return t._bust;}))h+='<div class="ib red"><b>Rikki!</b> Palautetaan: '+(G.ex.scoreSnapshot[G.players[G.ci].id]||0)+'p</div>';
   h+=renderBoard();
-  h+=`<div class="trow">`;
-  for(let i=0;i<3;i++){const t=G.throws[i];if(t){const cls=t._bust?'bust':t.miss?'miss':t.bull?'bull':'hit';h+=`<div class="tc ${cls}">${t.label}${t._bust?' ❌':''}</div>`;}else{h+=`<div class="tc">—</div>`;}}
-  h+='</div>';
-  if(!done3&&!isAI)h+=`<div class="qrow"><span style="font-size:11px;color:var(--color-text-tertiary);align-self:center;margin-right:4px">Pika:</span>${[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(n=>`<button class="qb" onclick="reg(${n},'big_single','${n}')">${n}</button>`).join('')}<button class="qb" onclick="reg('B','bull_outer','OB')">OB</button><button class="qb" onclick="reg('B','bull_inner','IB')">IB</button><button class="qb" style="color:var(--color-text-danger)" onclick="reg(0,'miss','Ohi')">Ohi</button></div><div class="gacts"><button class="ga dn" onclick="undoT()">↩ Kumoa</button></div>`;
-  document.getElementById('game-area').innerHTML=h;attachBoard();if(done3&&!isAI&&!isBust)startTmr();if(isBust)setTimeout(()=>confirmTurn(),1500);
+  h+='<div class="trow">'+[0,1,2].map(function(i){var t=G.throws[i];if(!t)return'<div class="tc">—</div>';var cls=t._bust?'bust':t.miss?'miss':t.bull?'bull':'hit';return'<div class="tc '+cls+'">'+t.label+(t._bust?' ❌':'')+'</div>';}).join('')+'</div>';
+  if(!done3&&!isAI)h+='<div class="qrow"><span style="font-size:11px;color:var(--color-text-tertiary);align-self:center;margin-right:4px">Pika:</span>'+[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(function(n){return'<button class="qb" onclick="reg('+n+',\'big_single\',\''+n+'\')">'+n+'</button>';}).join('')+'<button class="qb" onclick="reg(\'B\',\'bull_outer\',\'OB\')">OB</button><button class="qb" onclick="reg(\'B\',\'bull_inner\',\'IB\')">IB</button><button class="qb" style="color:#c00" onclick="reg(0,\'miss\',\'Ohi\')">Ohi</button></div><div class="gacts"><button class="ga dn" onclick="undoT()">↩ Kumoa</button></div>';
+  document.getElementById('game-area').innerHTML=h;attachBoard();
+  if(done3&&!isAI&&!isBust)startTmr();
+  if(isBust)setTimeout(confirmTurn,1500);
 }
 
-// ===== Varas renderThief =====
-function renderThief(){
-  const cp=G.players[G.ci];
-  // Build grid 1–20
-  let h='<div class="thief-grid">';
-  for(let n=1;n<=20;n++){
-    const key=String(n);
-    const owner=G.ex.owner[key];
-    const isOwnerMe=owner===cp.id;
-    const isOwnerOther=owner&&owner!==cp.id;
-    const myHits=G.ex.hits[cp.id][key]||0;
-    const ownerHits=owner?(G.ex.hits[owner][key]||0):0;
-    const ownerName=owner?G.players.find(p=>p.id===owner)?.name?.split(' ')[0]||'?':'—';
-    let cellClass='thief-cell';
-    if(isOwnerMe)cellClass+=' mine';
-    else if(isOwnerOther)cellClass+=' others';
-    h+=`<div class="${cellClass}">
-      <div class="thief-cell-num">${n}</div>
-      ${owner?`<div class="thief-cell-hits">${myHits}/${ownerHits}</div>`:``}
-      ${owner?`<div class="thief-cell-owner" style="color:${isOwnerMe?'#085041':'#791F1F'}">${isOwnerMe?'★':ownerName}</div>`:''}
-    </div>`;
+function renderNines(){
+  var cp=G.players[G.ci];var done3=G.throws.length>=3;var isAI=cp.isAI;var ml=G.opts.lives||3;var h='';
+  h+='<div class="order-banner">Järjestys: '+G.players.map(function(p,i){return'<span style="'+(i===G.ci?'color:var(--color-text-primary);font-weight:500':'')+'">'+ p.name.split(' ')[0]+'</span>';}).join(' → ')+'</div>';
+  h+='<div class="shdr"><div class="shdr-l"><div class="scp">'+(cp.isAI?cp.emoji+' ':'')+cp.name+'</div><div class="sti">Kierros '+G.round+' · '+G.throws.length+'/3</div></div>'+(done3&&!isAI?'<div class="tbox"><div class="tnum ok" id="tmr-n">5</div><div class="tbtns"><button class="tcancel" onclick="cancelTmr()">↩ Peruuta</button><button class="tskip" onclick="skipTmr()">Seuraava →</button></div></div>':'')+'</div>';
+  h+='<div class="sbar">'+G.players.map(function(p,i){var lv=G.ex.lives[p.id]||0;var pts=p.id===cp.id&&G.throws.length>0?G.throws.reduce(function(a,t){return a+t.pts;},0):G.scores[p.id];return'<div class="chip'+(i===G.ci?' act':'')+'"><div class="cn">'+p.name.split(' ')[0]+'</div><div class="cs">'+(lv>0?Array.from({length:ml},function(_,j){return'<span class="life-heart'+(j>=lv?' lost':'')+'">♥</span>';}).join(''):'💀')+'</div><div class="ce">'+pts+'p</div></div>';}).join('')+'</div>';
+  h+='<div class="ib">Pienin pistemäärä → menettää elämän. Tällä: <b>'+G.throws.reduce(function(a,t){return a+t.pts;},0)+'p</b></div>';
+  h+='<div class="trow">'+[0,1,2].map(function(i){var t=G.throws[i];if(!t)return'<div class="tc">—</div>';return'<div class="tc '+(t.miss?'miss':t.bull?'bull':'hit')+'">'+t.label+'</div>';}).join('')+'</div>';
+  if(!done3&&!isAI){
+    h+='<div style="padding:6px 12px 2px;font-size:11px;font-weight:500;color:var(--color-text-secondary)">Heitä tikka:</div><div class="nines-grid">';
+    for(var n=1;n<=20;n++)h+='<button class="nines-btn" onclick="reg('+n+',\'big_single\',\''+n+'\')"><span>'+n+'</span></button>';
+    h+='<button class="nines-btn D" onclick="reg(20,\'double\',\'D20\')"><span>D20</span><span class="nines-sub">40p</span></button>';
+    h+='<button class="nines-btn T" onclick="reg(20,\'triple\',\'T20\')"><span>T20</span><span class="nines-sub">60p</span></button>';
+    h+='<button class="nines-btn" onclick="reg(\'B\',\'bull_outer\',\'OB\')"><span>OB</span><span class="nines-sub">25p</span></button>';
+    h+='<button class="nines-btn" onclick="reg(\'B\',\'bull_inner\',\'IB\')"><span>IB</span><span class="nines-sub">50p</span></button>';
+    h+='<button class="nines-btn muu" onclick="reg(0,\'miss\',\'Ohi\')"><span>Muu/</span><span>Ohi</span></button></div>';
+    h+='<div class="gacts"><button class="ga dn" onclick="undoT()">↩ Kumoa</button></div>';
   }
-  h+='</div>';
-  h+=`<div class="ib">★=sinun · Luku: omat/johtajan osumat. Osu enemmän → valtaat! Tavoite: <b>${G.opts.target||300}p</b></div>`;
-  return h;
+  document.getElementById('game-area').innerHTML=h;
+  if(done3&&!isAI)startTmr();
+  if(isAI&&!aiActive)setTimeout(runAITurn,500);
 }
 
-// ===== Jailer =====
 function renderJailer(){
-  const cp=G.players[G.ci];const myPris=jailPrisTotal(cp.id);const canThrow=jailCanThrow(cp.id);const done=(canThrow<=0)||(G.throws.length>=3);
-  let h='';
-  h+=`<div class="order-banner">Järjestys: ${G.players.map((p,i)=>`<span style="${i===G.ci?'color:var(--color-text-primary);font-weight:500':''}">${p.name.split(' ')[0]}</span>`).join(' → ')}</div>`;
-  h+=`<div class="shdr"><div class="shdr-l"><div class="scp">${cp.name}</div><div class="sti">Kierros ${G.round} · Kohde: <b>${G.ex.tnum}</b>/${G.ex.tmax}</div></div>${done&&!cp.isAI?`<div class="tbox"><div class="tnum ok" id="tmr-n">5</div><div class="tbtns"><button class="tcancel" onclick="cancelTmr()">↩ Peruuta</button><button class="tskip" onclick="skipTmr()">Seuraava →</button></div></div>`:''}</div>`;
-  h+=`<div class="sbar">${G.players.map((p,i)=>{const pr=jailPrisTotal(p.id);return`<div class="chip${i===G.ci?' act':''}"><div class="cn">${p.name.split(' ')[0]}</div><div class="cs">${pr>0?pr+'🔒':'OK'}</div></div>`;}).join('')}</div>`;
-  if(myPris>0){const details=Object.entries(G.ex.pris[cp.id]).filter(([k,v])=>v>0).map(([k,v])=>`nro ${k}: ${v}×`).join(', ');h+=`<div class="ib red"><b>${myPris} tikkaa vangittuna!</b> (${details}) — vain <b>${canThrow}</b> heitto${canThrow!==1?'a':''} jäljellä. Osu samaan numeroon tai häränsilmään!</div>`;}
-  else h+=`<div class="ib">Kierros <b>${G.ex.tnum}</b>/${G.ex.tmax}. Ohiheitto vangitsee tikan tähän numeroon. Häränsilmä 🎯 vapauttaa kaikkien kaikki!</div>`;
+  var cp=G.players[G.ci];var maxT=jailMaxThrows(cp.id);var done=jailCanThrow(cp.id)<=0;var myPris=jailTotal(cp.id);var h='';
+  h+='<div class="order-banner">Järjestys: '+G.players.map(function(p,i){return'<span style="'+(i===G.ci?'color:var(--color-text-primary);font-weight:500':'')+'">'+ p.name.split(' ')[0]+'</span>';}).join(' → ')+'</div>';
+  h+='<div class="shdr"><div class="shdr-l"><div class="scp">'+cp.name+'</div><div class="sti">Kierros '+G.round+' · Kohde ▶'+G.ex.tnum+'/'+G.ex.tmax+' · '+G.throws.length+'/'+maxT+'</div></div>'+(done&&!cp.isAI?'<div class="tbox"><div class="tnum ok" id="tmr-n">5</div><div class="tbtns"><button class="tcancel" onclick="cancelTmr()">↩ Peruuta</button><button class="tskip" onclick="skipTmr()">Seuraava →</button></div></div>':'')+'</div>';
+  h+='<div class="sbar">'+G.players.map(function(p,i){var pr=jailTotal(p.id);return'<div class="chip'+(i===G.ci?' act':'')+'"><div class="cn">'+p.name.split(' ')[0]+'</div><div class="cs">'+(3-pr)+'/3 🎯</div><div class="ce">'+(pr>0?pr+'🔒':'vapaana')+'</div></div>';}).join('')+'</div>';
+  if(myPris>0){var det=Object.entries(G.ex.pris[cp.id]||{}).filter(function(e){return e[1]>0;}).map(function(e){return e[1]+'× nro'+e[0];}).join(', ');h+='<div class="ib red">⚠️ Jumissa: '+det+'. Max '+maxT+' heittoa.</div>';}
+  else h+='<div class="ib">Kohde ▶<b>'+G.ex.tnum+'</b> vapauttaa omat tikat. Muihin → vangitsee. IB/OB → vapauttaa kaikki.</div>';
   h+='<div class="j-grid">';
-  for(let n=1;n<=G.ex.tmax;n++){
-    const isTgt=n===G.ex.tnum;const isPast=n<G.ex.tnum;
-    const prisHere=[];G.players.forEach((p,pi)=>{const cnt=(G.ex.pris[p.id]?.[String(n)])||0;for(let x=0;x<cnt;x++)prisHere.push({p,pi});});
-    const hasPris=prisHere.length>0;
-    h+=`<div class="j-cell${isTgt?' tgt':''}${isPast?' past':''}${hasPris?' hasPris':''}">`;
-    if(hasPris&&!isTgt)h+=`<div class="j-lock">🔒</div>`;
-    h+=`<div class="j-num">${n}</div>`;
-    if(hasPris){h+=`<div class="j-avs">`;prisHere.forEach(({p,pi})=>{h+=`<div class="j-av ${AVC[pi%AVC.length]}" title="${p.name}">${inits(p.name)}</div>`;});h+='</div>';}
-    h+='</div>';
-  }
+  for(var jn=1;jn<=G.ex.tmax;jn++){var isTgt=jn===G.ex.tnum;var isPast=jn<G.ex.tnum;var pHere=[];G.players.forEach(function(p,pi){var cnt=(G.ex.pris[p.id]&&G.ex.pris[p.id][String(jn)])||0;for(var x=0;x<cnt;x++)pHere.push({p:p,pi:pi});});var hasPris=pHere.length>0;h+='<div class="j-cell'+(isTgt?' tgt':'')+(isPast?' past':'')+(hasPris?' hasPris':'')+'">';if(hasPris&&!isTgt)h+='<div class="j-lock">🔒</div>';h+='<div class="j-num">'+(isTgt?'▶'+jn:jn)+'</div>';if(hasPris){h+='<div class="j-avs">';pHere.forEach(function(it){h+='<div class="j-av '+AVC[it.pi%AVC.length]+'">'+inits(it.p.name)+'</div>';});h+='</div>';}h+='</div>';}
+  h+='</div><div class="trow">';
+  for(var ji=0;ji<3;ji++){var jt=G.throws[ji];if(jt)h+='<div class="tc '+(jt.type==='bull_inner'||jt.type==='bull_outer'?'bull':jt.miss?'miss':'hit')+'">'+jt.label+'</div>';else if(ji>=maxT)h+='<div class="tc jailed">🔒</div>';else h+='<div class="tc">—</div>';}
   h+='</div>';
-  h+=`<div class="trow">`;
-  for(let i=0;i<3;i++){const t=G.throws[i];if(t){h+=`<div class="tc ${t.miss?'miss':t.bull?'bull':'hit'}">${t.label}</div>`;}else if(i>=(3-myPris)){h+=`<div class="tc jailed">🔒</div>`;}else{h+=`<div class="tc">—</div>`;}}
-  h+='</div>';
-  if(!done&&!cp.isAI){h+=`<div class="qrow"><span style="font-size:11px;color:var(--color-text-tertiary);align-self:center;margin-right:4px">Heitä:</span>`;for(let n=1;n<=20;n++){const isTarget=n===G.ex.tnum;const myPrisHere=(G.ex.pris[cp.id]?.[String(n)]||0)>0;h+=`<button class="qb${isTarget||myPrisHere?' on':''}" onclick="reg(${n},'big_single','${n}')">${n}${myPrisHere?'🔒':''}</button>`;}h+=`<button class="qb" style="color:#BA7517;font-weight:700" onclick="reg('B','bull_inner','IB')">🎯 IB</button><button class="qb" onclick="reg('B','bull_outer','OB')">OB</button><button class="qb" style="color:var(--color-text-danger)" onclick="reg(0,'miss','Ohi')">Ohi</button></div><div class="gacts"><button class="ga dn" onclick="undoT()">↩ Kumoa</button></div>`;}
-  document.getElementById('game-area').innerHTML=h;if(done&&!cp.isAI)startTmr();if(cp.isAI&&!aiActive)setTimeout(()=>runAITurn(),500);
+  if(!done&&!cp.isAI){h+='<div class="qrow"><span style="font-size:11px;color:var(--color-text-tertiary);align-self:center;margin-right:4px">Heitä:</span>';for(var jjn=1;jjn<=20;jjn++){var isT=jjn===G.ex.tnum;var mPH=(G.ex.pris[cp.id]&&G.ex.pris[cp.id][String(jjn)]||0)>0;var oPH=G.players.some(function(p){return p.id!==cp.id&&(G.ex.pris[p.id]&&G.ex.pris[p.id][String(jjn)]||0)>0;});var jcls='qb'+(isT?' on':'');var jlbl=String(jjn);if(mPH)jlbl=jjn+'🔓';else if(oPH)jlbl=jjn+'🔄';h+='<button class="'+jcls+'" onclick="reg('+jjn+',\'big_single\',\''+jjn+'\')">'+jlbl+'</button>';}h+='<button class="qb" style="color:#BA7517;font-weight:700;border-color:#BA7517" onclick="reg(\'B\',\'bull_inner\',\'IB\')">🎯 IB</button><button class="qb" style="color:#9b59b6;font-weight:700;border-color:#9b59b6" onclick="reg(\'B\',\'bull_outer\',\'OB\')">OB</button><button class="qb" onclick="reg(0,\'miss\',\'Ohi\')">Ohi</button></div><div class="gacts"><button class="ga dn" onclick="undoT()">↩ Kumoa</button></div>';}
+  document.getElementById('game-area').innerHTML=h;if(done&&!cp.isAI)startTmr();if(cp.isAI&&!aiActive)setTimeout(runAITurn,500);
 }
 
-function renderGolf(){const cp=G.players[G.ci];const isAI=cp.isAI;let h='';h+=`<div class="order-banner">Järjestys: ${G.players.map((p,i)=>`<span style="${i===G.ci?'color:var(--color-text-primary);font-weight:500':''}">${p.name.split(' ')[0]}</span>`).join(' → ')}</div>`;h+=`<div class="shdr"><div class="shdr-l"><div class="scp">${cp.name}</div><div class="sti">Reikä ${G.ex.hole}/${G.ex.maxH}</div></div></div>`;h+=`<div class="sbar">${G.players.map((p,i)=>{const sc=G.ex.gs[p.id]||[];const tot=sc.reduce((a,b)=>a+b,0);return`<div class="chip${i===G.ci?' act':''}"><div class="cn">${p.name.split(' ')[0]}</div><div class="cs">${tot}</div><div class="ce">${sc.length}rk</div></div>`;}).join('')}</div>`;h+=renderGolfT();if(!isAI){const sel=G.ex.golfSel[cp.id];const labels=['Tripla','Tupla','Single iso','Single pieni','Ohi'];h+=`<div style="padding:14px 16px 8px;font-size:13px;font-weight:500;color:var(--color-text-secondary)">Valitse tulos reiälle ${G.ex.hole}:</div>`;h+=`<div class="golf-btns">${[1,2,3,4,5].map(v=>`<button class="golf-btn${sel===v?' sel':''}" onclick="golfPick(${v})"><div>${v}</div><div class="golf-label">${labels[v-1]}</div></button>`).join('')}</div>`;if(sel!==undefined)h+=`<div class="gacts"><button class="ga dn" onclick="golfUndo()">↩ Kumoa</button><button class="ga" style="background:#1D9E75;color:#fff;border-color:#1D9E75" onclick="golfConfirm()">Vahvista ›</button></div>`;}document.getElementById('game-area').innerHTML=h;if(isAI){const l=AIL[cp.level];const r=Math.random();const str=r<l.tripleRate?1:r<l.tripleRate+l.doubleRate?2:r<l.hitRate?3:r<l.hitRate+.05?4:5;setTimeout(()=>{G.ex.golfSel[cp.id]=str;golfConfirm();},1200);}}
+function renderThief(){var cp=G.players[G.ci];var h='<div class="thief-grid">';for(var n=1;n<=20;n++){var k=String(n);var ow=G.ex.owner[k];var isme=ow===cp.id;var isoth=ow&&ow!==cp.id;var mh=G.ex.hits[cp.id][k]||0;var oh=ow?(G.ex.hits[ow][k]||0):0;var on2=ow?(G.players.find(function(p){return p.id===ow;})||{name:'?'}).name.split(' ')[0]:'—';var cls='thief-cell'+(isme?' mine':isoth?' others':'');h+='<div class="'+cls+'"><div class="thief-cell-num">'+n+'</div>'+(ow?'<div class="thief-cell-hits">'+mh+'/'+oh+'</div>':'')+(ow?'<div class="thief-cell-owner" style="color:'+(isme?'#085041':'#791F1F')+'">'+(isme?'★':on2)+'</div>':'')+'</div>';}h+='</div><div class="ib">★=sinun. Omat/johtajan osumat. Enemmän → valtaat! Tavoite: <b>'+(G.opts.target||300)+'p</b></div>';return h;}
+
+function renderGolf(){var cp=G.players[G.ci];var isAI=cp.isAI;var h='';h+='<div class="order-banner">Järjestys: '+G.players.map(function(p,i){return'<span style="'+(i===G.ci?'color:var(--color-text-primary);font-weight:500':'')+'">'+ p.name.split(' ')[0]+'</span>';}).join(' → ')+'</div>';h+='<div class="shdr"><div class="shdr-l"><div class="scp">'+cp.name+'</div><div class="sti">Reikä '+G.ex.hole+'/'+G.ex.maxH+'</div></div></div>';h+='<div class="sbar">'+G.players.map(function(p,i){var sc=G.ex.gs[p.id]||[];var tot=sc.reduce(function(a,b){return a+b;},0);return'<div class="chip'+(i===G.ci?' act':'')+'"><div class="cn">'+p.name.split(' ')[0]+'</div><div class="cs">'+tot+'</div><div class="ce">'+sc.length+'rk</div></div>';}).join('')+'</div>';h+=renderGolfT();if(!isAI){var sel=G.ex.golfSel[cp.id];var labs=['Tripla','Tupla','Single iso','Single pieni','Ohi'];h+='<div style="padding:14px 16px 8px;font-size:13px;font-weight:500;color:var(--color-text-secondary)">Valitse tulos reiälle '+G.ex.hole+':</div>';h+='<div class="golf-btns">'+[1,2,3,4,5].map(function(v){return'<button class="golf-btn'+(sel===v?' sel':'')+'" onclick="golfPick('+v+')"><div>'+v+'</div><div class="golf-label">'+labs[v-1]+'</div></button>';}).join('')+'</div>';if(sel!==undefined)h+='<div class="gacts"><button class="ga dn" onclick="golfUndo()">↩ Kumoa</button><button class="ga" style="background:#1D9E75;color:#fff;border-color:#1D9E75" onclick="golfConfirm()">Vahvista ›</button></div>';}document.getElementById('game-area').innerHTML=h;if(isAI){var l=AIL[cp.level];var r=Math.random();var str=r<l.tripleRate?1:r<l.tripleRate+l.doubleRate?2:r<l.hitRate?3:r<l.hitRate+.05?4:5;setTimeout(function(){G.ex.golfSel[cp.id]=str;golfConfirm();},1200);}}
 function golfPick(v){G.ex.golfSel[G.players[G.ci].id]=v;renderGolf();}
 function golfUndo(){delete G.ex.golfSel[G.players[G.ci].id];renderGolf();}
-function golfConfirm(){const cp=G.players[G.ci];const str=G.ex.golfSel[cp.id];if(str===undefined)return;G.ex.gs[cp.id].push(str);G.scores[cp.id]=G.ex.gs[cp.id].reduce((a,b)=>a+b,0);delete G.ex.golfSel[cp.id];G.throws=[];if((G.ci+1)%G.players.length===0){G.ex.hole++;if(G.ex.hole>G.ex.maxH){playerFinishes(G.players.reduce((a,b)=>G.scores[a.id]<G.scores[b.id]?a:b));return;}}advanceTurn();}
-function renderKnockdown(){let h='<div class="kd-area">';G.players.forEach(p=>{h+=`<div class="kd-section"><div class="kd-player-label">${p.name.split(' ')[0]}</div><div class="kd-grid">`;G.ex.tgts[p.id].forEach(t=>{h+=`<div class="kd-target ${t.up?'up':'down'}"><span style="font-size:22px;font-weight:700">${t.n}</span>${!t.up?'<span class="kd-x">✕</span>':''}</div>`;});h+='</div></div>';});h+='</div>';return h;}
-function renderKillerAssign(){const cp=G.players[G.ci];const taken=Object.values(G.ex.nums).filter(Boolean);let h='';h+=`<div class="shdr"><div class="shdr-l"><div class="scp">${cp.name}</div><div class="sti">Valitse oma numero</div></div></div>`;if(cp.isAI){h+=`<div class="ib">${cp.name} valitsee...</div>`;document.getElementById('game-area').innerHTML=h;setTimeout(()=>{const avail=Array.from({length:20},(_,i)=>i+1).filter(n=>!taken.includes(n));G.ex.nums[cp.id]=avail[Math.floor(Math.random()*avail.length)];killerConfirm();},900);return;}h+=`<div class="ib">Valittu: <b>${G.ex.nums[cp.id]||'-'}</b></div>`;h+=`<div class="qrow">${Array.from({length:20},(_,i)=>i+1).map(n=>{const t=taken.includes(n)&&G.ex.nums[cp.id]!==n;return`<button class="qb${G.ex.nums[cp.id]===n?' on':''}" style="${t?'opacity:.3;cursor:not-allowed':''}" onclick="${t?'':'killerPick('+n+')'}">${n}</button>`;}).join('')}</div>`;h+=`<div class="gacts"><button class="ga" style="${G.ex.nums[cp.id]?'background:#1D9E75;color:#fff;border-color:#1D9E75':'opacity:.4;cursor:not-allowed'}" ${G.ex.nums[cp.id]?'':'disabled'} onclick="killerConfirm()">Vahvista ›</button></div>`;document.getElementById('game-area').innerHTML=h;}
-function killerPick(n){const cp=G.players[G.ci];const taken=Object.values(G.ex.nums).filter(x=>x!==null&&x!==G.ex.nums[cp.id]);if(taken.includes(n))return;G.ex.nums[cp.id]=G.ex.nums[cp.id]===n?null:n;renderKillerAssign();}
-function killerConfirm(){const cp=G.players[G.ci];if(!G.ex.nums[cp.id])return;G.throws=[];G.ci=(G.ci+1)%G.players.length;if(G.players.every(p=>G.ex.nums[p.id]!==null)){G.ex.phase='play';G.ci=0;}renderG();}
-function renderBattleSetup(){const idx=G.ex.si;if(idx>=G.players.length){G.ex.phase='play';G.ci=0;renderG();return;}const cp=G.players[idx];const range=idx===0?Array.from({length:10},(_,i)=>i+1):Array.from({length:10},(_,i)=>i+11);const ch=G.ex.ships[cp.id]||[];let h='';h+=`<div class="shdr"><div class="shdr-l"><div class="scp">${cp.name}</div><div class="sti">${idx===0?'Valitse laivat 1–10':'Valitse laivat 11–20'} (valitse 3)</div></div></div>`;h+=`<div class="ib">Valittu: <b>${ch.length?ch.join(', '):'-'}</b></div>`;if(!cp.isAI){h+=`<div class="qrow">${range.map(n=>`<button class="qb${ch.includes(n)?' on':''}" onclick="bPick(${n})">${n}</button>`).join('')}</div>`;h+=`<div class="gacts"><button class="ga" style="${ch.length===3?'background:#1D9E75;color:#fff;border-color:#1D9E75':'opacity:.4;cursor:not-allowed'}" ${ch.length!==3?'disabled':''} onclick="bConf()">Vahvista ›</button></div>`;}document.getElementById('game-area').innerHTML=h;if(cp.isAI){const picked=[];while(picked.length<3){const n=range[Math.floor(Math.random()*range.length)];if(!picked.includes(n))picked.push(n);}G.ex.ships[cp.id]=picked;setTimeout(()=>bConf(),500);}}
-function bPick(n){const pid=G.players[G.ex.si].id,s=G.ex.ships[pid]||[];if(s.includes(n))G.ex.ships[pid]=s.filter(x=>x!==n);else if(s.length<3)G.ex.ships[pid]=[...s,n];renderBattleSetup();}
+function golfConfirm(){var cp=G.players[G.ci];var str=G.ex.golfSel[cp.id];if(str===undefined)return;G.ex.gs[cp.id].push(str);G.scores[cp.id]=G.ex.gs[cp.id].reduce(function(a,b){return a+b;},0);delete G.ex.golfSel[cp.id];G.throws=[];if((G.ci+1)%G.players.length===0){G.ex.hole++;if(G.ex.hole>G.ex.maxH){playerFinishes(G.players.reduce(function(a,b){return G.scores[a.id]<G.scores[b.id]?a:b;}));return;}}advanceTurn();}
+function renderGolfT(){var h=G.ex.hole-1;if(h===0)return'';return'<div style="padding:4px 12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="color:var(--color-text-tertiary)">'+['Pelaaja'].concat(Array.from({length:h},function(_,i){return i+1;}),['Yht']).map(function(x){return'<th style="padding:3px 5px;border-bottom:0.5px solid var(--color-border-tertiary)">'+x+'</th>';}).join('')+'</tr>'+G.players.map(function(p){var sc=G.ex.gs[p.id]||[];return'<tr>'+[p.name.split(' ')[0]].concat(sc,[sc.reduce(function(a,b){return a+b;},0)]).map(function(v,i){return'<td style="padding:3px 5px;text-align:center;border-bottom:0.5px solid var(--color-border-tertiary);color:'+(i>0&&v<=2?'#1D9E75':i>0&&v>=5?'#c00':'var(--color-text-primary)')+'">'+v+'</td>';}).join('')+'</tr>';}).join('')+'</table></div>';}
+
+function renderKnockdown(){var h='<div class="kd-area">';G.players.forEach(function(p){h+='<div class="kd-section"><div class="kd-player-label">'+p.name.split(' ')[0]+'</div><div class="kd-grid">';G.ex.tgts[p.id].forEach(function(t){h+='<div class="kd-target '+(t.up?'up':'down')+'"><span style="font-size:22px;font-weight:700">'+t.n+'</span>'+(!t.up?'<span class="kd-x">✕</span>':'')+'</div>';});h+='</div></div>';});h+='</div>';return h;}
+
+function renderKillerAssign(){var cp=G.players[G.ci];var taken=Object.values(G.ex.nums).filter(Boolean);var h='<div class="shdr"><div class="shdr-l"><div class="scp">'+cp.name+'</div><div class="sti">Valitse oma numero</div></div></div>';if(cp.isAI){h+='<div class="ib">'+cp.name+' valitsee...</div>';document.getElementById('game-area').innerHTML=h;setTimeout(function(){var avail=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].filter(function(n){return taken.indexOf(n)<0;});G.ex.nums[cp.id]=avail[Math.floor(Math.random()*avail.length)];killerConfirm();},900);return;}h+='<div class="ib">Valittu: <b>'+(G.ex.nums[cp.id]||'-')+'</b></div>';h+='<div class="qrow">'+[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(function(n){var t=taken.indexOf(n)>=0&&G.ex.nums[cp.id]!==n;return'<button class="qb'+(G.ex.nums[cp.id]===n?' on':'')+'" style="'+(t?'opacity:.3;cursor:not-allowed':'')+'" onclick="'+(t?'':'killerPick('+n+')')+'">'+n+'</button>';}).join('')+'</div>';h+='<div class="gacts"><button class="ga" style="'+(G.ex.nums[cp.id]?'background:#1D9E75;color:#fff;border-color:#1D9E75':'opacity:.4;cursor:not-allowed')+'" '+(G.ex.nums[cp.id]?'':'disabled')+' onclick="killerConfirm()">Vahvista ›</button></div>';document.getElementById('game-area').innerHTML=h;}
+function killerPick(n){var cp=G.players[G.ci];var taken=Object.values(G.ex.nums).filter(function(x){return x!==null&&x!==G.ex.nums[cp.id];});if(taken.indexOf(n)>=0)return;G.ex.nums[cp.id]=G.ex.nums[cp.id]===n?null:n;renderKillerAssign();}
+function killerConfirm(){var cp=G.players[G.ci];if(!G.ex.nums[cp.id])return;G.throws=[];G.ci=(G.ci+1)%G.players.length;if(G.players.every(function(p){return G.ex.nums[p.id]!==null;})){G.ex.phase='play';G.ci=0;}renderG();}
+
+function renderBattleSetup(){var idx=G.ex.si;if(idx>=G.players.length){G.ex.phase='play';G.ci=0;renderG();return;}var cp=G.players[idx];var range=idx===0?[1,2,3,4,5,6,7,8,9,10]:[11,12,13,14,15,16,17,18,19,20];var ch=G.ex.ships[cp.id]||[];var h='<div class="shdr"><div class="shdr-l"><div class="scp">'+cp.name+'</div><div class="sti">'+(idx===0?'Valitse laivat 1–10':'Valitse laivat 11–20')+' (valitse 3)</div></div></div><div class="ib">Valittu: <b>'+(ch.length?ch.join(', '):'-')+'</b></div>';if(!cp.isAI){h+='<div class="qrow">'+range.map(function(n){return'<button class="qb'+(ch.indexOf(n)>=0?' on':'')+'" onclick="bPick('+n+')">'+n+'</button>';}).join('')+'</div>';h+='<div class="gacts"><button class="ga" style="'+(ch.length===3?'background:#1D9E75;color:#fff;border-color:#1D9E75':'opacity:.4;cursor:not-allowed')+'" '+(ch.length!==3?'disabled':'')+' onclick="bConf()">Vahvista ›</button></div>';}document.getElementById('game-area').innerHTML=h;if(cp.isAI){var p2=[];while(p2.length<3){var rn=range[Math.floor(Math.random()*range.length)];if(p2.indexOf(rn)<0)p2.push(rn);}G.ex.ships[cp.id]=p2;setTimeout(bConf,500);}}
+function bPick(n){var pid=G.players[G.ex.si].id;var s=G.ex.ships[pid]||[];if(s.indexOf(n)>=0)G.ex.ships[pid]=s.filter(function(x){return x!==n;});else if(s.length<3)G.ex.ships[pid]=s.concat([n]);renderBattleSetup();}
 function bConf(){G.ex.si++;renderG();}
-function renderBattlePlay(){const ci=G.ci;const cp=G.players[ci];const opp=G.players[1-ci];const done3=G.throws.length>=3;const myThrowRange=ci===0?Array.from({length:10},(_,i)=>i+11):Array.from({length:10},(_,i)=>i+1);let h='';h+=`<div class="shdr"><div class="shdr-l"><div class="scp">${cp.name}</div><div class="sti">Heitä ${myThrowRange[0]}–${myThrowRange[myThrowRange.length-1]}</div></div>${done3?`<div class="tbox"><div class="tnum ok" id="tmr-n">5</div><div class="tbtns"><button class="tcancel" onclick="cancelTmr()">↩ Peruuta</button><button class="tskip" onclick="skipTmr()">Seuraava →</button></div></div>`:''}</div>`;h+=`<div class="sbar"><div class="chip act"><div class="cn">${cp.name.split(' ')[0]}</div><div class="cs">${G.ex.bhits[cp.id]||0}/3</div><div class="ce">upotettu</div></div><div class="chip"><div class="cn">${opp.name.split(' ')[0]}</div><div class="cs">${G.ex.bhits[opp.id]||0}/3</div><div class="ce">upotettu</div></div></div>`;const myShips=G.ex.ships[cp.id]||[];h+=`<div style="padding:10px 14px 4px"><div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px">Omat laivat:</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">`;myShips.forEach(n=>{const sk=`${opp.id}_${n}`;const hits=G.ex.shipHits[sk]||0;const sunk=hits>=3;if(hits===0){h+=`<div class="b-ship hidden">🚢 ?</div>`;}else if(sunk){h+=`<div class="b-ship sunk">${n} ⚓</div>`;}else if(hits===2){h+=`<div class="b-ship h2">${n} — ${hits}/3</div>`;}else{h+=`<div class="b-ship h1">${n} — ${hits}/3</div>`;}});h+='</div>';const myHits=G.ex.hitLog.filter(hl=>hl.attacker===cp.id);h+=`<div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px">Osumat ${opp.name.split(' ')[0]}:lle:</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">`;if(!myHits.length){h+=`<span style="font-size:13px;color:var(--color-text-tertiary)">Ei osumia</span>`;}else myHits.forEach(hl=>{h+=`<div class="b-ship${hl.sunk?' sunk':' h1'}">${hl.target}${hl.sunk?' ⚓':''}</div>`;});h+='</div></div>';h+=`<div class="trow">${[0,1,2].map(i=>{const t=G.throws[i];if(!t)return`<div class="tc">—</div>`;return`<div class="tc ${t.miss?'miss':'hit'}">${t.label}</div>`;}).join('')}</div>`;if(!done3){h+=`<div class="qrow"><span style="font-size:11px;color:var(--color-text-tertiary);align-self:center;margin-right:4px">Heitä (${myThrowRange[0]}–${myThrowRange[myThrowRange.length-1]}):</span>`;myThrowRange.forEach(n=>{const sk=`${cp.id}_${n}`;const prevHits=G.ex.shipHits[sk]||0;const sunk=prevHits>=3;h+=`<button class="qb${prevHits>0&&!sunk?' on':''}" onclick="reg(${n},'big_single','${n}')" ${sunk?'disabled style="opacity:.35"':''}>${n}${prevHits>0?` (${prevHits})`:''}</button>`;});h+=`<button class="qb" style="color:var(--color-text-danger)" onclick="reg(0,'miss','Ohi')">Ohi</button></div>`;h+=`<div class="gacts"><button class="ga dn" onclick="undoT()">↩ Kumoa</button></div>`;}document.getElementById('game-area').innerHTML=h;if(done3)startTmr();}
+function renderBattlePlay(){var ci=G.ci;var cp=G.players[ci];var opp=G.players[1-ci];var done3=G.throws.length>=3;var mtr=ci===0?[11,12,13,14,15,16,17,18,19,20]:[1,2,3,4,5,6,7,8,9,10];var h='<div class="shdr"><div class="shdr-l"><div class="scp">'+cp.name+'</div><div class="sti">Heitä '+mtr[0]+'–'+mtr[mtr.length-1]+'</div></div>'+(done3?'<div class="tbox"><div class="tnum ok" id="tmr-n">5</div><div class="tbtns"><button class="tcancel" onclick="cancelTmr()">↩ Peruuta</button><button class="tskip" onclick="skipTmr()">Seuraava →</button></div></div>':'')+'</div>';h+='<div class="sbar"><div class="chip act"><div class="cn">'+cp.name.split(' ')[0]+'</div><div class="cs">'+(G.ex.bhits[cp.id]||0)+'/3 ⚓</div></div><div class="chip"><div class="cn">'+opp.name.split(' ')[0]+'</div><div class="cs">'+(G.ex.bhits[opp.id]||0)+'/3 ⚓</div></div></div>';var ms=G.ex.ships[cp.id]||[];h+='<div style="padding:10px 14px 4px"><div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px">Omat laivat:</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">';ms.forEach(function(n){var sk=opp.id+'_'+n;var hits=G.ex.shipHits[sk]||0;var sunk=hits>=3;if(hits===0)h+='<div class="b-ship hidden">🚢 ?</div>';else if(sunk)h+='<div class="b-ship sunk">'+n+' ⚓</div>';else if(hits===2)h+='<div class="b-ship h2">'+n+' — '+hits+'/3</div>';else h+='<div class="b-ship h1">'+n+' — '+hits+'/3</div>';});h+='</div>';var mh=G.ex.hitLog.filter(function(hl){return hl.attacker===cp.id;});h+='<div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px">Osumat '+opp.name.split(' ')[0]+':lle:</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">';if(!mh.length)h+='<span style="font-size:13px;color:var(--color-text-tertiary)">Ei osumia</span>';else mh.forEach(function(hl){h+='<div class="b-ship'+(hl.sunk?' sunk':' h1')+'">'+hl.target+(hl.sunk?' ⚓':'')+'</div>';});h+='</div></div><div class="trow">'+[0,1,2].map(function(i){var t=G.throws[i];if(!t)return'<div class="tc">—</div>';return'<div class="tc '+(t.miss?'miss':'hit')+'">'+t.label+'</div>';}).join('')+'</div>';if(!done3){h+='<div class="qrow"><span style="font-size:11px;color:var(--color-text-tertiary);align-self:center;margin-right:4px">Heitä ('+mtr[0]+'–'+mtr[mtr.length-1]+'):</span>';mtr.forEach(function(n){var sk=cp.id+'_'+n;var ph=G.ex.shipHits[sk]||0;var sunk=ph>=3;h+='<button class="qb'+(ph>0&&!sunk?' on':'')+'" onclick="reg('+n+',\'big_single\',\''+n+'\')" '+(sunk?'disabled style="opacity:.35"':'')+'>'+n+(ph>0?' ('+ph+')':'')+'</button>';});h+='<button class="qb" style="color:#c00" onclick="reg(0,\'miss\',\'Ohi\')">Ohi</button></div><div class="gacts"><button class="ga dn" onclick="undoT()">↩ Kumoa</button></div>';}document.getElementById('game-area').innerHTML=h;if(done3)startTmr();}
 
-function getTI(){switch(G.gid){case 'shanghai':return`Kierros ${G.round}/7 · Kohdenumero: ${G.round}`;case 'halveit':return`Kierros ${G.ex.hi+1}/${G.opts.rounds} · Kohde: ${G.ex.targets[G.ex.hi]?.label||'-'}`;case 'jailer':{const pr=jailPrisTotal(G.players[G.ci].id);return`Kierros ${G.round} · ${G.throws.length}/${3-pr} heitettävissä`;}default:return`Kierros ${G.round} · ${G.throws.length}/3 heitetty`;}}
-function getSD(p){const s=G.scores[p.id];switch(G.gid){case 'g501':return{m:s,e:s<=170&&s>1?'lopetus':''};case 'nines':return{m:G.throws.length>0&&p.id===G.players[G.ci].id?G.throws.reduce((a,t)=>a+t.pts,0):s,e:''};case 'killer':return{m:G.ex.nums[p.id]||'?',e:G.ex.killers[p.id]?`KILLER ♥${G.ex.lives[p.id]}`:`${s}/3`};case 'stairs':return{m:s,e:G.ex.eliminated[p.id]?'tippui':''};case 'clock':return{m:G.ex.prog[p.id],e:'/'+G.ex.tgt};case 'scrkt':{const CN=[15,16,17,18,19,20,'B'];return{m:CN.filter(n=>(G.ex.marks[p.id][n]||0)>=3).length+'/7',e:''}}case 'ptscrkt':case 'ctcrkt':return{m:s,e:''};case 'engcrkt':return{m:s,e:p.id===G.ex.batter?'Lyöjä':'Keilaaja'};case 'jailer':return{m:jailPrisTotal(p.id)>0?jailPrisTotal(p.id)+'🔒':'0🔒',e:''};default:return{m:s,e:''};}}
-
-function renderBoard(){
-  const NUMS=getBoardNums();const isSh=G&&G.gid==='shadow';const CX=260,CY=260,SZ=520;const toR=d=>d*Math.PI/180;
-  const R_BI=18,R_BO=38,R_SI=0,R_SO=90,R_TI=90,R_TO=124,R_GI=124,R_GO=192,R_DI=192,R_DO=224,R_NL=238;
-  function arc(r1,r2,a1,a2){const s=toR(a1),e=toR(a2);if(r1===0){const x2=CX+r2*Math.cos(s),y2=CY+r2*Math.sin(s),x3=CX+r2*Math.cos(e),y3=CY+r2*Math.sin(e);return`M${CX},${CY}L${x2},${y2}A${r2},${r2} 0 0,1 ${x3},${y3}Z`;}const x1=CX+r1*Math.cos(s),y1=CY+r1*Math.sin(s),x2=CX+r2*Math.cos(s),y2=CY+r2*Math.sin(s),x3=CX+r2*Math.cos(e),y3=CY+r2*Math.sin(e),x4=CX+r1*Math.cos(e),y4=CY+r1*Math.sin(e);return`M${x1},${y1}L${x2},${y2}A${r2},${r2} 0 0,1 ${x3},${y3}L${x4},${y4}A${r1},${r1} 0 0,0 ${x1},${y1}Z`;}
-  function shTxt(num,type,base,r,aDeg){if(!isSh)return'';const key=`${type}_${num}`;const prev=G.ex.hits[key]||0;const eff=Math.floor(base*Math.pow(.5,prev));const rad=toR(aDeg),x=CX+r*Math.cos(rad),y=CY+r*Math.sin(rad);return`<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="10" font-weight="700" fill="rgba(255,255,255,${eff>0?.92:.3})" font-family="sans-serif" pointer-events="none">${eff}</text>`;}
-  const base=-99;let segs='';
-  NUMS.forEach((num,i)=>{const a1=base+i*18,a2=a1+18,ev=i%2===0,mid=base+i*18+9;segs+=`<path d="${arc(R_SI,R_SO,a1,a2)}" fill="${ev?'#1a1a1a':'#8a6040'}" class="bs" data-n="${num}" data-t="small_single" data-l="${num}s" data-pts="${num}"/>`;segs+=shTxt(num,'small_single',num,(R_SI+R_SO)/2+10,mid);});
-  NUMS.forEach((num,i)=>{const a1=base+i*18,a2=a1+18,ev=i%2===0,mid=base+i*18+9;const dc=ev?'#1D9E75':'#E24B4A',bc=ev?'#282828':'#c0956a';segs+=`<path d="${arc(R_DI,R_DO,a1,a2)}" fill="${dc}" class="bs" data-n="${num}" data-t="double" data-l="D${num}" data-pts="${num*2}"/>`;segs+=shTxt(num,'double',num*2,(R_DI+R_DO)/2,mid);segs+=`<path d="${arc(R_GI,R_GO,a1,a2)}" fill="${bc}" class="bs" data-n="${num}" data-t="big_single" data-l="${num}" data-pts="${num}"/>`;segs+=shTxt(num,'big_single',num,(R_GI+R_GO)/2,mid);segs+=`<path d="${arc(R_TI,R_TO,a1,a2)}" fill="${dc}" class="bs" data-n="${num}" data-t="triple" data-l="T${num}" data-pts="${num*3}"/>`;segs+=shTxt(num,'triple',num*3,(R_TI+R_TO)/2,mid);const mr=toR(mid);segs+=`<text x="${CX+R_NL*Math.cos(mr)}" y="${CY+R_NL*Math.sin(mr)}" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="700" fill="#e8e8e8" font-family="sans-serif" pointer-events="none">${num}</text>`;});
-  segs+=`<circle cx="${CX}" cy="${CY}" r="${R_BO}" fill="#1D9E75" class="bs" data-n="B" data-t="bull_outer" data-l="OB" data-pts="25"/>`;
-  segs+=`<circle cx="${CX}" cy="${CY}" r="${R_BI}" fill="#E24B4A" class="bs" data-n="B" data-t="bull_inner" data-l="IB" data-pts="50"/>`;
-  return`<div class="bwrap"><svg id="bsvg" viewBox="0 0 ${SZ} ${SZ}" style="width:100%;max-width:520px;cursor:crosshair;touch-action:manipulation;display:block"><style>#bsvg *{stroke:none!important}</style><rect width="${SZ}" height="${SZ}" fill="var(--color-background-tertiary)"/><circle cx="${CX}" cy="${CY}" r="250" fill="#111"/>${segs}</svg></div>`;
-}
-function attachBoard(){document.querySelectorAll('#bsvg .bs').forEach(el=>{el.style.cursor='pointer';el.addEventListener('click',function(e){e.stopPropagation();if(G.throws.length>=3||G.players[G.ci]?.isAI)return;if(G.gid==='jailer'&&jailCanThrow(G.players[G.ci].id)<=0)return;if(G.gid==='battle'){const ci=G.ci;const myRange=ci===0?[...Array(10)].map((_,i)=>i+11):[...Array(10)].map((_,i)=>i+1);const rawN=this.dataset.n;if(rawN!=='B'&&!myRange.includes(parseInt(rawN)))return;}const rawN=this.dataset.n,t=this.dataset.t,l=this.dataset.l,pts=parseInt(this.dataset.pts,10);const n=rawN==='B'?'B':parseInt(rawN,10);reg(n,t,l,pts);});});}
+function renderCricket(){var CN=[20,19,18,17,16,15,'B'],MK=['·','/','X','⊗'];var h='<div class="cw"><table class="ct"><thead><tr><th>Nro</th>'+G.players.map(function(p){return'<th>'+p.name.split(' ')[0]+'</th>';}).join('')+'</tr></thead><tbody>';CN.forEach(function(n){h+='<tr><td class="nn">'+n+'</td>';G.players.forEach(function(p){var m=G.ex.marks[p.id][n]||0;h+='<td class="'+(m>=3?'cl':'')+'">'+MK[Math.min(m,3)]+'</td>';});h+='</tr>';});return h+'</tbody></table></div>';}
 
 function reg(num,type,label,ptsOvr){
-  if(G.done||G.players[G.ci]?.isAI)return;
-  if(G.gid==='jailer'){if(jailCanThrow(G.players[G.ci].id)<=0||G.throws.length>=3)return;}
+  if(G.done||(G.players[G.ci]&&G.players[G.ci].isAI))return;
+  if(G.gid==='jailer'){if(jailCanThrow(G.players[G.ci].id)<=0)return;}
   else if(G.throws.length>=3)return;
-  clearTmr();
-  const miss=type==='miss',bull=type==='bull_inner'||type==='bull_outer';
-  let pts=miss?0:(ptsOvr!==undefined?ptsOvr:(type==='double'?+num*2:type==='triple'?+num*3:type==='bull_outer'?25:type==='bull_inner'?50:+num||0));
-  const tObj={num,type,label,pts,miss,bull};
-  G.throws.push(tObj);
-  applyThrow(tObj);
-  playSfx(miss,bull);
-  if(tObj._bust){renderG();setTimeout(()=>confirmTurn(),1500);return;}
+  clearTmr();var miss=type==='miss',bull=type==='bull_inner'||type==='bull_outer';
+  var pts=miss?0:(ptsOvr!==undefined?ptsOvr:(type==='double'?+num*2:type==='triple'?+num*3:type==='bull_outer'?25:type==='bull_inner'?50:+num||0));
+  var tObj={num:num,type:type,label:label,pts:pts,miss:miss,bull:bull};
+  G.throws.push(tObj);applyThrow(tObj);playSfx(miss,bull);
+  if(tObj._bust){renderG();setTimeout(confirmTurn,1500);return;}
   if(checkMidTurnWin())return;
-  if(G.gid==='jailer')renderJailer();else renderG();
+  if(G.gid==='jailer')renderJailer();else if(G.gid==='nines')renderNines();else renderG();
 }
-
-function undoT(){if(!G||G.throws.length===0)return;clearTmr();const t=G.throws.pop();revertThrow(t);if(G.gid==='jailer')renderJailer();else renderG();}
+function undoT(){if(!G||G.throws.length===0)return;clearTmr();var t=G.throws.pop();revertThrow(t);if(G.gid==='jailer')renderJailer();else if(G.gid==='nines')renderNines();else renderG();}
 
 function confirmTurn(){
   clearTmr();if(!G||G.done)return;
-  const cp=G.players[G.ci],ts=G.throws;
+  var cp=G.players[G.ci],ts=G.throws;
   switch(G.gid){
     case 'g100':if(G.scores[cp.id]>=(G.opts.target||100)){playerFinishes(cp);return;}break;
-    case 'g501':
-      // Rikki palautetaan automaattisesti applyThrow:ssa
-      if(G.scores[cp.id]===0){playerFinishes(cp);return;}
-      // Uusi vuoro — nollaa snapshot
-      G.ex.scoreSnapshot[cp.id]=G.scores[cp.id];
-      break;
-    case 'gotcha':if(G.scores[cp.id]>=G.ex.win){playerFinishes(cp);return;}G.players.forEach(p=>{if(p.id!==cp.id&&G.scores[p.id]===G.scores[cp.id]&&G.scores[p.id]>0)G.scores[p.id]=Math.floor(G.scores[p.id]/2);});break;
-    case 'shadow':if((G.ci+1)%G.players.length===0){G.round++;if(G.round>G.ex.maxR){playerFinishes(G.players.reduce((a,b)=>G.scores[a.id]>G.scores[b.id]?a:b));return;}}break;
-    case 'nines':{const rPts=ts.reduce((a,t)=>a+t.pts,0);G.scores[cp.id]=rPts;G.ex.rs[cp.id]=rPts;if((G.ci+1)%G.players.length===0){const alive=G.players.filter(p=>G.ex.lives[p.id]>0);if(alive.length>1){const mn=Math.min(...alive.map(p=>G.ex.rs[p.id]||0));alive.forEach(p=>{if((G.ex.rs[p.id]||0)===mn)G.ex.lives[p.id]--;});const sa=alive.filter(p=>G.ex.lives[p.id]>0);if(sa.length===1){G.throws=[];playerFinishes(sa[0]);return;}}G.ex.rs={};G.round++;}break;}
-    case 'stairs':{const pts=ts.reduce((a,t)=>a+t.pts,0);G.scores[cp.id]=pts;G.ex.roundScores[cp.id]=pts;if((G.ci+1)%G.players.length===0){G.players.forEach(p=>{if(!G.ex.eliminated[p.id]&&(G.ex.roundScores[p.id]||0)<G.ex.target)G.ex.eliminated[p.id]=true;});const alive=G.players.filter(p=>!G.ex.eliminated[p.id]);if(alive.length===0){G.throws=[];playerFinishes(cp);return;}if(alive.length===1){G.throws=[];playerFinishes(alive[0]);return;}G.ex.target+=G.ex.step;G.ex.roundScores={};G.round++;G.scores={};G.players.forEach(p=>G.scores[p.id]=0);}break;}
-    case 'halveit':{const tgt=G.ex.targets[G.ex.hi];let hitTarget=false;ts.forEach(t=>{if(t.miss)return;if(tgt?.type==='num'&&+t.num===tgt.n)hitTarget=true;if(tgt?.type==='double'&&t.type==='double')hitTarget=true;if(tgt?.type==='triple'&&t.type==='triple')hitTarget=true;if(tgt?.type==='bull'&&t.bull)hitTarget=true;});const normalPts=ts.reduce((a,t)=>a+t.pts,0);if(hitTarget)G.scores[cp.id]+=normalPts;else G.scores[cp.id]=Math.floor(G.scores[cp.id]/2);if((G.ci+1)%G.players.length===0){G.ex.hi++;if(G.ex.hi>=G.ex.targets.length){G.throws=[];playerFinishes(G.players.reduce((a,b)=>G.scores[a.id]>G.scores[b.id]?a:b));return;}}break;}
-    case 'shanghai':{const rn=G.round;const shPts=ts.filter(t=>!t.miss&&+t.num===rn).reduce((a,t)=>a+t.pts,0);G.scores[cp.id]+=shPts;if((G.ci+1)%G.players.length===0){G.round++;if(G.round>7){G.throws=[];playerFinishes(G.players.reduce((a,b)=>G.scores[a.id]>G.scores[b.id]?a:b));return;}}break;}
-    case 'fives':{const pts2=ts.reduce((a,t)=>a+t.pts,0);if(pts2%5===0&&pts2>0){G.scores[cp.id]+=pts2/5;if(G.scores[cp.id]>=G.ex.win){G.throws=[];playerFinishes(cp);return;}}break;}
-    case 'engcrkt':{const pts2=ts.reduce((a,t)=>a+t.pts,0);const isBatter=cp.id===G.ex.batter;if(!isBatter){ts.forEach(t=>{if(t.bull)G.ex.wickets=Math.max(0,G.ex.wickets-1);});if(G.ex.wickets===0){G.ex.inn++;if(G.ex.inn>2){const wid=G.scores[G.ex.batter]>G.scores[G.ex.bowler]?G.ex.batter:G.ex.bowler;G.throws=[];playerFinishes(G.players.find(p=>p.id===wid));return;}const tmp=G.ex.batter;G.ex.batter=G.ex.bowler;G.ex.bowler=tmp;G.ex.wickets=G.ex.wmax;showNotify('Innings vaihto!',`Uusi lyöjä: ${G.players.find(p=>p.id===G.ex.batter)?.name}.`);}}else G.scores[cp.id]+=Math.max(0,pts2-40);break;}
-    case 'jailer':if((G.ci+1)%G.players.length===0){G.ex.tnum++;G.round++;if(G.ex.tnum>G.ex.tmax){G.throws=[];playerFinishes(G.players.reduce((a,b)=>G.scores[a.id]>G.scores[b.id]?a:b));return;}}break;
+    case 'g501':if(G.scores[cp.id]===0){playerFinishes(cp);return;}G.ex.scoreSnapshot[cp.id]=G.scores[cp.id];break;
+    case 'gotcha':if(G.scores[cp.id]>=G.ex.win){playerFinishes(cp);return;}G.players.forEach(function(p){if(p.id!==cp.id&&G.scores[p.id]===G.scores[cp.id]&&G.scores[p.id]>0)G.scores[p.id]=Math.floor(G.scores[p.id]/2);});break;
+    case 'shadow':if((G.ci+1)%G.players.length===0){G.round++;if(G.round>G.ex.maxR){playerFinishes(G.players.reduce(function(a,b){return G.scores[a.id]>G.scores[b.id]?a:b;}));return;}}break;
+    case 'nines':{var rp=ts.reduce(function(a,t){return a+t.pts;},0);G.scores[cp.id]=rp;G.ex.rs[cp.id]=rp;if((G.ci+1)%G.players.length===0){var al=G.players.filter(function(p){return G.ex.lives[p.id]>0;});if(al.length>=1){var mn=Math.min.apply(null,al.map(function(p){return G.ex.rs[p.id]||0;}));al.forEach(function(p){if((G.ex.rs[p.id]||0)===mn)G.ex.lives[p.id]--;});}var sa=G.players.filter(function(p){return G.ex.lives[p.id]>0;});if(sa.length<=1){G.throws=[];if(sa.length===1)playerFinishes(sa[0]);else playerFinishes(cp);return;}G.ex.rs={};G.round++;}break;}
+    case 'stairs':{var sp=ts.reduce(function(a,t){return a+t.pts;},0);G.scores[cp.id]=sp;G.ex.roundScores[cp.id]=sp;if((G.ci+1)%G.players.length===0){G.players.forEach(function(p){if(!G.ex.eliminated[p.id]&&(G.ex.roundScores[p.id]||0)<G.ex.target)G.ex.eliminated[p.id]=true;});var sal=G.players.filter(function(p){return!G.ex.eliminated[p.id];});if(sal.length===0){G.throws=[];playerFinishes(cp);return;}if(sal.length===1){G.throws=[];playerFinishes(sal[0]);return;}G.ex.target+=G.ex.step;G.ex.roundScores={};G.round++;G.scores={};G.players.forEach(function(p){G.scores[p.id]=0;});}break;}
+    case 'halveit':{var htgt=G.ex.targets[G.ex.hi];var hHit=false;ts.forEach(function(t){if(t.miss)return;if(htgt&&htgt.type==='num'&&+t.num===htgt.n)hHit=true;if(htgt&&htgt.type==='double'&&t.type==='double')hHit=true;if(htgt&&htgt.type==='triple'&&t.type==='triple')hHit=true;if(htgt&&htgt.type==='bull'&&t.bull)hHit=true;});var hp=ts.reduce(function(a,t){return a+t.pts;},0);if(hHit)G.scores[cp.id]+=hp;else G.scores[cp.id]=Math.floor(G.scores[cp.id]/2);if((G.ci+1)%G.players.length===0){G.ex.hi++;if(G.ex.hi>=G.ex.targets.length){G.throws=[];playerFinishes(G.players.reduce(function(a,b){return G.scores[a.id]>G.scores[b.id]?a:b;}));return;}}break;}
+    case 'shanghai':{var srn=G.round;var spts=ts.filter(function(t){return!t.miss&&+t.num===srn;}).reduce(function(a,t){return a+t.pts;},0);G.scores[cp.id]+=spts;if((G.ci+1)%G.players.length===0){if(srn>=7){var mx=Math.max.apply(null,G.players.map(function(p){return G.scores[p.id];}));var ld=G.players.filter(function(p){return G.scores[p.id]===mx;});if(ld.length===1){G.throws=[];playerFinishes(ld[0]);return;}}G.round++;}break;}
+    case 'fives':{var fp=ts.reduce(function(a,t){return a+t.pts;},0);if(fp%5===0&&fp>0){G.scores[cp.id]+=fp/5;if(G.scores[cp.id]>=G.ex.win){G.throws=[];playerFinishes(cp);return;}}break;}
+    case 'engcrkt':{var ep=ts.reduce(function(a,t){return a+t.pts;},0);var isBat=cp.id===G.ex.batter;if(!isBat){ts.forEach(function(t){if(t.bull)G.ex.wickets=Math.max(0,G.ex.wickets-1);});if(G.ex.wickets<=0){G.ex.inn++;if(G.ex.inn>2){var ewid=G.scores[G.ex.batter]>G.scores[G.ex.bowler]?G.ex.batter:G.ex.bowler;G.throws=[];playerFinishes(G.players.find(function(p){return p.id===ewid;}));return;}var etmp=G.ex.batter;G.ex.batter=G.ex.bowler;G.ex.bowler=etmp;G.ex.wickets=G.ex.wmax;showNotify('Innings vaihto!','Uusi lyöjä: '+(G.players.find(function(p){return p.id===G.ex.batter;})||{name:''}).name+'.');}}else G.scores[cp.id]+=Math.max(0,ep-40);break;}
+    case 'jailer':if((G.ci+1)%G.players.length===0){G.ex.tnum++;G.round++;if(G.ex.tnum>G.ex.tmax){G.throws=[];playerFinishes(G.players.reduce(function(a,b){return G.scores[a.id]>G.scores[b.id]?a:b;}));return;}}break;
     case 'thief':if(G.scores[cp.id]>=(G.opts.target||300)){playerFinishes(cp);return;}break;
+    case 'battle':if((G.ex.bhits[cp.id]||0)>=3){playerFinishes(cp);return;}break;
   }
+  if(G.gid==='jailer'){var jnx=(G.ci+1)%G.players.length;var jnp=G.players[jnx];G.ex.jailAtTurnStart[jnp.id]=Object.values(G.ex.pris[jnp.id]||{}).reduce(function(a,b){return a+b;},0);}
   G.throws=[];advanceTurn();
 }
 
-function renderCricket(){const CN=[20,19,18,17,16,15,'B'],MK=['·','/','X','⊗'];let h=`<div class="cw"><table class="ct"><thead><tr><th>Nro</th>${G.players.map(p=>`<th>${p.name.split(' ')[0]}</th>`).join('')}</tr></thead><tbody>`;CN.forEach(n=>{h+=`<tr><td class="nn">${n}</td>`;G.players.forEach(p=>{const m=G.ex.marks[p.id][n]||0;h+=`<td class="${m>=3?'cl':''}">${MK[Math.min(m,3)]}</td>`;});h+='</tr>';});return h+'</tbody></table></div>';}
-function renderGolfT(){const h=G.ex.hole-1;if(h===0)return'';return`<div style="padding:4px 12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="color:var(--color-text-tertiary)">${['Pelaaja',...Array.from({length:h},(_,i)=>i+1),'Yht'].map(x=>`<th style="padding:3px 5px;border-bottom:0.5px solid var(--color-border-tertiary)">${x}</th>`).join('')}</tr>${G.players.map(p=>{const sc=G.ex.gs[p.id]||[];return`<tr>${[p.name.split(' ')[0],...sc,sc.reduce((a,b)=>a+b,0)].map((v,i)=>`<td style="padding:3px 5px;text-align:center;border-bottom:0.5px solid var(--color-border-tertiary);color:${i>0&&v<=2?'#1D9E75':i>0&&v>=5?'var(--color-text-danger)':'var(--color-text-primary)'}">${v}</td>`).join('')}</tr>`;}).join('')}</table></div>`;}
-
-function advanceTurn(){
-  const total=G.players.length;let next=(G.ci+1)%total,loops=0;
-  while(loops<total){const p=G.players[next];const skip=hasFinished(p.id)||(G.gid==='stairs'&&G.ex.eliminated[p.id]);if(!skip)break;next=(next+1)%total;loops++;}
-  if(loops>=total||activePs().length===0){endGame();return;}
-  G.ci=next;if(!G.done){renderG();playTurnChange();if(G.players[G.ci]?.isAI)setTimeout(()=>runAITurn(),600);}
-}
+function advanceTurn(){var total=G.players.length;var next=(G.ci+1)%total,loops=0;while(loops<total){var p=G.players[next];var skip=hasFinished(p.id)||(G.gid==='stairs'&&G.ex.eliminated[p.id]);if(!skip)break;next=(next+1)%total;loops++;}if(loops>=total||activePs().length===0){endGame();return;}G.ci=next;if(!G.done){renderG();playTurnChange();if(G.players[G.ci]&&G.players[G.ci].isAI)setTimeout(runAITurn,600);}}
 function playerFinishes(player){clearTmr();hideAIO();aiActive=false;if(!hasFinished(player.id))G.finishOrder.push(player.id);G.throws=[];if(activePs().length===0){endGame();return;}advanceTurn();}
-function recordGame(pid,gid,score,won,round){const fp=PL.find(p=>p.id===pid);if(!fp||pid<0)return;fp.stats=fp.stats||{};fp.stats.gameHistory=fp.stats.gameHistory||{};fp.stats.gameHistory[gid]=fp.stats.gameHistory[gid]||[];fp.stats.gameHistory[gid].push({score,won,round});if(fp.stats.gameHistory[gid].length>30)fp.stats.gameHistory[gid]=fp.stats.gameHistory[gid].slice(-30);}
+function recordGame(pid,gid,score,won,round){var fp=PL.find(function(p){return p.id===pid;});if(!fp||pid<0)return;fp.stats=fp.stats||{};fp.stats.gameHistory=fp.stats.gameHistory||{};fp.stats.gameHistory[gid]=fp.stats.gameHistory[gid]||[];fp.stats.gameHistory[gid].push({score:score,won:won,round:round});if(fp.stats.gameHistory[gid].length>30)fp.stats.gameHistory[gid]=fp.stats.gameHistory[gid].slice(-30);}
+
 function endGame(){
   G.done=true;clearSp();playWin();
-  const order=G.finishOrder,rounds=G.round;
-  const isSolo=G.players.filter(p=>!p.isAI).length<=1;const isBot=G.players.some(p=>p.isAI);
-  G.players.forEach(p=>{if(p.isAI||p.id<0)return;const won=order[0]===p.id;recordGame(p.id,G.gid,G.scores[p.id]||0,won,rounds);const fp=PL.find(x=>x.id===p.id);if(!fp)return;fp.stats=fp.stats||{};fp.stats.games=(fp.stats.games||0)+1;if(isSolo&&!isBot)fp.stats.soloGames=(fp.stats.soloGames||0)+1;if(won){fp.stats.wins=(fp.stats.wins||0)+1;if(isSolo&&!isBot)fp.stats.soloWins=(fp.stats.soloWins||0)+1;fp.stats.fastestWins=fp.stats.fastestWins||{};if(!fp.stats.fastestWins[G.gid]||rounds<fp.stats.fastestWins[G.gid])fp.stats.fastestWins[G.gid]=rounds;const rp=G.players.filter(p=>!p.isAI);if(rp.length>=2&&!isBot){fp.stats.curStreak=(fp.stats.curStreak||0)+1;if((fp.stats.curStreak||0)>(fp.stats.bestStreak||0))fp.stats.bestStreak=fp.stats.curStreak;}}else{const rp=G.players.filter(p=>!p.isAI);if(rp.length>=2&&!isBot)fp.stats.curStreak=0;}});
+  var order=G.finishOrder,rounds=G.round;
+  var isSolo=G.players.filter(function(p){return!p.isAI;}).length<=1;
+  var isBot=G.players.some(function(p){return p.isAI;});
+  G.players.forEach(function(p){
+    if(p.isAI||p.id<0)return;
+    var won=order[0]===p.id;var score=G.scores[p.id]||0;
+    recordGame(p.id,G.gid,score,won,rounds);
+    var fp=PL.find(function(x){return x.id===p.id;});if(!fp)return;
+    fp.stats=fp.stats||{};fp.stats.games=(fp.stats.games||0)+1;
+    if(isSolo&&!isBot)fp.stats.soloGames=(fp.stats.soloGames||0)+1;
+    if(won){fp.stats.wins=(fp.stats.wins||0)+1;if(isSolo&&!isBot)fp.stats.soloWins=(fp.stats.soloWins||0)+1;fp.stats.fastestWins=fp.stats.fastestWins||{};if(!fp.stats.fastestWins[G.gid]||rounds<fp.stats.fastestWins[G.gid])fp.stats.fastestWins[G.gid]=rounds;var rp=G.players.filter(function(p2){return!p2.isAI;});if(rp.length>=2&&!isBot){fp.stats.curStreak=(fp.stats.curStreak||0)+1;if((fp.stats.curStreak||0)>(fp.stats.bestStreak||0))fp.stats.bestStreak=fp.stats.curStreak;}}
+    else{var rp2=G.players.filter(function(p2){return!p2.isAI;});if(rp2.length>=2&&!isBot)fp.stats.curStreak=0;}
+  });
   saveP();
-  const medals=['🥇','🥈','🥉'];const winner=G.players.find(p=>p.id===order[0]);
-  speak(`Voittaja on ${winner?.name||''}!`,.9,true);
-  const rankHtml=order.map((pid,i)=>{const p=G.players.find(x=>x.id===pid);return`<div class="rank-row"><span class="rank-pos">${medals[i]||i+1}</span><span class="rank-name">${p?.name||'?'}</span></div>`;}).join('')+G.players.filter(p=>!order.includes(p.id)).map(p=>{const isOut=G.gid==='stairs'&&G.ex.eliminated[p.id];return`<div class="rank-row"><span class="rank-pos" style="font-size:14px">${isOut?'—':medals[order.length]||'—'}</span><span class="rank-name">${p.name}${isOut?' (tippui)':''}</span></div>`;}).join('');
-  document.getElementById('game-area').innerHTML=`<div class="ww"><div class="wtr">🏆</div><div class="wt">Peli ohi!</div><div class="wn">${winner?.name||'?'} voitti</div><div class="rank-list">${rankHtml}</div><div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:20px">${GAMES.find(g=>g.id===G.gid)?.n||''} · ${rounds} kierrosta</div><button class="wb" onclick="openSetup('${G.gid}')">Uusi peli</button><button class="wb s" onclick="navTo('pg-games')">Pelivalikko</button><button class="wb s" onclick="navTo('pg-home')">Etusivu</button></div>`;
+  var medals=['🥇','🥈','🥉'];var winner=G.players.find(function(p){return p.id===order[0];});
+  speak('Voittaja on '+(winner?winner.name:'')+'!',.9,true);
+  var rankHtml=order.map(function(pid,i){var p=G.players.find(function(x){return x.id===pid;});return'<div class="rank-row"><span class="rank-pos">'+(medals[i]||i+1)+'</span><span class="rank-name">'+(p?p.name:'?')+'</span></div>';}).join('')+G.players.filter(function(p){return order.indexOf(p.id)<0;}).map(function(p){var isOut=G.gid==='stairs'&&G.ex.eliminated[p.id];return'<div class="rank-row"><span class="rank-pos" style="font-size:14px">'+(isOut?'—':medals[order.length]||'—')+'</span><span class="rank-name">'+p.name+(isOut?' (tippui)':'')+'</span></div>';}).join('');
+  document.getElementById('game-area').innerHTML='<div class="ww"><div class="wtr">🏆</div><div class="wt">Peli ohi!</div><div class="wn">'+(winner?winner.name:'?')+' voitti</div><div class="rank-list">'+rankHtml+'</div><div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:20px">'+(GAMES.find(function(g){return g.id===G.gid;})||{n:''}).n+' · '+rounds+' kierrosta</div><button class="wb" onclick="openSetup(\''+G.gid+'\')">Uusi peli</button><button class="wb s" onclick="navTo(\'pg-games\')">Pelivalikko</button><button class="wb s" onclick="navTo(\'pg-home\')">Etusivu</button></div>';
 }
+
 function openQuit(){document.getElementById('modal-quit').classList.add('open');}
 function quitGame(){clearTmr();clearSp();hideAIO();aiActive=false;closeModal('modal-quit');G=null;navTo('pg-games');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
-function renderProfiles(){const el=document.getElementById('profiles-list'),em=document.getElementById('empty-p');if(!PL.length){el.innerHTML='';em.style.display='block';return;}em.style.display='none';el.innerHTML=PL.map((p,i)=>{const g=p.stats?.games||0,w=p.stats?.wins||0;return`<div class="pcc" onclick="openPD(${p.id})"><div class="pcav ${AVC[i%AVC.length]}">${inits(p.name)}</div><div style="flex:1"><div class="pcn">${p.name}${p.nick?` <span style="font-size:11px;color:var(--color-text-tertiary)">"${p.nick}"</span>`:''}</div><div class="pcs">${g} peliä · ${w} voittoa</div></div><span style="color:var(--color-text-tertiary);font-size:16px">›</span></div>`;}).join('');}
-let curPid=null;
+function renderProfiles(){var el=document.getElementById('profiles-list'),em=document.getElementById('empty-p');if(!PL.length){el.innerHTML='';em.style.display='block';return;}em.style.display='none';el.innerHTML=PL.map(function(p,i){var g=p.stats&&p.stats.games||0,w=p.stats&&p.stats.wins||0;return'<div class="pcc" onclick="openPD('+p.id+')"><div class="pcav '+AVC[i%AVC.length]+'">'+inits(p.name)+'</div><div style="flex:1"><div class="pcn">'+p.name+(p.nick?' <span style="font-size:11px;color:var(--color-text-tertiary)">"'+p.nick+'"</span>':'')+'</div><div class="pcs">'+g+' peliä · '+w+' voittoa</div></div><span style="color:var(--color-text-tertiary);font-size:16px">›</span></div>';}).join('');}
+
+var curPid=null;
 function openPD(id){curPid=id;renderPDetail(id);}
-function renderPDetail(id){const p=PL.find(x=>x.id===id);if(!p)return;document.getElementById('pd-title').textContent=p.name;const idx=PL.indexOf(p),st=p.stats||{};const g=st.games||0,w=st.wins||0,sg=st.soloGames||0,sw=st.soloWins||0,curS=st.curStreak||0,bestS=st.bestStreak||0;const hits=st.hits||{},th=Object.values(hits).reduce((a,b)=>a+b,0)||1;const ht=[{n:'Iso 1x',k:'bigSingle',c:'#1D9E75'},{n:'Pieni 1x',k:'smallSingle',c:'#378ADD'},{n:'Tuplat',k:'double',c:'#BA7517'},{n:'Triplat',k:'triple',c:'#E24B4A'},{n:'Ulko-bull',k:'outerBull',c:'#9b59b6'},{n:'Sisempi bull',k:'innerBull',c:'#e91e63'}];const fw=st.fastestWins||{};const fwRows=Object.keys(fw).length?Object.keys(fw).map(gid=>{const gname=GAMES.find(g=>g.id===gid)?.n||gid;return`<div class="fw-row"><span class="fw-game">${gname}</span><span class="fw-val">${fw[gid]} kiert.</span></div>`;}).join(''):`<div class="fw-row"><span style="font-size:13px;color:var(--color-text-tertiary)">Ei voittoja vielä</span></div>`;
-  document.getElementById('pd-body').innerHTML=`<div class="phdr"><div class="phav ${AVC[idx%AVC.length]}">${inits(p.name)}</div><div><div class="phnm">${p.name}${p.nick?` <span style="font-size:13px;font-weight:400;color:var(--color-text-secondary)">"${p.nick}"</span>`:''}</div><div class="phj">Liittynyt ${p.joined}</div></div></div>
-  <div class="sg"><div class="sb"><div class="sv">${g}</div><div class="sl">Pelatut pelit</div></div><div class="sb"><div class="sv">${sg}</div><div class="sl">Pelatut yksin</div></div><div class="sb"><div class="sv g">${w}</div><div class="sl">Voitot</div></div><div class="sb"><div class="sv am">${st.winPctStarter||0}%</div><div class="sl">Voitto-% aloittajana</div></div><div class="sb"><div class="sv am">${st.over100||0}</div><div class="sl">Yli 100 lopetukset</div></div><div class="sb"><div class="sv g">${sw}</div><div class="sl">Voitot yksin</div></div><div class="sb"><div class="sv or">${curS}</div><div class="sl">Nykyinen putki</div></div><div class="sb"><div class="sv or">${bestS}</div><div class="sl">Paras putki</div></div><div class="sb"><div class="sv">${st.highestRound||0}</div><div class="sl">Korkein kierros</div></div></div>
-  ${renderPerfGraph(id)}
-  <div class="hs"><div class="hst">Heitto-% ruuduittain</div>${ht.map(h=>{const v=hits[h.k]||0,pct=Math.round(v/th*100);return`<div class="hr2"><span class="hn2">${h.n}</span><div class="hbg"><div class="hf" style="width:${pct}%;background:${h.c}"></div></div><span class="hp">${pct}%</span></div>`;}).join('')}</div>
-  <div class="fwtable"><div class="fwtitle">Nopein peli (kierroksia)</div>${fwRows}</div>`;
-  navTo('pg-pdetail');}
-function delProfile(){if(!curPid)return;if(!confirm('Poista pelaaja?'))return;PL=PL.filter(p=>p.id!==curPid);saveP();navTo('pg-profiles');}
-function openAddModal(){document.getElementById('inp-name').value='';document.getElementById('inp-nick').value='';document.getElementById('modal-add').classList.add('open');setTimeout(()=>document.getElementById('inp-name').focus(),100);}
-function addPlayer(){const name=document.getElementById('inp-name').value.trim();if(!name)return;const nick=document.getElementById('inp-nick').value.trim();PL.push({id:Date.now(),name,nick,joined:new Date().toISOString().slice(0,7),stats:{games:0,wins:0,soloGames:0,soloWins:0,winPctStarter:0,over100:0,highestRound:0,lowestRound:0,curStreak:0,bestStreak:0,fastestWins:{},hits:{bigSingle:0,smallSingle:0,double:0,triple:0,outerBull:0,innerBull:0},gameHistory:{}}});saveP();closeModal('modal-add');renderProfiles();}
-document.getElementById('inp-name').addEventListener('keydown',e=>{if(e.key==='Enter')addPlayer();});
-document.getElementById('modal-add').addEventListener('click',e=>{if(e.target===document.getElementById('modal-add'))closeModal('modal-add');});
+function renderPDetail(id){
+  var p=PL.find(function(x){return x.id===id;});if(!p)return;
+  document.getElementById('pd-title').textContent=p.name;
+  var idx=PL.indexOf(p),st=p.stats||{};
+  var g=st.games||0,w=st.wins||0,sg=st.soloGames||0,sw=st.soloWins||0,curS=st.curStreak||0,bestS=st.bestStreak||0;
+  var hits=st.hits||{},th=Object.values(hits).reduce(function(a,b){return a+b;},0)||1;
+  var ht=[{n:'Iso 1x',k:'bigSingle',c:'#1D9E75'},{n:'Pieni 1x',k:'smallSingle',c:'#378ADD'},{n:'Tuplat',k:'double',c:'#BA7517'},{n:'Triplat',k:'triple',c:'#E24B4A'},{n:'Ulko-bull',k:'outerBull',c:'#9b59b6'},{n:'Sisempi bull',k:'innerBull',c:'#e91e63'}];
+  var fw=st.fastestWins||{};
+  var fwRows=Object.keys(fw).length?Object.keys(fw).map(function(gid){var gn=(GAMES.find(function(g2){return g2.id===gid;})||{n:gid}).n;return'<div class="fw-row"><span class="fw-game">'+gn+'</span><span class="fw-val">'+fw[gid]+' kiert.</span></div>';}).join(''):'<div class="fw-row"><span style="font-size:13px;color:var(--color-text-tertiary)">Ei voittoja vielä</span></div>';
+  document.getElementById('pd-body').innerHTML=
+    '<div class="phdr"><div class="phav '+AVC[idx%AVC.length]+'">'+inits(p.name)+'</div><div><div class="phnm">'+p.name+(p.nick?' <span style="font-size:13px;font-weight:400;color:var(--color-text-secondary)">"'+p.nick+'"</span>':'')+'</div><div class="phj">Liittynyt '+p.joined+'</div></div></div>'+
+    '<div class="sg"><div class="sb"><div class="sv">'+g+'</div><div class="sl">Pelatut pelit</div></div><div class="sb"><div class="sv">'+sg+'</div><div class="sl">Yksin pelattu</div></div><div class="sb"><div class="sv g">'+w+'</div><div class="sl">Voitot</div></div><div class="sb"><div class="sv g">'+sw+'</div><div class="sl">Voitot yksin</div></div><div class="sb"><div class="sv or">'+curS+'</div><div class="sl">Nykyinen putki</div></div><div class="sb"><div class="sv or">'+bestS+'</div><div class="sl">Paras putki</div></div></div>'+
+    renderPerfGraph(id)+
+    '<div class="hs"><div class="hst">Heitto-% ruuduittain</div>'+ht.map(function(h2){var v=hits[h2.k]||0,pct=Math.round(v/th*100);return'<div class="hr2"><span class="hn2">'+h2.n+'</span><div class="hbg"><div class="hf" style="width:'+pct+'%;background:'+h2.c+'"></div></div><span class="hp">'+pct+'%</span></div>';}).join('')+'</div>'+
+    '<div class="fwtable"><div class="fwtitle">Nopein peli (kierroksia)</div>'+fwRows+'</div>';
+  navTo('pg-pdetail');
+}
+function delProfile(){if(!curPid)return;if(!confirm('Poista pelaaja?'))return;PL=PL.filter(function(p){return p.id!==curPid;});saveP();navTo('pg-profiles');}
+function openAddModal(){document.getElementById('inp-name').value='';document.getElementById('inp-nick').value='';document.getElementById('modal-add').classList.add('open');setTimeout(function(){document.getElementById('inp-name').focus();},100);}
+function addPlayer(){var name=document.getElementById('inp-name').value.trim();if(!name)return;var nick=document.getElementById('inp-nick').value.trim();PL.push({id:Date.now(),name:name,nick:nick,joined:new Date().toISOString().slice(0,7),stats:{games:0,wins:0,soloGames:0,soloWins:0,curStreak:0,bestStreak:0,fastestWins:{},hits:{bigSingle:0,smallSingle:0,double:0,triple:0,outerBull:0,innerBull:0},gameHistory:{}}});saveP();closeModal('modal-add');renderProfiles();}
+document.getElementById('inp-name').addEventListener('keydown',function(e){if(e.key==='Enter')addPlayer();});
+document.getElementById('modal-add').addEventListener('click',function(e){if(e.target===document.getElementById('modal-add'))closeModal('modal-add');});
 renderGamesList();syncSettingsUI();
+
 </script>
+</body>
+</html>
