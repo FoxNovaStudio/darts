@@ -217,7 +217,7 @@ html,body{height:100%;background:#f0f0f2;font-family:-apple-system,BlinkMacSyste
 <body>
 <div id="app">
 <div id="pg-home" class="pg on">
-  <div class="bar"><span class="bar-title">DartsScore v22</span></div>
+  <div class="bar"><span class="bar-title">DartsScore</span></div>
   <div class="hero">
     <svg width="80" height="80" viewBox="0 0 90 90" style="display:block;margin:auto">
       <circle cx="45" cy="45" r="43" fill="#1a1a1a"/>
@@ -280,9 +280,19 @@ html,body{height:100%;background:#f0f0f2;font-family:-apple-system,BlinkMacSyste
       <div class="ai-selector" id="ai-selector">
         <h4>Lisää AI-vastustaja</h4>
         <div class="ai-btn-row">
-          <button class="ai-add-btn beginner" onclick="addAI('beginner')">🟢 Aloittelija</button>
-          <button class="ai-add-btn medium" onclick="addAI('medium')">🟡 Keskitaso</button>
-          <button class="ai-add-btn expert" onclick="addAI('expert')">🔴 Ekspertti</button>
+          <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">Taso:</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+          <button class="ai-add-btn beginner" onclick="addAI('beginner',S.aiPers)">🟢 Aloittelija</button>
+          <button class="ai-add-btn medium" onclick="addAI('medium',S.aiPers)">🟡 Keskitaso</button>
+          <button class="ai-add-btn expert" onclick="addAI('expert',S.aiPers)">🔴 Ekspertti</button>
+          </div>
+          <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">Persoonallisuus:</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap" id="ai-pers-btns">
+          <button class="ai-add-btn" id="pers-aggressive" onclick="setAIPers('aggressive')">⚔️ Aggressiivinen</button>
+          <button class="ai-add-btn" id="pers-defensive" onclick="setAIPers('defensive')">🛡️ Defensiivinen</button>
+          <button class="ai-add-btn" id="pers-chaotic" onclick="setAIPers('chaotic')">🎲 Kaaos</button>
+          <button class="ai-add-btn" id="pers-adaptive" onclick="setAIPers('adaptive')">🧠 Mukautuva</button>
+          </div>
         </div>
         <div class="ai-added" id="ai-added-list"></div>
       </div>
@@ -421,13 +431,721 @@ function clearSp(){if(window.speechSynthesis)window.speechSynthesis.cancel();spQ
 function tLabel(t){if(t.miss)return'ohitse';if(t.type==='bull_inner')return'häränsilmä';if(t.type==='bull_outer')return'ulko häränsilmä';if(t.type==='triple')return'tripla '+t.num;if(t.type==='double')return'tupla '+t.num;return String(t.num);}
  
 // ===== AI =====
-var AIL={beginner:{name:'Aloittelija',emoji:'🟢',hitRate:.45,bullRate:.05,doubleRate:.06,tripleRate:.04},medium:{name:'Keskitaso',emoji:'🟡',hitRate:.68,bullRate:.12,doubleRate:.14,tripleRate:.09},expert:{name:'Ekspertti',emoji:'🔴',hitRate:.88,bullRate:.22,doubleRate:.26,tripleRate:.18}};
+var AIL={
+  beginner:{name:'Aloittelija',emoji:'🟢',hitRate:.45,bullRate:.05,doubleRate:.06,tripleRate:.04},
+  medium:{name:'Keskitaso',emoji:'🟡',hitRate:.68,bullRate:.12,doubleRate:.14,tripleRate:.09},
+  expert:{name:'Ekspertti',emoji:'🔴',hitRate:.88,bullRate:.22,doubleRate:.26,tripleRate:.18}
+};
+// Persoonallisuustyypit — muokkaavat strategiaa taitotason päälle
+var AI_PERSONALITIES = {
+  aggressive: {name:'Aggressiivinen',emoji:'⚔️',desc:'Hyökkää johtajaa, ottaa riskejä'},
+  defensive:  {name:'Defensiivinen', emoji:'🛡️',desc:'Pelaa varman päälle, vältää virheitä'},
+  chaotic:    {name:'Kaaospelaaja', emoji:'🎲',desc:'Arvaamaton, tekee välillä täysin satunnaisia heittoja'},
+  adaptive:   {name:'Mukautuva',    emoji:'🧠',desc:'Seuraa pelaajien tasoa ja säätää omaa peliään'}
+};
 var aiPlayers=[],aiC=10000;
-function addAI(lv){var gdef=GAMES.find(function(x){return x.id===S.gid;});if(S.sel.length+aiPlayers.length>=(gdef?gdef.max||8:8))return;var l=AIL[lv];var id=-(++aiC);var names={beginner:['Tero-AI','Mikko-AI','Sanna-AI'],medium:['Kari-AI','Eeva-AI','Juhani-AI'],expert:['Pekka-AI','Liisa-AI','Veikko-AI']};var taken=aiPlayers.map(function(a){return a.name;});var pool=names[lv].filter(function(n){return taken.indexOf(n)<0;});var name=pool[0]||(l.name+'-'+(aiPlayers.length+1));aiPlayers.push({id:id,level:lv,name:name,isAI:true,emoji:l.emoji});renderAIAdded();updSBtn();}
+function addAI(lv,personality){
+  var gdef=GAMES.find(function(x){return x.id===S.gid;});
+  if(S.sel.length+aiPlayers.length>=(gdef?gdef.max||8:8))return;
+  var l=AIL[lv];
+  var id=-(++aiC);
+  // Persoonallisuus: jos ei annettu, valitaan satunnaisesti
+  var pkeys=Object.keys(AI_PERSONALITIES);
+  var pers=personality||pkeys[Math.floor(Math.random()*pkeys.length)];
+  var pdata=AI_PERSONALITIES[pers];
+  var names={
+    beginner:['Tero','Mikko','Sanna','Paavo','Aino'],
+    medium:['Kari','Eeva','Juhani','Risto','Tuija'],
+    expert:['Pekka','Liisa','Veikko','Marja','Tapio']
+  };
+  var taken=aiPlayers.map(function(a){return a.name;});
+  var pool=names[lv].filter(function(n){return taken.indexOf(n)<0;});
+  var baseName=pool[0]||(l.name+'-'+(aiPlayers.length+1));
+  var name=baseName+' '+pdata.emoji;
+  aiPlayers.push({id:id,level:lv,name:name,isAI:true,emoji:l.emoji,personality:pers});
+  renderAIAdded();updSBtn();
+}
 function removeAI(id){aiPlayers=aiPlayers.filter(function(a){return a.id!==id;});renderAIAdded();updSBtn();}
-function renderAIAdded(){var el=document.getElementById('ai-added-list');if(!el)return;el.innerHTML=aiPlayers.map(function(a){return'<div class="ai-added-item"><span>'+a.emoji+'</span><span class="ai-added-name">'+a.name+' ('+AIL[a.level].name+')</span><button class="ai-remove" onclick="removeAI('+a.id+')">✕</button></div>';}).join('');}
-function aiThrow(player,G){var l=AIL[player.level];var r=Math.random();var num=20,type='big_single';if(G.gid==='g501'){var sc=G.scores[player.id];if(sc<=170&&sc>0){num=Math.min(20,Math.floor(sc/3));type=sc<=40?'double':'triple';}else type=r<l.tripleRate?'triple':r<l.tripleRate+l.doubleRate?'double':'big_single';}else type=r<l.tripleRate?'triple':r<l.tripleRate+l.doubleRate?'double':r<l.bullRate?'bull':'big_single';if(Math.random()>=l.hitRate){if(Math.random()<.5)return{num:0,type:'miss',label:'Ohi',pts:0,miss:true,bull:false};num=Math.floor(Math.random()*20)+1;type='big_single';}if(type==='bull'){var pts=Math.random()<.5?50:25;return{num:'B',type:pts===50?'bull_inner':'bull_outer',label:pts===50?'IB':'OB',pts:pts,miss:false,bull:true};}var pts2=type==='triple'?num*3:type==='double'?num*2:num;return{num:num,type:type,label:type==='triple'?'T'+num:type==='double'?'D'+num:String(num),pts:pts2,miss:false,bull:false};}
- 
+function setAIPers(p){
+  S.aiPers=p;
+  document.querySelectorAll('#ai-pers-btns button').forEach(function(b){
+    b.style.background=b.id==='pers-'+p?'var(--color-primary)':'';
+    b.style.color=b.id==='pers-'+p?'#fff':'';
+    b.style.borderColor=b.id==='pers-'+p?'var(--color-primary)':'';
+  });
+}
+function renderAIAdded(){
+  var el=document.getElementById('ai-added-list');if(!el)return;
+  el.innerHTML=aiPlayers.map(function(a){
+    var pdata=AI_PERSONALITIES[a.personality]||{};
+    return '<div class="ai-added-item"><span>'+a.emoji+'</span>'+
+           '<div style="flex:1;min-width:0">'+
+           '<div class="ai-added-name">'+a.name+' ('+AIL[a.level].name+')</div>'+
+           '<div style="font-size:11px;color:var(--color-text-tertiary)">'+pdata.emoji+' '+(pdata.desc||'')+'</div>'+
+           '</div>'+
+           '<button class="ai-remove" onclick="removeAI('+a.id+')">✕</button></div>';
+  }).join('');
+}
+
+// ===== AI THROW ENGINE =====
+
+function aiBuild(num, type) {
+  if (type==='bull_inner') return {num:'B',type:'bull_inner',label:'IB',pts:50,miss:false,bull:true};
+  if (type==='bull_outer') return {num:'B',type:'bull_outer',label:'OB',pts:25,miss:false,bull:true};
+  if (type==='miss')       return {num:0,type:'miss',label:'Ohi',pts:0,miss:true,bull:false};
+  var pts=type==='triple'?num*3:type==='double'?num*2:num;
+  var lbl=type==='triple'?'T'+num:type==='double'?'D'+num:String(num);
+  return {num:num,type:type,label:lbl,pts:pts,miss:false,bull:false};
+}
+
+var AI_NB={
+  20:[1,5],1:[20,18],18:[1,4],4:[18,13],13:[4,6],6:[13,10],
+  10:[6,15],15:[10,2],2:[15,17],17:[2,3],3:[17,19],19:[3,7],
+  7:[19,16],16:[7,8],8:[16,11],11:[8,14],14:[11,9],9:[14,12],
+  12:[9,5],5:[12,20]
+};
+
+// Mukautuva vaikeustaso: seuraa ihmispelaajia ja säätää tehokkuutta
+function aiAdaptiveLevel(player, G, baseL) {
+  if (player.personality !== 'adaptive') return baseL;
+  var humans = G.players.filter(function(p){return !p.isAI && p.id>0;});
+  if (!humans.length) return baseL;
+  // Laske ihmisten keskimääräinen pisteiden suhde voittajaan
+  var maxSc = Math.max.apply(null, G.players.map(function(p){return G.scores[p.id]||0;}));
+  var humanAvg = humans.reduce(function(s,p){return s+(G.scores[p.id]||0);},0)/humans.length;
+  var aiSc = G.scores[player.id]||0;
+  // Jos AI johtaa selvästi → heikennä, jos häviää → paranna
+  var ratio = maxSc>0 ? aiSc/maxSc : 0.5;
+  var adjusted = Object.assign({}, baseL);
+  if (ratio > 0.8 && aiSc > humanAvg*1.3) {
+    // AI johtaa — heikennä hieman
+    adjusted.hitRate = Math.max(0.35, baseL.hitRate - 0.15);
+    adjusted.tripleRate = Math.max(0.02, baseL.tripleRate - 0.08);
+  } else if (ratio < 0.4 || aiSc < humanAvg*0.6) {
+    // AI häviää — paranna hieman
+    adjusted.hitRate = Math.min(0.95, baseL.hitRate + 0.1);
+    adjusted.tripleRate = Math.min(0.28, baseL.tripleRate + 0.06);
+  }
+  return adjusted;
+}
+
+function aiAttempt(num, type, l) {
+  if (Math.random() >= l.hitRate) {
+    if (Math.random() < 0.35) return aiBuild(0,'miss');
+    if (type==='bull_inner'||type==='bull_outer') {
+      var nb2=AI_NB[20]||[1,5];
+      return aiBuild(nb2[Math.floor(Math.random()*nb2.length)],'big_single');
+    }
+    var nb=num!=='B'?(AI_NB[num]||[num]):[1,5];
+    return aiBuild(nb[Math.floor(Math.random()*nb.length)],'big_single');
+  }
+  if (type==='triple') {
+    if (Math.random()<l.tripleRate) return aiBuild(num,'triple');
+    if (Math.random()<l.doubleRate+l.tripleRate) return aiBuild(num,'double');
+    return aiBuild(num,'big_single');
+  }
+  if (type==='double') {
+    if (Math.random()<l.doubleRate+l.tripleRate*0.5) return aiBuild(num,'double');
+    return aiBuild(num,'big_single');
+  }
+  if (type==='bull_inner') {
+    if (Math.random()<l.bullRate)   return aiBuild('B','bull_inner');
+    if (Math.random()<l.bullRate*2) return aiBuild('B','bull_outer');
+    return aiBuild(20,'big_single');
+  }
+  if (type==='bull_outer') {
+    if (Math.random()<l.bullRate*1.8) return aiBuild('B','bull_outer');
+    return aiBuild(20,'big_single');
+  }
+  return aiBuild(num, type);
+}
+
+// Palauttaa strategisen virheen todennäköisyyden tason ja persoonallisuuden mukaan
+function aiMistake(l, personality) {
+  var base = l===AIL.beginner?0.28:l===AIL.medium?0.12:0.04;
+  if (personality==='defensive') base *= 0.4;   // defensiivinen tekee harvemmin virheitä
+  if (personality==='chaotic')   base *= 2.0;   // kaaos tekee usein virheitä
+  if (personality==='aggressive') base *= 1.3;
+  return base;
+}
+
+// Kaaospelaaja: täysin satunnainen heitto
+function aiChaosThrow(l) {
+  var nums=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,'B'];
+  var types=['big_single','double','triple','bull_inner','bull_outer','miss'];
+  var num=nums[Math.floor(Math.random()*nums.length)];
+  var type;
+  if (num==='B') type=Math.random()<0.5?'bull_inner':'bull_outer';
+  else           type=types[Math.floor(Math.random()*4)];
+  return aiAttempt(num==='B'?'B':num, type, l);
+}
+
+// Palauttaa johtavan pelaajan
+function aiLeader(G, excludeId) {
+  return G.players
+    .filter(function(p){return p.id!==excludeId&&!hasFinished(p.id);})
+    .sort(function(a,b){return G.scores[b.id]-G.scores[a.id];})[0];
+}
+
+function aiThrow(player, G) {
+  var baseL = AIL[player.level];
+  var l     = aiAdaptiveLevel(player, G, baseL);
+  var pid   = player.id;
+  var pers  = player.personality || 'adaptive';
+  var sc    = G.scores[pid]||0;
+  var throwsDone = G.throws.length;
+  var curSum = G.throws.reduce(function(a,t){return a+t.pts;},0);
+  var mistake = aiMistake(l, pers);
+  var num=20, type='triple';
+
+  // KAAOS: 25% todennäköisyydellä täysin satunnainen heitto
+  if (pers==='chaotic' && Math.random()<0.25) return aiChaosThrow(l);
+
+  switch(G.gid) {
+
+    // ── 100 ──────────────────────────────────────────────────────
+    case 'g100': {
+      var goal=G.opts.target||100, need=goal-sc;
+      if      (need>=60) { num=20; type='triple'; }
+      else if (need>=40) { num=20; type='double'; }
+      else if (need>0)   { num=need<=20?need:Math.ceil(need/3); type=need<=20?'big_single':'triple'; }
+      // AGGRESSIIVINEN: jos lähellä voittoa, ottaa triple-riskin
+      if (pers==='aggressive' && need<=60 && need>20) { num=20; type='triple'; }
+      break;
+    }
+
+    // ── GOTCHA ───────────────────────────────────────────────────
+    case 'gotcha': {
+      var goal2=G.ex.win||301, need2=goal2-sc-curSum;
+      var roomLeft=goal2-sc-curSum;
+
+      // VIRHE: laskee väärin ja menee yli
+      if (roomLeft>0&&roomLeft<=60&&Math.random()<mistake) {
+        return aiAttempt(20,'triple',l);
+      }
+
+      // AGGRESSIIVINEN: Johtajan Gotchaaminen prioriteetti
+      var gcTarget=null, gcWant=-1;
+      if (pers==='aggressive'||pers==='adaptive') {
+        var leader2=aiLeader(G,pid);
+        if (leader2) {
+          var lSc=G.scores[leader2.id];
+          var wantGc=lSc-sc-curSum;
+          if (wantGc>0&&wantGc<=60) { gcTarget=leader2; gcWant=wantGc; }
+        }
+      } else {
+        // Muut: Gotchaa ketä tahansa
+        G.players.forEach(function(p){
+          if (p.id===pid) return;
+          var w=G.scores[p.id]-sc-curSum;
+          if (w>0&&w<=60&&G.scores[p.id]<goal2){gcTarget=p;gcWant=w;}
+        });
+      }
+
+      if (gcTarget&&gcWant>0&&need2>0) {
+        if      (gcWant<=20)               {num=gcWant;   type='big_single';}
+        else if (gcWant%3===0&&gcWant<=60) {num=gcWant/3; type='triple';}
+        else if (gcWant%2===0&&gcWant<=40) {num=gcWant/2; type='double';}
+        else                               {num=19;       type='triple';}
+      } else if (need2<=60&&need2>0) {
+        if      (need2<=20)               {num=need2;   type='big_single';}
+        else if (need2%3===0&&need2<=60)  {num=need2/3; type='triple';}
+        else if (need2%2===0&&need2<=40)  {num=need2/2; type='double';}
+        else                              {num=19;      type='triple';}
+      } else { num=20; type='triple'; }
+      break;
+    }
+
+    // ── 501 ──────────────────────────────────────────────────────
+    case 'g501': {
+      // VIRHE: heittää liikaa loppuvaiheessa
+      if (sc<=100&&sc>1&&Math.random()<mistake) return aiAttempt(20,'triple',l);
+
+      if      (sc>180)                 {num=20; type='triple';}
+      else if (sc>100)                 {num=19; type='triple';}
+      else if (sc===50)                {num='B';type='bull_inner';}
+      else if (sc===25)                {num='B';type='bull_outer';}
+      else if (sc<=40&&sc>1&&sc%2===0) {num=sc/2;type='double';}
+      else if (sc<=40&&sc>1)           {num=sc-1<=20?sc-1:19;type='big_single';}
+      else if (sc<=100) {
+        var rem=sc%2===0?sc:sc-1;
+        if      (rem<=40)  {num=rem/2;type='double';}
+        else if (rem===50) {num='B';  type='bull_inner';}
+        else               {num=20;   type='triple';}
+      }
+      // AGGRESSIIVINEN: ei pelaa varman päälle, yrittää triple-lopetuksia
+      if (pers==='aggressive'&&sc<=60) { num=20; type='triple'; }
+      // DEFENSIIVINEN: vältää riskejä, käyttää singlejä jos saldo pieni
+      if (pers==='defensive'&&sc<=60) { num=sc<=20?sc:Math.floor(sc/2); type=sc<=20?'big_single':'double'; }
+      break;
+    }
+
+    // ── NINES ────────────────────────────────────────────────────
+    case 'nines': {
+      var livePlayers=G.players.filter(function(p){return p.id!==pid&&(G.ex.lives[p.id]||0)>0;});
+      var otherRoundScores=livePlayers.map(function(p){return G.scores[p.id]||0;});
+      var minOther3=otherRoundScores.length?Math.min.apply(null,otherRoundScores):0;
+      var maxOther=otherRoundScores.length?Math.max.apply(null,otherRoundScores):0;
+      // Kuinka moni on jo heittänyt tällä kierroksella (indeksistä päätellen)
+      var myIdx=G.players.indexOf(player);
+      var playersHeatedAlready=G.players.filter(function(p,i){
+        return i<myIdx&&(G.ex.lives[p.id]||0)>0;
+      }).length;
+      var allHeated=playersHeatedAlready===livePlayers.length; // kaikki muut jo heittäneet
+
+      // SPOILAUSTEMPPU: Jos muut ovat jo heittäneet hyvät pisteet (max>50) ja
+      // joku on heittänyt huonosti (minOther<15), AI voi yrittää jäädä alle sen —
+      // mutta vain jos se ei uhkaa AI:n omia elämiä merkittävästi
+      var spoilTarget=null;
+      if (allHeated&&maxOther>50&&minOther3<20&&(G.ex.lives[pid]||0)>2) {
+        // Joku on jo todella heikosti — heitetään vähemmän kuin hän
+        // Niche: AI tietää sen olevan riskialtista (menettää elämän), mutta voi tehdä sen tahallaan
+        // ... jos se sabotoi johtajaa (johtajalla korkeimmat pisteet)
+        var leader4=livePlayers.sort(function(a,b){return (G.ex.lives[b.id]||0)-(G.ex.lives[a.id]||0);})[0];
+        if (leader4&&G.scores[leader4.id]===maxOther&&maxOther>50) {
+          spoilTarget=minOther3; // tähtää alle heikoimman
+        }
+      }
+
+      if (spoilTarget!==null&&Math.random()<0.35) {
+        // SPOILAA: heitetään tarkoituksella vähemmän kuin heikoin
+        var spoilNum=Math.max(1,spoilTarget-5);
+        num=spoilNum<=20?spoilNum:5; type='big_single';
+      } else if (pers==='defensive') {
+        if      (sc>minOther3)  {num=1;  type='big_single';}
+        else if (minOther3<20)  {num=20; type='big_single';}
+        else                    {num=20; type='double';}
+      } else if (pers==='aggressive') {
+        num=20; type='triple';
+      } else {
+        if      (sc>minOther3+20) {num=20;type='triple';}
+        else if (minOther3<20)    {num=20;type='big_single';}
+        else if (minOther3<40)    {num=20;type='double';}
+        else                      {num=20;type='triple';}
+      }
+      break;
+    }
+
+    // ── SHANGHAI ─────────────────────────────────────────────────
+    case 'shanghai': {
+      var tgt3=G.round<=7?G.round:(G.ex.extraTarget||G.round);
+      var prevH2=G.throws.filter(function(t){return t.num===tgt3;});
+      var hasS3=prevH2.some(function(t){return t.type==='big_single'||t.type==='small_single';});
+      var hasD3=prevH2.some(function(t){return t.type==='double';});
+      var hasT3=prevH2.some(function(t){return t.type==='triple';});
+      if      (!hasT3) {num=tgt3;type='triple';}
+      else if (!hasD3) {num=tgt3;type='double';}
+      else if (!hasS3) {num=tgt3;type='big_single';}
+      else             {num=tgt3;type='triple';}
+      break;
+    }
+
+    // ── HALVEIT ──────────────────────────────────────────────────
+    case 'halveit': {
+      var kohde3=G.ex.targets&&G.ex.targets[G.ex.hi];
+      var kohdeHit3=G.throws.some(function(t){
+        if (!kohde3) return false;
+        var kv5=kohde3.val;
+        if (kv5==='bull')   return t.bull;
+        if (kv5==='double') return t.type==='double';
+        if (kv5==='triple') return t.type==='triple';
+        return +t.num===kv5&&!t.miss;
+      });
+      if (!kohdeHit3&&kohde3) {
+        var kv6=kohde3.val;
+        if      (kv6==='bull')   {num='B';type='bull_inner';}
+        else if (kv6==='double') {num=20; type='double';}
+        else if (kv6==='triple') {num=20; type='triple';}
+        else                     {num=kv6;type='triple';}
+      } else {num=20;type='triple';}
+      break;
+    }
+
+    // ── FIVES ────────────────────────────────────────────────────
+    case 'fives': {
+      // VIRHE: aloittelija/kaaos ei laske modulo-korjausta
+      if (Math.random()<mistake*0.7) {num=20;type='triple';break;}
+      var mod5=curSum%5;
+      if (mod5===0&&throwsDone>0) {num=20;type='triple';}
+      else {
+        var need5b=(5-mod5)%5;
+        var best5b=-1;
+        for (var ni5b=20;ni5b>=1;ni5b--) {if(ni5b%5===need5b&&ni5b>best5b)best5b=ni5b;}
+        if (best5b>0) {num=best5b;type='big_single';} else {num=5;type='big_single';}
+      }
+      break;
+    }
+
+    // ── CLOCK ────────────────────────────────────────────────────
+    case 'clock': {
+      num=G.ex.prog[pid]||1; type='big_single'; // VAIN big_single kelpaa
+      break;
+    }
+
+    // ── SHADOW ───────────────────────────────────────────────────
+    case 'shadow': {
+      // Laske paras oma sektori (korkein jäljellä oleva arvo)
+      var bestSh2=-1,bestNSh2=20,bestTSh2='triple';
+      for (var sn4=20;sn4>=1;sn4--) {
+        ['triple','double','big_single'].forEach(function(st4){
+          var key4=st4+'_'+sn4;
+          var prev4=G.ex.hits[key4]||0;
+          var base4=st4==='triple'?sn4*3:st4==='double'?sn4*2:sn4;
+          var eff4=Math.floor(base4*Math.pow(0.5,prev4));
+          if (eff4>bestSh2){bestSh2=eff4;bestNSh2=sn4;bestTSh2=st4;}
+        });
+      }
+      var ibPrev3=G.ex.hits['bull_inner_B']||0;
+      if (Math.floor(50*Math.pow(0.5,ibPrev3))>bestSh2){bestSh2=Math.floor(50*Math.pow(0.5,ibPrev3));bestNSh2='B';bestTSh2='bull_inner';}
+
+      // SABOTOINTI: Etsi johtajan suosikkisektori (eniten käyttänyt = arvo on laskenut eniten)
+      // ja osu siihen ensin jos se on vielä arvokas — laskee sen arvoa entisestään
+      var lead3=aiLeader(G,pid);
+      var sabotageScore=-1,sabN2=null,sabT2=null;
+      if (lead3) {
+        for (var sn3=20;sn3>=1;sn3--) {
+          ['triple','double','big_single'].forEach(function(st3){
+            var k3=st3+'_'+sn3;
+            var totalHits=G.ex.hits[k3]||0;
+            var base3=st3==='triple'?sn3*3:st3==='double'?sn3*2:sn3;
+            var curVal=Math.floor(base3*Math.pow(0.5,totalHits));
+            // Sabotoinnin arvo: kuinka paljon johtaja on käyttänyt tätä (menneisyydessä)
+            // vs kuinka paljon arvo on vielä jäljellä
+            if (totalHits>0&&curVal>0&&curVal>sabotageScore) {
+              sabotageScore=curVal;sabN2=sn3;sabT2=st3;
+            }
+          });
+        }
+      }
+
+      // Päätä: sabotoiko vai etsii oman parhaan?
+      // Aggressiivinen sabotoi aina jos kohde on lähellä omaa parasta (>75% arvosta)
+      // Muut sabotoivat vain jos johtaa selvästi ja sabotoinnin arvo > 70% omasta parhaasta
+      var myLeadRatio=lead3?((G.scores[pid]||0)/Math.max(1,G.scores[lead3.id]||1)):1;
+      var doSabotage=false;
+      if (sabN2&&sabotageScore>0) {
+        if (pers==='aggressive'&&sabotageScore>bestSh2*0.6) doSabotage=true;
+        else if (myLeadRatio>1.15&&sabotageScore>bestSh2*0.7) doSabotage=true;
+        else if (pers==='chaotic'&&Math.random()<0.4) doSabotage=true;
+      }
+
+      if (doSabotage) {num=sabN2;type=sabT2;}
+      else            {num=bestNSh2;type=bestTSh2;}
+      break;
+    }
+
+    // ── STAIRS ───────────────────────────────────────────────────
+    case 'stairs': {
+      var minG3=G.ex.cur||10,stillN2=minG3-curSum;
+      // Arvioi muiden tähänastiset tulokset tällä kierroksella
+      // (heidän pisteet ENNEN tätä vuoroa kertovat jotain kierroksen tasosta)
+      var othersAlive2=G.players.filter(function(p){return p.id!==pid&&!G.ex.eliminated[p.id];});
+      var myIdx2=G.players.indexOf(player);
+      // Pelaajat jotka ovat jo heittäneet tällä kierroksella (ennen AI:ta kierroksessa)
+      var alreadyThrownScores=G.players
+        .filter(function(p,i){return i<myIdx2&&!G.ex.eliminated[p.id]&&p.id!==pid;})
+        .map(function(p){return G.scores[p.id]||0;});
+      var highestSoFar=alreadyThrownScores.length?Math.max.apply(null,alreadyThrownScores):0;
+      var lowestSoFar=alreadyThrownScores.length?Math.min.apply(null,alreadyThrownScores):minG3+1;
+
+      // TILANNETIETOISUUS: Jos joku on jo heittänyt 60p+ , AI tietää riman olevan korkea
+      // Jos lowestSoFar on alle minG3 → joku tippuu joka tapauksessa → AI voi pelata rauhallisemmin
+      var someoneEliminated=lowestSoFar<minG3&&alreadyThrownScores.length>0;
+      var rimOnHigh=highestSoFar>50&&alreadyThrownScores.length>0;
+
+      if (pers==='aggressive'||rimOnHigh) {
+        // Korkea rima tai aggressiivinen → tähtää maksimiin
+        num=20;type='triple';
+      } else if (someoneEliminated&&stillN2<=0) {
+        // Joku jo tippumassa — riittää selviytyminen
+        num=5;type='big_single';
+      } else if (stillN2<=0) {
+        num=20;type='triple';
+      } else if (stillN2<=20) {
+        num=stillN2;type='big_single';
+      } else if (stillN2<=40) {
+        num=Math.ceil(stillN2/2);type='double';
+      } else {
+        num=20;type='triple';
+      }
+      break;
+    }
+
+    // ── SIMPLE CRICKET ───────────────────────────────────────────
+    case 'scrkt': {
+      var mMs=G.ex.marks[pid]||{};
+      var openCs=null;
+      [20,19,18,17,16,15,'B'].forEach(function(n){if(!openCs&&(mMs[String(n)]||0)<3)openCs=n;});
+      if (openCs) {num=openCs==='B'?'B':openCs;type=openCs==='B'?'bull_inner':'triple';}
+      else        {num=20;type='triple';}
+      break;
+    }
+
+    // ── SCORE CRICKET ────────────────────────────────────────────
+    case 'ptscrkt': {
+      var mMs2=G.ex.marks[pid]||{};
+      var openCs2=null;
+      [20,19,18,17,16,15,'B'].forEach(function(n){if(!openCs2&&(mMs2[String(n)]||0)<3)openCs2=n;});
+
+      // TILANNETIETOISUUS: Tarkista kerääkö joku pisteitä suljetusta numerosta
+      // Jos vastustaja on sulkenut 20:n ja AI:lla 20 auki → priorisoi 20:n sulkeminen heti!
+      var urgentClose=null;
+      [20,19,18,17].forEach(function(n){
+        if (urgentClose) return;
+        var myMarks=mMs2[String(n)]||0;
+        if (myMarks>=3) return; // jo suljettu
+        // Onko joku muu sulkenut tämän ja kerää siitä pisteitä?
+        var enemyScoring=G.players.some(function(p){
+          return p.id!==pid && (G.ex.marks[p.id][String(n)]||0)>=3;
+        });
+        if (enemyScoring) urgentClose=n;
+      });
+
+      if (urgentClose&&(mMs2[String(urgentClose)]||0)<3) {
+        // Sulje kiireellinen kohde ensin — vastustaja kerää siitä pisteitä!
+        num=urgentClose;type='triple';
+      } else if (openCs2) {
+        if (pers==='aggressive'&&(mMs2['20']||0)<3) {num=20;type='triple';}
+        else {num=openCs2==='B'?'B':openCs2;type=openCs2==='B'?'bull_inner':'triple';}
+      } else {
+        // Kaikki suljettu — kerää pisteitä parhaalta avoimelta
+        var scoreT3=null;
+        [20,19,18,17,16,15].forEach(function(n){
+          if (!scoreT3&&G.players.some(function(p){return p.id!==pid&&(G.ex.marks[p.id][String(n)]||0)<3;}))
+            scoreT3=n;
+        });
+        if (scoreT3) {num=scoreT3;type='triple';}
+        else         {num=20;type='triple';}
+      }
+      break;
+    }
+
+    // ── CUT THROAT CRICKET ───────────────────────────────────────
+    case 'ctcrkt': {
+      var mMs3=G.ex.marks[pid]||{};
+      var openCs3=null;
+      [20,19,18,17,16,15,'B'].forEach(function(n){if(!openCs3&&(mMs3[String(n)]||0)<3)openCs3=n;});
+      if (openCs3) {num=openCs3==='B'?'B':openCs3;type=openCs3==='B'?'bull_inner':'triple';}
+      else {
+        // AGGRESSIIVINEN: hyökkää johtajaa
+        var ctTarget=pers==='aggressive'?aiLeader(G,pid):G.players
+          .filter(function(p){return p.id!==pid;})
+          .sort(function(a,b){return G.scores[b.id]-G.scores[a.id];})[0];
+        if (ctTarget) {
+          var dmgT3=null;
+          [20,19,18,17,16,15].forEach(function(n){
+            if (!dmgT3&&(mMs3[n]||0)>=3&&(G.ex.marks[ctTarget.id][n]||0)<3) dmgT3=n;
+          });
+          if (dmgT3) {num=dmgT3;type='triple';} else {num=20;type='triple';}
+        }
+      }
+      break;
+    }
+
+    // ── ENGLISH CRICKET ──────────────────────────────────────────
+    case 'engcrkt': {
+      var isBatter2=(pid===G.ex.batter);
+      if (isBatter2) {num=20;type='triple';}
+      else           {num='B';type='bull_inner';}
+      break;
+    }
+
+    // ── KILLER ───────────────────────────────────────────────────
+    case 'killer': {
+      var myNumK2=G.ex.nums[pid];
+      var isKillerK2=G.ex.killers&&G.ex.killers[pid];
+      if (!isKillerK2) {num=myNumK2;type='triple';}
+      else {
+        // VIRHE: osuu omaan numeroonsa vahingossa
+        if (Math.random()<mistake) {num=myNumK2;type='big_single';break;}
+        var aliveK2=G.players
+          .filter(function(p){return p.id!==pid&&!hasFinished(p.id)&&G.ex.nums[p.id];});
+
+        // TILANNETIETOISUUS: Johtavan pelaajan kimppuun ensin — ei heikoimpaan
+        // Logiikka: jos johtaja on lähellä voittoa (vähän elämiä jäljellä), eliminoi hänet ensin
+        // Muuten: heikoin ensin (helpoin tappo)
+        var leader5=aliveK2.reduce(function(best,p){
+          return !best||(G.ex.lives[p.id]||0)<(G.ex.lives[best.id]||0)?p:best;
+        },null);
+        var weakest5=aliveK2.reduce(function(best,p){
+          return !best||(G.ex.lives[p.id]||0)<(G.ex.lives[best.id]||0)?p:best;
+        },null);
+
+        // Johtajan määritelmä: eniten elämiä jäljellä (vaikein vastustaja)
+        var hardest=aliveK2.reduce(function(best,p){
+          return !best||(G.ex.lives[p.id]||0)>(G.ex.lives[best.id]||0)?p:best;
+        },null);
+
+        var killerTarget;
+        if (pers==='aggressive'&&hardest) {
+          killerTarget=hardest; // aggressiivinen: vahvin ensin
+        } else if (pers==='defensive'&&weakest5) {
+          killerTarget=weakest5; // defensiivinen: heikoin ensin (varma tappo)
+        } else {
+          // Mukautuva/kaaos: johtajan kimppuun jos johtaa selvästi, muuten heikoin
+          var myLives=G.ex.lives[pid]||0;
+          var maxEnemyLives=aliveK2.reduce(function(m,p){return Math.max(m,G.ex.lives[p.id]||0);},0);
+          if (myLives>maxEnemyLives&&hardest) killerTarget=hardest;
+          else killerTarget=weakest5;
+        }
+        if (killerTarget) {num=G.ex.nums[killerTarget.id];type='big_single';}
+      }
+      break;
+    }
+
+    // ── THIEF ────────────────────────────────────────────────────
+    case 'thief': {
+      var myHitsT2=G.ex.hits[pid]||{};
+      var goal4=G.opts.target||300;
+      var myScT2=G.scores[pid]||0;
+
+      // Lähellä voittoa → kerää omista numeroista
+      if (myScT2>goal4*0.85) {
+        for (var tn4=20;tn4>=1;tn4--) {
+          if (G.ex.owner[String(tn4)]===pid){num=tn4;type='triple';break;}
+        }
+        if (G.ex.owner[String(num)]===pid) break;
+      }
+
+      // TILANNETIETOISUUS: Etsi pelaaja joka on lähimpänä voittoa
+      // → hyökkää hänen arvokkaimman numeron kimppuun
+      var closestToWin=G.players
+        .filter(function(p){return p.id!==pid&&!hasFinished(p.id);})
+        .sort(function(a,b){return G.scores[b.id]-G.scores[a.id];})[0];
+
+      // Aggressiivinen kohdistaa aina lähimpänä voittoa olevaan
+      // Muut kohdistaa lähimpänä voittoa olevaan jos hän on uhka (>75% tavoitteesta)
+      var stealTarget2=null;
+      if (closestToWin) {
+        var threat=(G.scores[closestToWin.id]||0)/goal4;
+        if (pers==='aggressive'||threat>0.65) stealTarget2=closestToWin;
+      }
+
+      // Etsi arvokkain varastettava numero — priorisoi uhkapelaajan numerot
+      var bestStealV2=-1,stealN3=-1;
+      for (var tn5=20;tn5>=1;tn5--) {
+        var tk3=String(tn5);
+        var tOw2=G.ex.owner[tk3];
+        if (!tOw2||tOw2===pid) continue;
+        var myH3=myHitsT2[tk3]||0;
+        var owH3=G.ex.hits[tOw2][tk3]||0;
+        var owPts3=G.ex.pts[tOw2][tk3]||0;
+        if (myH3+3<=owH3) continue; // ei voi varastaa
+        // Bonus: jos omistaja on uhkapelaaja, paino kaksinkertainen
+        var weight=owPts3*(stealTarget2&&tOw2===stealTarget2.id?2:1);
+        if (weight>bestStealV2){bestStealV2=weight;stealN3=tn5;}
+      }
+      if (stealN3>0){num=stealN3;type='triple';break;}
+
+      // Vapaat numerot — isoin ensin
+      for (var fn3=20;fn3>=1;fn3--) {
+        if (!G.ex.owner[String(fn3)]){num=fn3;type='triple';break;}
+      }
+      break;
+    }
+
+    // ── KAATOKISA ────────────────────────────────────────────────
+    case 'knockdown': {
+      var myTgts3=(G.ex.tgts&&G.ex.tgts[pid])||[];
+      var standingK2=myTgts3.filter(function(tg){return tg.up;}).map(function(tg){return tg.n;});
+      var otherTgts2={};
+      G.players.forEach(function(p){
+        if (p.id===pid) return;
+        (G.ex.tgts[p.id]||[]).forEach(function(tg){
+          if (!otherTgts2[tg.n]) otherTgts2[tg.n]={};
+          otherTgts2[tg.n][p.id]=tg.up;
+        });
+      });
+
+      if (standingK2.length===0) {
+        // Sabotoi: nosta johtajan kaatuneita
+        var sabN=-1,sabBest=-1;
+        var sabTarget=pers==='aggressive'?aiLeader(G,pid):null;
+        G.players.forEach(function(p){
+          if (p.id===pid||G.ex.knocked.indexOf(p.id)>=0) return;
+          if (sabTarget&&p.id!==sabTarget.id) return;
+          var pDown=(G.ex.tgts[p.id]||[]).filter(function(tg){return !tg.up;});
+          if (pDown.length>sabBest){sabBest=pDown.length;sabN=pDown[0]?pDown[0].n:-1;}
+        });
+        if (sabN>0){num=sabN;type='big_single';}
+        else       {num=20;type='big_single';}
+        break;
+      }
+
+      var safeK2=standingK2.filter(function(n){
+        return !G.players.some(function(p){
+          return p.id!==pid&&otherTgts2[n]&&otherTgts2[n][p.id]===false;
+        });
+      });
+      // Lähellä voittoa: ota riski
+      var almostDone2=standingK2.length<=2;
+      // AGGRESSIIVINEN: kaada nopeimmin (välittää muiden keiloista vähemmän)
+      num=(pers==='aggressive'||almostDone2)?standingK2[0]:(safeK2.length?safeK2[0]:standingK2[0]);
+      type='big_single';
+      break;
+    }
+
+    // ── VANGINVARTIJA ────────────────────────────────────────────
+    case 'jailer': {
+      var tnumJ2=G.ex.tnum;
+      var myJailJ2=G.ex.pris[pid]||{};
+      var jailCountJ2=Object.keys(myJailJ2).reduce(function(a,k){return a+(myJailJ2[k]||0);},0);
+
+      if (jailCountJ2>0) {num=tnumJ2;type='big_single';break;} // aina vapauta ensin
+
+      if (throwsDone===0) {num=tnumJ2;type='big_single';break;} // turvaverkko
+
+      // Vangitse johtaja tai heikoin riippuen persoonallisuudesta
+      var survivedJ2=G.ex.survived||{};
+      var targetsJ2=G.players
+        .filter(function(p){return p.id!==pid&&!hasFinished(p.id)&&jailTotal(p.id)<3;});
+      if (pers==='aggressive') {
+        targetsJ2.sort(function(a,b){return (survivedJ2[b.id]||0)-(survivedJ2[a.id]||0);});
+      } else {
+        targetsJ2.sort(function(a,b){return (survivedJ2[b.id]||0)-(survivedJ2[a.id]||0);});
+      }
+      if (targetsJ2.length) {
+        var lJ2=targetsJ2[0];
+        var lJail2=G.ex.pris[lJ2.id]||{};
+        var lJailNums2=Object.keys(lJail2).filter(function(k){return lJail2[k]>0;}).map(Number);
+        if (lJailNums2.length) {num=lJailNums2[0];type='big_single';}
+        else {
+          var free3=[];
+          for (var fj2=1;fj2<=20;fj2++){if(!(G.ex.pris[lJ2.id][String(fj2)]||0))free3.push(fj2);}
+          num=free3.length?free3[Math.floor(Math.random()*free3.length)]:tnumJ2;
+          type='big_single';
+        }
+      } else {num=tnumJ2;type='big_single';}
+      break;
+    }
+
+    // ── LAIVANUPOTUS ─────────────────────────────────────────────
+    case 'battle': {
+      var ciB2=G.players.indexOf(player);
+      var myRangeB2=ciB2===0?[11,12,13,14,15,16,17,18,19,20]:[1,2,3,4,5,6,7,8,9,10];
+      var partialB2=[];
+      myRangeB2.forEach(function(n){
+        var sk4=pid+'_'+n, h4=G.ex.shipHits[sk4]||0;
+        if (h4>0&&h4<3) partialB2.push({n:n,h:h4});
+      });
+      if (partialB2.length) {
+        partialB2.sort(function(a,b){return b.h-a.h;});
+        num=partialB2[0].n;type='big_single';break;
+      }
+      var untouchedB2=myRangeB2.filter(function(n){return !(G.ex.shipHits[pid+'_'+n]||0);});
+      num=untouchedB2.length?untouchedB2[Math.floor(Math.random()*untouchedB2.length)]:myRangeB2[0];
+      type='big_single';
+      break;
+    }
+
+    default:
+      num=20;type='triple';
+  }
+
+  return aiAttempt(num,type,l);
+}
+
+
 // ===== RULES =====
 function openRulesList(){document.getElementById('ro-title').textContent='Säännöt';document.getElementById('ro-back-btn').textContent='← Pelit';document.getElementById('ro-back-btn').onclick=closeRules;var h='';['Perus','Haaste','Cricket','Erikois'].forEach(function(cat){h+='<div style="font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.08em;text-transform:uppercase;margin:12px 0 8px">'+cat+'</div>';GAMES.filter(function(g){return g.cat===cat;}).forEach(function(g){var r=getRules(g.id);h+='<div class="rlist-item" onclick="showRules(\''+g.id+'\',\'← Kaikki pelit\',false,openRulesList)"><div style="width:34px;height:34px;border-radius:var(--border-radius-md);background:'+g.bg+';color:'+g.fc+';display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">'+g.ic+'</div><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">'+g.n+'</div><div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px">'+r.short+'</div></div><span style="color:var(--color-text-tertiary);font-size:16px">›</span></div>';});});document.getElementById('ro-body').innerHTML=h;document.getElementById('rules-overlay').classList.add('open');}
 function openSetupRules(){if(S.gid)showRules(S.gid,'← Asetukset',false);}
@@ -436,37 +1154,661 @@ function showRules(gid,backLabel,showReturn,backFn){var g=GAMES.find(function(x)
 function closeRules(){document.getElementById('rules-overlay').classList.remove('open');}
 function getRules(gid){
   var R={
-    g100:{short:'Kerää pisteitä — ensimmäinen tavoitteeseen voittaa.',goal:'🎯 Kerää pisteitä nollasta ylöspäin. Ensimmäinen joka saavuttaa tavoitepisteet voittaa.',sections:[{title:'Pisteytys',items:['Single: numeron arvo. Double: arvo×2. Triple: arvo×3. OB=25p, IB=50p.']},{title:'Kulku',items:['3 tikkaa per vuoro. Pisteet lisätään heti. Saavuttaa tavoitteen → peli loppuu heti.'],example:'Tavoite 100p. T20+T20=120p → voitto toisella tikalla!'}],tip:'T20 (60p) paras heitto.'},
-    g501:{short:'Laske 501:stä täsmälleen nollaan.',goal:'🎯 Laske pisteet 501:stä nollaan. Rikki (alle 0 tai jää 1) → koko vuoro peruutetaan.',sections:[{title:'Rikki',items:['Alle 0 tai jää 1p → vuoro peruutetaan ja pisteet palautuvat.'],example:'Saldo 32p. 20+20 → -8p → RIKKI → palataan 32p.'}],tip:'D16=32, D10=20, IB=50.'},
-    gotcha:{short:'Täsmälleen tavoitteeseen — yli meneminen palauttaa pisteet!',goal:'💥 Kerää pisteet täsmälleen tavoitteeseen. Yli meneminen = pisteet palautuvat vuoron alkuun! Sama pistemäärä kuin toisella → toisen pisteet puolitetaan.',sections:[{title:'Bust (rikki)',items:['Pisteet ylittäisivät tavoitteen → koko vuoro peruutetaan ja pisteet palautuvat.'],example:'Tavoite 301, saldo 290p. D10=20p → 310 > 301 → RIKKI → palataan 290p.'},{title:'Gotcha',items:['Vuoron lopussa: sama pistemäärä kuin toisella → toisen pisteet puolitetaan!'],example:'Matti 120p, Sanna 120p → Sanna: 60p.'}],tip:'Täsmälleen tavoitteeseen! Lopussa käytä tuplaa tai yksittäistä tarkkaan.'},
-    nines:{short:'Pienin pistemäärä menettää elämän.',goal:'❤️ Pienin kierrospisteet → -1 elämä. Peli loppuu kun yhdellä on elämiä.',sections:[{title:'Kulku',items:['3 tikkaa. Pienin → menettää elämän. Ei tikkataulua — paina numeronappeja.','Peli loppuu kun enää yhdellä on elämiä.'],example:'Matti 45p, Sanna 20p → Sanna menettää.'}],tip:'T20=60p paras. Ohi=0p=varmasti pienin!'},
-    shanghai:{short:'7 kierrosta, kohdenumero pistyttää. Shanghai = välitön voitto!',goal:'🏙️ 7 kierrosta, vain kohdenumero pistyttää. S+D+T samaan = SHANGHAI = välitön voitto!',sections:[{title:'Kulku',items:['Kierros N: kohde N. Tasatilanne → lisäkierroksia.'],example:'Kierros 5: S5=5p, D5=10p, T5=15p. T20=0p.'}],tip:'Pienillä numeroilla kannattaa yrittää Shanghaitä.'},
-    halveit:{short:'Ei osuma kohteeseen puolittaa kaikki pisteesi!',goal:'✂️ Satunnainen kohde. Osuma → kaikki pisteet. Ei osumaa → kaikki puolitetaan!',sections:[{title:'Kulku',items:['Yksikin osuma riittää. Kaikki heitetyt pisteet lasketaan.'],example:'Kohde Tupla. T20+D10+S15=95p. D10 on tupla → saat 95p.'}],tip:'Heitä kohteeseen ensin.'},
-    fives:{short:'Summa jaollinen viidellä → saat summa÷5 pistettä.',goal:'5️⃣ Summa jaollinen 5 → summa÷5 pistettä. Muuten 0p. Vapaa-tilassa yli meneminen on sallittu. Tarkka-tilassa yli meneminen = pisteet menetetään.',sections:[{title:'Laskeminen',items:['Jaollinen 5 → summa÷5p. Muuten 0.','Vapaa: ensimmäinen tavoitteen saavuttanut voittaa.','Tarkka (kuten 501): täsmälleen tavoitteeseen — yli = ei pisteitä.'],example:'60÷5=12p. 47 → 0p.'}],tip:'5,10,15,20 aina jaollisia. OB=25✓ IB=50✓'},
-    clock:{short:'Numerot 1–20 järjestyksessä (iso single).',goal:'🕐 Käy numerot 1–20 järjestyksessä. Vain iso single!',sections:[{title:'Säännöt',items:['Järjestyksessä 1→20. Double/triple ei edistä.'],example:'Tavoite 5. S5→6, S6→7.'}],tip:'Tikkataulun järjestys: 20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5'},
-    shadow:{short:'Osumat puolittavat ruudun arvon kaikille.',goal:'👥 Jokainen osuma puolittaa ruudun arvon kaikille. 1.=100%, 2.=50%...',sections:[{title:'Kulku',items:['1. osuma täysi arvo, 2.→50%, 3.→25%. Koskee kaikkia!'],example:'T20: Matti→60p (arvo 30p nyt). Sanna→30p.'}],tip:'Tähtää koskemattomiin tai sabotoi!'},
-    stairs:{short:'Tavoite nousee — alle tippuu, peli jatkuu.',goal:'🪜 Alle kierrostavoitteen → tippuu (✗) mutta peli jatkuu. Viimeisenä selvinnyt voittaa.',sections:[{title:'Kulku',items:['Alle tavoitteen → tippuu. Viimeinen selvinnyt voittaa.'],example:'Tavoite 30p: Matti 45✓, Sanna 28✗.'}],tip:'Peli jatkuu vaikka pelaajia tippuu.'},
-    scrkt:{short:'Sulje 15–20 ja Bull (3 merkkiä).',goal:'🏏 Sulje kaikki: 15,16,17,18,19,20,Bull. 3 merkkiä sulkee.',sections:[{title:'Merkit',items:['S=1, D=2, T=3 (sulkee heti!). OB=1, IB=2.'],example:'T20 → suljettu heti!'}],tip:'Aloita 20:sta.'},
-    ptscrkt:{short:'Sulje ja kerää pisteitä.',goal:'🏏 Sulje kohteet, kerää pisteitä kun vastustajalla auki.',sections:[{title:'Pisteet',items:['Sinä sulkenut, vastustaja ei → ylimääräiset antavat pisteitä.'],example:'Olet sulkenut 20. T20 → +60p!'}],tip:'Sulje 20,19 nopeasti.'},
-    ctcrkt:{short:'Käänteinen — osumasi antavat pisteitä VASTUSTAJILLE.',goal:'⚔️ Ylimääräiset osumasi antavat pisteitä VASTUSTAJILLE. Vähiten voittaa!',sections:[{title:'Käänteinen',items:['Sinä sulkenut, vastustaja ei → VASTUSTAJALLE pisteitä.'],example:'Olet sulkenut 20, Matilla auki. T20 → Matti +60p.'}],tip:'Sulje nopeasti, hyökkää sitten.'},
-    engcrkt:{short:'Lyöjä vs Keilaaja — 2 innings.',goal:'🏏 Lyöjä (summa-40), Keilaaja (OB=1, IB=2 hilaa). Innings vaihtu kun hilat loppuvat.',sections:[{title:'Roolit',items:['Lyöjä: p=kaikki-40. Keilaaja: OB=1 hila, IB=2. Hilat loppuu → vaihtu heti!'],example:'T20+S18+S10=88-40=48p. Keilaaja: IB→2 hilaa.'}],tip:'Keilaajana tähtää bulliin.'},
-    golf:{short:'Vähiten lyöntejä voittaa!',goal:'⛳ Valitse tulos (1-5) per reikä. Vähiten pisteitä voittaa!',sections:[{title:'Pisteytys',items:['1=Tripla, 2=Tupla, 3=Small, 4=Big, 5=Ohi.'],example:'Matti 20p vs Sanna 23p → Matti voittaa.'}],tip:'T=1p, Ohi=5p → 4p ero per reikä!'},
-    killer:{short:'Tule Killeriksi ja eliminoi muut.',goal:'☠️ 3 osumaa omaan → KILLER! Killerinä osu vastustajan numeroon → vie elämiä.',sections:[{title:'Vaiheet',items:['1. Valitse numero. 2. 3 osumaa → KILLER. 3. Osu vastustajan numeroon.','Killerinä osutat omaan → menetät itse elämän!'],example:'T17 → Killer heti!'}],tip:'Triple omaan = Killer yhdellä tikalla.'},
-    jailer:{short:'Viimeinen vapaana oleva voittaa!',goal:'🔒 Selviy pisin — viimeinen vapaana oleva pelaaja voittaa. Jokainen vanki = 1 heitto vähemmän.',sections:[{title:'Vapautus',items:['Kohdenumero → kaikki omat vapautuvat. IB/OB → kaikki vapautuvat.','Toisen tikka samassa numerossa → vaihto. Jos kaikilla ≥3 vankia → eniten selvinnyt voittaa.'],example:'1 vanki = vain 2 heittoa.'}],tip:'Priorisoi vapautuminen. Viimeinen vapaana oleva voittaa!'},
-    thief:{short:'Enemmän osumia valtaa numeron.',goal:'🦹 Omistajana saat pisteet. Valtaa osumalla enemmän.',sections:[{title:'Valtaus',items:['Enemmän osumia → valtaat. Ilman valtausta ei pisteitä.'],example:'Matti 1 osuma. Sanna 2 osumaa → valtaus!'}],tip:'Triple = 3 osumaa yhdellä tikalla.'},
-    knockdown:{short:'Kaada kaikki omat — muut pystyttävät niitä!',goal:'🎳 Kaada kaikki omat. Muut voivat pystyttää kaatuneet!',sections:[{title:'Kohteet',items:['Osumat omaan → kaatuu. Osumat vastustajan kaatuneeseen → nousee!'],example:'Matin kohde 3 kaatunut. Sanna osuu 3 → nousee!'}],tip:'Sabotoi johtajaa ennen voittoa.'},
-    battle:{short:'Upota kaikki 3 vastustajan laivaa.',goal:'🚢 3 osumaa = laiva uppoaa. Kaikki 3 uppoaa → välitön voitto!',sections:[{title:'Kulku',items:['Laivat valitaan salaa. 3 osumaa = uppoaa. Peli loppuu heti!'],example:'P2 laivat: 12,15,19. P1: 12,12,12 → laiva uppoaa!'}],tip:'Etsi systemaattisesti.'}
+    g100:{
+      short:'Kerää pisteitä — ensimmäinen tavoitteeseen voittaa.',
+      goal:'🎯 Yksinkertainen pistepeli: kerää pisteitä nollasta ylöspäin. Ensimmäinen pelaaja joka saavuttaa tai ylittää tavoitepistemäärän voittaa pelin välittömästi — vuoro loppuu heti voittohetkellä.',
+      sections:[
+        {title:'Pisteytys',items:[
+          'Iso single (ulkosektori): numeron arvo. Esim. 20 = 20 pistettä.',
+          'Pieni single (sisäsektori): numeron arvo. Lasketaan samoin.',
+          'Tupla (kapea ulkokehä): numeron arvo × 2. Esim. D20 = 40 pistettä.',
+          'Tripla (kapea sisäkehä): numeron arvo × 3. Esim. T20 = 60 pistettä.',
+          'Outer Bull (vihreä rengas): 25 pistettä.',
+          'Inner Bull / Häränsilmä (punainen keskipiste): 50 pistettä.'
+        ]},
+        {title:'Vuoron kulku',items:[
+          'Jokainen pelaaja heittää vuorollaan 3 tikkaa.',
+          'Jokaisen tikan pisteet lisätään saldoon heti.',
+          'Jos pelaaja saavuttaa tai ylittää tavoitepistemäärän kesken vuoron, peli loppuu välittömästi — jäljellä olevia tikkoja ei heitetä.',
+          'Vuoron päätyttyä siirtyy seuraavalle pelaajalle.'
+        ],example:'Tavoite 100p. Saldo 80p. T20 = 60p → yhteensä 140p → VOITTO toisella tikalla! Kolmatta tikkaa ei heitetä.'},
+        {title:'Asetukset',items:[
+          'Tavoite voidaan asettaa 100–900 pisteeseen ennen pelin aloitusta.',
+          'Useammalla pelaajalla kaikki pelaavat vuorollaan — voitto voi tulla kenen tahansa vuorolla.'
+        ]}
+      ],
+      tip:'💡 T20 (60p) on paras yksittäinen heitto. D20 (40p) ja T19 (57p) myös hyviä. Bullseye (50p) kannattaa aina!'
+    },
+    g501:{
+      short:'Laske 501 pisteestä täsmälleen nollaan.',
+      goal:'0️⃣ Klassinen tikkailu: aloitat 501 pisteestä ja lasket kohti nollaa. Tavoitteena on päästä täsmälleen nollaan. Jos pisteet menisivät alle nollan tai jäisivät yhteen pisteeseen, koko vuoro peruutetaan.',
+      sections:[
+        {title:'Pisteytys',items:[
+          'Sama pisteytys kuin 100-pelissä: single, double, triple, OB=25p, IB=50p.',
+          'Pisteet vähennetään saldosta jokaisen tikan jälkeen.',
+          'Tavoitteena laskea saldo täsmälleen 0:aan.'
+        ]},
+        {title:'Rikki (Bust)',items:[
+          'Jos kolmen tikan yhteispisteet laskisivat saldon alle nollan → koko vuoro peruutetaan ja saldo palautuu vuoron alun arvoon.',
+          'Jos saldo jää täsmälleen yhteen pisteeseen (1p) → myös rikki, vuoro peruutetaan.',
+          'Nolla on ainoa hyväksyttävä lopputulos.'
+        ],example:'Saldo 32p. Heitit: 20+20=40p → 32−40=−8p → RIKKI! Palataan 32p:hen. Oikea ratkaisu olisi ollut D16 (=32p) täsmälleen nollaan.'},
+        {title:'Strategia',items:[
+          'Lopussa kannattaa tähtätä tupliin, koska ne antavat tarkat parilliset loppuarvot.',
+          'Yleisiä loppuheittoja: D16=32p, D10=20p, D8=16p, IB=50p (jos saldo on 50).'
+        ]}
+      ],
+      tip:'💡 Kun saldo on alle 50p, mieti tarkkaan mitä heität. D16 (32p) on helppo loppuheitto. IB=50p jos saldo on tasan 50.'
+    },
+    gotcha:{
+      short:'Kerää pisteitä täsmälleen tavoitteeseen — yli meneminen palauttaa pisteet!',
+      goal:'💥 Kuten 100-peli, mutta päinvastoin: yli meneminen on kiellettyä! Jos pisteet ylittäisivät tavoitteen, koko vuoro peruutetaan. Lisäksi: jos vuoron lopussa sinulla on täsmälleen sama pistemäärä kuin toisella pelaajalla, toisen pisteet puolitetaan — tämä on Gotcha!',
+      sections:[
+        {title:'Pisteytys',items:[
+          'Sama pisteytys kuin muissa peleissä: single, double, triple, OB=25p, IB=50p.',
+          'Pisteet kerätään nollasta ylöspäin kohti tavoitetta.'
+        ]},
+        {title:'Rikki (Bust)',items:[
+          'Jos kolmen tikan yhteispisteet nostaisivat saldon yli tavoitteen → koko vuoro peruutetaan ja saldo palautuu vuoron alun arvoon.',
+          'Esimerkki: tavoite 301p, saldo 290p. Heitit D10=20p → 290+20=310 > 301 → RIKKI! Palataan 290p:hen.',
+          'Täsmälleen tavoitteeseen = voitto välittömästi!'
+        ]},
+        {title:'Gotcha! — pisteenvarastus',items:[
+          'Vuoron lopussa tarkistetaan: onko sinulla sama pistemäärä kuin jollakin muulla pelaajalla?',
+          'Jos kyllä → toisen pelaajan pisteet puolitetaan! Sinun pisteesi säilyvät.',
+          'Tämä toimii myös ketjuna: jos useammalla on sama pistemäärä, kaikkien paitsi sinun pisteet puolitetaan.'
+        ],example:'Matti 120p, Sanna 120p. Sanna pelaa vuoronsa ja päättää 120p:hen → Gotcha! Matin pisteet puolittuvat → Matti 60p. Sanna jatkaa 120p:stä.'},
+        {title:'Asetukset',items:[
+          'Tavoite voidaan asettaa 101–901 pisteeseen ennen pelin aloitusta.'
+        ]}
+      ],
+      tip:'💡 Yritä muistaa vastustajien pisteet ja vältä laskeutumista samaan lukemaan! Voit myös tarkoituksella Gotchata vastustajan strategisesti.'
+    },
+    nines:{
+      short:'Heität 3 tikkaa — pienin kierrospisteet menettää elämän. Viimeinen selviytyjä voittaa.',
+      goal:'❤️ Selviytymispeli: joka kierroksella heitetään 3 tikkaa ja lasketaan yhteispisteet. Kierroksen pienin pistemäärä → pelaaja menettää yhden elämän. Kun kaikki elämät on menetetty, pelaaja on ulkona. Viimeinen elossa oleva voittaa.',
+      sections:[
+        {title:'Kulku',items:[
+          'Kaikki pelaajat heittävät vuorollaan 3 tikkaa. Pisteet lasketaan normaalisti (single, double, triple, bull).',
+          'Kierroksen lopussa vertaillaan kaikkien yhteispisteet.',
+          'Alhaisimman pistemäärän saanut pelaaja menettää yhden elämän (sydämen).',
+          'Jos useammalla on sama alin pistemäärä, kaikki heistä menettävät elämän.',
+          'Kun pelaajan kaikki elämät on menetetty, hän on ulkona — mutta peli jatkuu muilla.',
+          'Viimeinen pelaaja jolla on elämiä jäljellä voittaa.'
+        ],example:'Kierros: Matti 45p, Sanna 20p, Jussi 38p → Sanna on alhaisin → Sanna menettää elämän. Seuraavalla kierroksella kaikki heittävät taas.'},
+        {title:'Asetukset',items:[
+          'Elämien määrä voidaan asettaa 3, 6 tai 9 elämään ennen pelin aloitusta.',
+          'Enemmän elämiä = pidempi peli.'
+        ]},
+        {title:'Huomioita',items:[
+          'Ohi (0p) on aina varmin tapa menettää elämä — tähtää aina lautaan!',
+          'Peli ei pysähdy kun pelaajia tippuu — jäljellä olevat jatkavat normaalisti.'
+        ]}
+      ],
+      tip:'💡 T20 (60p) on paras mahdollinen heitto. Heitä vähintään niin hyvin kuin muut — ei tarvitse voittaa kierrosta, riittää ettei häviä sitä!'
+    },
+    shanghai:{
+      short:'7 kierrosta, vain kohdenumero tuo pisteitä. Single + Double + Triple = Shanghai → välitön voitto!',
+      goal:'🏙️ Jokaisella kierroksella on oma kohdenumeronsa (1–7). Vain osumat kyseiseen numeroon tuovat pisteitä. Kierroksen 1 kohde on 1, kierroksen 2 kohde on 2, jne. Erityinen voitto: jos heität samalla kierroksella yhden singlen, yhden tupla ja yhden tripla samaan numeroon — se on Shanghai ja voitat välittömästi!',
+      sections:[
+        {title:'Pisteytys',items:[
+          'Kierros N: vain numero N tuo pisteitä. Kaikki muut osumat ovat arvottomia.',
+          'S(N) = N pistettä, D(N) = N×2 pistettä, T(N) = N×3 pistettä.',
+          'Esim. kierros 5: S5=5p, D5=10p, T5=15p. T20 tai mikä tahansa muu = 0p.'
+        ]},
+        {title:'Shanghai',items:[
+          'Jos heität samalla kierroksella singlen, tupla ja tripla samaan kohdenumeroon (missä tahansa järjestyksessä) → SHANGHAI → voitat pelin välittömästi riippumatta pisteistä!'
+        ],example:'Kierros 3: T3+D3+S3 = Shanghai! Voitat heti, vaikka johtaisit tai häviäisit pisteinä.'},
+        {title:'Pelin kulku',items:[
+          '7 kierrosta yhteensä. Eniten pisteitä kerännyt voittaa.',
+          'Jos useammalla on sama pistemäärä 7 kierroksen jälkeen, pelataan lisäkierroksia tasatilanteen ratkaisemiseksi.'
+        ]}
+      ],
+      tip:'💡 Pienillä kierroksilla (1–3) Shanghai on helpompi saavuttaa koska numerot ovat lähellä toisiaan taululla. Isommilla numeroilla (6, 7) pyri kolmeen osumaan.'
+    },
+    halveit:{
+      short:'Satunnainen kohde joka kierroksella. Ei osumaa → kaikki pisteesi puolitetaan!',
+      goal:'✂️ Joka kierroksella on satunnaisesti arvottu kohde (numero, tupla, tripla tai bull). Jos heität edes yhden tikan kyseiseen kohteeseen, saat kaikki kierroksen pisteet normaalisti. Jos et osu kohteeseen lainkaan, kaikki tähän mennessä kerätyt pisteesi puolitetaan!',
+      sections:[
+        {title:'Kohteet',items:[
+          'Kohde voi olla: numero 1–20 (mihin tahansa sektorityyppiin osuminen riittää), Tupla (mikä tahansa tupla riittää), Tripla (mikä tahansa tripla riittää), tai Bull (OB tai IB riittää).',
+          'Riittää että yksikin kolmesta tikasta osuu kohteeseen.',
+          'Kaikki kierroksen pisteet lasketaan normaalisti — kohde ei rajoita muita heittoja.'
+        ],example:'Kohde: Tupla. Heitit T20+D10+S15 = 95p yhteensä. D10 on tupla → kohde saavutettu → saat kaikki 95p! Jos olisit heittänyt T20+S10+S15 = 65p ilman tuplaa → 65p:stä ei mitään, kaikki aiemmat pisteet puolitetaan.'},
+        {title:'Pisteytys',items:[
+          'Kohde saavutettu: kaikki kierroksen 3 tikan pisteet lisätään saldoon.',
+          'Kohde ei saavutettu: kaikki tähänastiset pisteet puolitetaan (pyöristetään alas).',
+          'Puolituksen jälkeen peli jatkuu — pisteet voivat kasvaa taas seuraavilla kierroksilla.'
+        ]},
+        {title:'Asetukset',items:[
+          'Kierrosten määrä: 8, 12, 16 tai 20 ennen pelin alkua. Enemmän kierroksia = enemmän satunnaisia kohteita.'
+        ]}
+      ],
+      tip:'💡 Heitä kohde ensin jos mahdollista — jos ensimmäinen tikka osuu, loput voi heittää vapaasti parhaaseen kohtaan. Jos kohteena on Tupla, tähtää D20 (helpoiten näkyvä).'
+    },
+    fives:{
+      short:'3 tikan summa jaollinen viidellä → saat summa÷5 pistettä. Muuten 0.',
+      goal:'5️⃣ Laske kierroksen 3 tikan yhteispisteet. Jos summa on tasan jaollinen viidellä, saat summa÷5 pistettä. Jos ei ole jaollinen viidellä, saat 0 pistettä kierrokselta. Kaksi pelitapaa: Vapaa (yli tavoitteen meneminen ok) tai Tarkka (yli meneminen = ei pisteitä).',
+      sections:[
+        {title:'Pisteytys',items:[
+          'Laske 3 tikan yhteissumma. Jos summa mod 5 = 0 → saat summa÷5 pistettä.',
+          'Esim. 60p (T20) ÷ 5 = 12 pistettä. 45p ÷ 5 = 9 pistettä.',
+          'Jos summa ei ole jaollinen 5:llä (esim. 47p, 23p, 51p) → saat 0 pistettä kyseiseltä kierrokselta.',
+          'Numerot jotka ovat aina jaollisia 5:llä: 5, 10, 15, 20. OB=25 ja IB=50 myös jaollisia.'
+        ],example:'T20+T20+T20 = 180p → 180÷5 = 36 pistettä! T20+D20+S5 = 65p → ei jaollinen → 0 pistettä.'},
+        {title:'Vapaa-tila',items:[
+          'Ensimmäinen pelaaja joka saavuttaa tai ylittää tavoitepistemäärän voittaa.',
+          'Yli meneminen on sallittua — voitto tulee heti kun raja ylittyy.'
+        ]},
+        {title:'Tarkka-tila (kuten 501)',items:[
+          'Täsmälleen tavoitteeseen — yli meneminen kierroksella tarkoittaa että pisteet eivät kerry (ei busti vaan vain 0p kyseiseltä kierrokselta).',
+          'Voitto vain täsmälleen tavoitteen saavuttaessa.'
+        ]},
+        {title:'Asetukset',items:[
+          'Tavoite: 5–500 pistettä (oletuksena 50). Pelitapa: Vapaa tai Tarkka.'
+        ]}
+      ],
+      tip:'💡 T20+T20+T20=180÷5=36p on paras mahdollinen kierros. Vältä "lähes jaolliset" summat kuten 61, 43, 47 — ne tuovat 0 pistettä vaikka olet heittänyt hyvin.'
+    },
+    clock:{
+      short:'Käy numerot 1–20 järjestyksessä. Vain iso single edistää!',
+      goal:'🕐 Yksinkertainen haastepeli: sinun pitää osua numeroihin 1, 2, 3... 20 täsmälleen tässä järjestyksessä. Vain iso single (ulkosektori) kelpaa — tupla tai tripla ei edistä! Ensimmäinen pelaaja joka saavuttaa tavoitenumeron voittaa.',
+      sections:[
+        {title:'Säännöt',items:[
+          'Aloitat numerosta 1. Seuraava kohde on aina juuri seuraava numero.',
+          'Vain iso single (ulkosektori, suurempi puolikas) kyseiseen numeroon edistää.',
+          'Tupla tai tripla samaan numeroon EI edistä — se lasketaan ohi-heitoksi.',
+          'Kierroksen aikana voit edistää useaan numeroon — jos osuit 1:een ja sitten 2:een samalla kierroksella, olet nyt numerolla 3.'
+        ],example:'Tavoite 10 (eli pitää päästä numeroon 10). Olet numerolla 5. Heitit: S5 → etenet 6:een. D6 → ei kelpaa (tupla). S6 → etenet 7:ään. Nyt olet numerolla 7 ja 1 tikka jäljellä.'},
+        {title:'Tikkataulun järjestys',items:[
+          'Numerot eivät ole taululla peräkkäin! Tikkataulun järjestys myötäpäivään: 20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5.',
+          'Suunnittele heittoreitit etukäteen — hyppäät ympäri taulua.'
+        ]},
+        {title:'Asetukset',items:[
+          'Tavoitenumero: 5, 10, 15 tai 20. Tavoite 20 = koko taulu läpi.'
+        ]}
+      ],
+      tip:'💡 Tikkataulun järjestys on tärkeä! Numerot 20→1→18 ovat vierekkäin — käytä tämä hyväksi. Muista: VAIN iso single kelpaa!'
+    },
+    shadow:{
+      short:'Jokainen osuma puolittaa ko. sektorin arvon kaikille. Ensimmäinen tuo täyden arvon, toinen puolen...',
+      goal:'👥 Strateginen peli jossa sektoreiden arvot laskevat käytön myötä. Ensimmäinen osuma mihin tahansa sektoriin antaa täydet pisteet. Toinen osuma samaan sektoriin antaa puolet. Kolmas neljänneksen, jne. Tärkeää: tämä koskee kaikkia pelaajia — jos sinä osuit kerran 20:een, seuraava osuma 20:een (sinulta tai muilta) antaa enää puolet.',
+      sections:[
+        {title:'Pisteytys',items:[
+          '1. osuma sektoriin: 100% arvo (esim. T20 = 60p)',
+          '2. osuma samaan sektoriin: 50% arvosta (T20 = 30p)',
+          '3. osuma samaan sektoriin: 25% arvosta (T20 = 15p)',
+          '4. osuma ja eteenpäin: arvo puolittuu aina — lopulta lähes 0.',
+          'Sektori = tietty tyyppi tietyssä numerossa. Esim. "tupla 20" ja "tripla 20" ovat eri sektorit.'
+        ],example:'Matti osuu T20 → saa 60p (arvo oli 60p, 1. osuma). Sanna osuu T20 → saa 30p (arvo on nyt 30p, 2. osuma). Matti osuu T20 uudelleen → saa 15p (3. osuma). T20:n arvo on enää 15p kaikille.'},
+        {title:'Strategia',items:[
+          'Kannattaa tähtätä sektoreihin joihin ei ole vielä osuttu — niistä saa täydet pisteet.',
+          'Voit myös sabotoida vastustajan suosikkisektoreita osumalla niihin ensin.',
+          'Myöhemmillä kierroksilla kaikki arvokkaat sektorit voivat olla jo kulutettuja.'
+        ]},
+        {title:'Kulku',items:[
+          'Kierrosten määrä asetetaan ennen peliä (5–20). Eniten pisteitä voittaa.'
+        ]}
+      ],
+      tip:'💡 Avaa uudet sektorit nopeasti — ensimmäinen osuma antaa täydet pisteet. Älä toista samoja sektoreita turhaan. Sabotoi johtajan suosikkisektoreita!'
+    },
+    stairs:{
+      short:'Kierrostavoite nousee joka kierros. Alle tavoitteen → tippuu, mutta peli jatkuu!',
+      goal:'🪜 Nouseva haastepeli: joka kierros on minimitavoite joka pitää saavuttaa. Jos jää alle tavoitteen, tippuu pelistä — mutta peli jatkuu muilla! Tavoite nousee joka kierros, joten haaste kasvaa koko ajan. Viimeinen jäljellä oleva voittaa.',
+      sections:[
+        {title:'Kulku',items:[
+          'Kaikki pelaajat heittävät 3 tikkaa. Pisteet lasketaan normaalisti.',
+          'Kierroksen jälkeen tarkistetaan: kaikki jotka jäivät alle minimitavoitteen tippuvat pelistä.',
+          'Tavoite nousee seuraavalle kierrokselle (aloitusaskeleen verran, esim. +10 tai +15).',
+          'Tippuneet pelaajat eivät enää heitä, mutta peli jatkuu jäljellä olevilla.',
+          'Kun vain yksi pelaaja on jäljellä, hän voittaa. Jos kaikki tippuvat samalla kierroksella, viimeisenä tippunut voittaa.'
+        ],example:'Aloitustavoite 10p, askel +10p. Kierros 1 (tavoite 10p): Matti 45p ✓, Sanna 28p ✓, Jussi 7p ✗ → Jussi tippuu! Kierros 2 (tavoite 20p): Matti 35p ✓, Sanna 18p ✗ → Sanna tippuu! Matti voittaa.'},
+        {title:'Asetukset',items:[
+          'Aloitustavoite: 10, 15 tai 20 pistettä. Tavoite nousee saman verran joka kierros.',
+          'Esim. aloitus 10p: kierros 1=10p, kierros 2=20p, kierros 3=30p...'
+        ]}
+      ],
+      tip:'💡 Alkukierroksilla mikä tahansa tulos riittää — mutta myöhemmillä kierroksilla (tavoite 60–80p) tarvitaan hyviä heittoja. Seuraa missä mennään!'
+    },
+    scrkt:{
+      short:'Sulje numerot 15–20 ja Bull kolmella merkillä. Ensimmäinen sulkenut kaikki voittaa.',
+      goal:'🏏 Klassinen Cricket: tavoitteena sulkea kaikki kohteet — numerot 15, 16, 17, 18, 19, 20 ja Bull (häränsilmä). Kohde suljetaan kun siihen on kerätty yhteensä 3 merkkiä. Ensimmäinen joka sulkee kaikki kohteet voittaa.',
+      sections:[
+        {title:'Merkit',items:[
+          'Yksi osuma = 1 merkki. Kaksi merkkiä = "/" (puolisuljenta). Kolme merkkiä = "X" (suljettu ⊗).',
+          'Single antaa 1 merkin, Double antaa 2 merkkiä, Triple antaa 3 merkkiä (sulkee heti!)',
+          'Outer Bull antaa 1 merkin Bulliin. Inner Bull antaa 2 merkkiä Bulliin.',
+          'Osumia numeroihin 1–14 ei lasketa lainkaan.'
+        ],example:'Olet 1/3 kohti 20:n sulkemista (1 merkki). T20 → 3 merkkiä lisää → 20 suljettu heti! D19 → 2 merkkiä 19:ään.'},
+        {title:'Kulku',items:[
+          'Jokainen heittää 3 tikkaa per vuoro. Merkit kerääntyvät.',
+          'Ensimmäinen joka saa kaikki 7 kohdetta (15,16,17,18,19,20,Bull) suljetuiksi voittaa välittömästi.'
+        ]},
+        {title:'Strategia',items:[
+          'Aloita suurimmista numeroista (20, 19) — ne antavat enemmän merkkejä triple-sektoreissa.',
+          'Triple sulkee minkä tahansa yhdellä tikalla.'
+        ]}
+      ],
+      tip:'💡 T20 sulkee 20:n yhdellä tikalla. Aloita 20 ja 19 — ne ovat vierekkäin taululla. Bull kannattaa jättää viimeiseksi tai tehdä sivutuotteena.'
+    },
+    ptscrkt:{
+      short:'Sulje kohteet ja kerää pisteitä. Eniten pisteitä suljetusta kohteesta kun vastustajalla auki.',
+      goal:'🏏 Score Cricket: samat sulkemissäännöt kuin Simple Cricketissä, mutta sulkemisen jälkeen voi kerätä pisteitä! Kun sinä olet sulkenut kohteen mutta vastustajalla on se auki, ylimääräiset osumasi kyseiseen kohteeseen antavat pisteitä. Eniten pisteitä ja kaikki kohteet suljettu voittaa.',
+      sections:[
+        {title:'Sulkeminen',items:[
+          'Kohteen sulkeminen toimii kuten Simple Cricketissä: 3 merkkiä sulkee.',
+          'Sinä sulkenut + vastustajalla auki → ylimääräiset osumasi antavat pisteitä.',
+          'Kaikki sulkeneet → kohde lukittu, ei enää pisteitä siitä.'
+        ],example:'Olet sulkenut 20:n. T20 nyt → +60 pistettä sinulle (koska vastustajalla 20 auki)! Kun vastustaja sulkee 20:n, T20 ei enää anna pisteitä kummallekaan.'},
+        {title:'Voitto',items:[
+          'Voitat kun sinulla on eniten pisteitä JA kaikki kohteet suljettu.',
+          'Jos sinulla on eniten pisteitä mutta vastustaja sulkee viimeisen kohteensa ensin ja sinulla on enemmän pisteitä → sinä voitat.',
+          'Strategia: sulje nopeasti arvokkaimmat numerot ja kerää pisteitä!'
+        ]},
+        {title:'Strategia',items:[
+          'Sulje 20 ja 19 ensimmäiseksi — niistä saat eniten pisteitä per osuma.',
+          'Hyökkää vastustajan avoimiin kohteisiin heti kun olet sulkenut oman.'
+        ]}
+      ],
+      tip:'💡 T20 suljetun 20:n jälkeen = 60p lisää! Sulje suuri numero ensin ja kerää pisteitä aggressiivisesti ennen kuin vastustaja sulkee saman.'
+    },
+    ctcrkt:{
+      short:'Käänteinen Cricket — osumasi antavat pisteitä VASTUSTAJILLE. Vähiten pisteitä voittaa!',
+      goal:'⚔️ Cut Throat Cricket: samat säännöt kuin Score Cricketissä, mutta pisteet menevät päinvastoin! Kun sinä olet sulkenut kohteen mutta vastustajalla on auki, ylimääräiset osumasi antavat pisteitä VASTUSTAJILLE. Vähiten pisteitä saanut voittaa — sinä et halua pisteitä!',
+      sections:[
+        {title:'Sulkeminen',items:[
+          'Sulkeminen toimii kuten muissakin Cricket-peleissä: 3 merkkiä sulkee.',
+          'Kun sinä olet sulkenut kohteen ja vastustajalla on se auki → ylimääräiset osumasi antavat VASTUSTAJALLE pisteitä.',
+          'Tämä on käänteistä Score Cricketistä!'
+        ],example:'Olet sulkenut 20:n. T20 → +60 pistettä VASTUSTAJALLE. Hän ei halua niitä! Vältä ylimääräisiä osumia suljettuihin kohteisiin.'},
+        {title:'Voitto',items:[
+          'Ensimmäinen joka sulkee kaikki kohteet ja jolla on vähiten pisteitä voittaa.',
+          'Strategia: sulje kohteet nopeasti jottei vastustaja voi antaa sinulle pisteitä, ja hyökkää vastustajan avoimiin kohteisiin antaaksesi hänelle pisteitä.'
+        ]},
+        {title:'Strategia',items:[
+          'Sulje kohteet nopeasti — suljetusta kohteesta ei voi saada lisää pisteitä.',
+          'Hyökkää numeroon joka on vastustajalla auki → hän saa pisteitä!',
+          'Vältä heittämästä vastustajan jo suljettuun numeroon.'
+        ]}
+      ],
+      tip:'💡 Hyökkää pieniin numeroihin (15, 16) joihin vastustajalla on eniten merkkejä auki. Sulje omat nopeasti niin vastustaja ei voi kostaa!'
+    },
+    engcrkt:{
+      short:'Lyöjä vs keilaaja — lyöjä kerää pisteitä, keilaaja kaataa hiloja. 2 innings.',
+      goal:'🏏 English Cricket: kaksi pelaajaa, kaksi roolia. Lyöjä yrittää kerätä pisteitä, keilaaja yrittää kaataa kaikki hilat. Kun kaikki hilat ovat kaatuneet, innings vaihtuu. Eniten pisteitä lyöjänä voittaa.',
+      sections:[
+        {title:'Roolit',items:[
+          'Lyöjä: jokainen heitetty tikka antaa pisteitä kaavalla: yhteispisteet − 40. Jos yhteispisteet ovat alle 40, lyöjä ei saa pisteitä.',
+          'Keilaaja: Outer Bull = 1 hila, Inner Bull = 2 hilaa. Muut osumat eivät kaada hiloja.',
+          'Innings alkaa täydellä hilamäärällä (asetettavissa). Kun kaikki hilat kaadettu → innings vaihtuu ja roolit vaihtuvat.'
+        ],example:'Lyöjä heittää T20+D19+S18 = 96p − 40 = 56 pistettä. Keilaaja heittää IB → 2 hilaa kaatuu. OB → 1 hila kaatuu.'},
+        {title:'Innings-rakenne',items:[
+          'Pelataan 2 innings (vuoroa). Ensin A lyöjänä ja B keilaajana, sitten roolit vaihtuvat.',
+          'Innings loppuu kun kaikki hilat on kaadettu — heti kun viimeinen hila kaatuu!',
+          'Pisteet lasketaan molemmilta innings:iltä yhteen. Eniten pisteitä yhteensä voittaa.'
+        ]},
+        {title:'Asetukset',items:[
+          'Hilojen määrä: 2–10 hilaa per innings. Enemmän hiloja = pidempi innings = enemmän mahdollisuuksia lyöjälle.'
+        ]}
+      ],
+      tip:'💡 Lyöjänä tähtää T20 (60p−40=20p lyöntipistettä). Keilaajana tähtää aina Bulliin — IB=2 hilaa on nopein tapa päättää innings!'
+    },
+    golf:{
+      short:'Vähiten lyöntejä voittaa — valitse tulos per reikä.',
+      goal:'⛳ Darts-golf: jokaisella reiällä valitset tuloksesi 1–5. Numerot vastaavat golf-lyöntien määrää. Peli loppuu valittuun reikämäärään. Vähiten pisteitä kerännyt voittaa — kuten oikeassa golfissa!',
+      sections:[
+        {title:'Pisteytys per reikä',items:[
+          '1 = Tripla (paras mahdollinen, kuten hole-in-one)',
+          '2 = Tupla (erinomainen tulos)',
+          '3 = Iso single (hyvä tulos)',
+          '4 = Pieni single (tyydyttävä)',
+          '5 = Ohi / ei osumaa (huonoin tulos)',
+          'Valitset itse rehellisesti mikä heittosi vastasi — sovitaan yhdessä mitä reikä vaatii.'
+        ],example:'9 reikää. Matti: 1+2+3+2+1+3+2+2+3 = 19p. Sanna: 2+2+2+3+2+2+3+2+2 = 20p. Matti voittaa!'},
+        {title:'Kulku',items:[
+          'Pelaajat heittävät vuorotellen. Jokainen valitsee tuloksensa 5s sisällä — ajastin käynnistyy automaattisesti valinnan jälkeen.',
+          'Voit peruuttaa valinnan ennen kuin 5s kuluu.',
+          'Kun kaikki ovat pelanneet reiän, siirrytään seuraavalle.',
+          'Pelin lopussa vähiten pisteitä kerännyt pelaaja voittaa.'
+        ]},
+        {title:'Asetukset',items:[
+          '9 tai 18 reikää ennen pelin alkua.'
+        ]}
+      ],
+      tip:'💡 Muistuta kaikki pelaajia rehellisyydestä! Voit sopia etukäteen mitä kukin tulos vaatii — esim. "tripla täytyy oikeasti heittää" tai "arvioidaan silmämääräisesti".'
+    },
+    killer:{
+      short:'Tule Killeriksi omalla numerollasi, sitten eliminoi vastustajat heidän numeroistaan.',
+      goal:'☠️ Killer on eliminointipeli kahdessa vaiheessa. Ensin jokainen valitsee oman numeronsa. Sitten jokainen yrittää ensin tulla Killeriksi (3 osumaa omaan numeroon), jonka jälkeen voi eliminoida muita osumalla heidän numeroihinsa.',
+      sections:[
+        {title:'Vaihe 1: Numeron valinta',items:[
+          'Ennen peliä jokainen pelaaja valitsee itselleen oman numeron 1–20.',
+          'Kaksi pelaajaa ei voi valita samaa numeroa.',
+          'Voit valita strategisesti tai satunnaisesti.'
+        ]},
+        {title:'Vaihe 2: Killer-status',items:[
+          'Heität 3 tikkaa per vuoro omaan numeroosi kerätäksesi merkkejä.',
+          'Single = 1 merkki, Double = 2 merkkiä, Triple = 3 merkkiä.',
+          'Kun olet saanut 3 merkkiä omaan numeroosi → olet KILLER! ☠️',
+          'Varoitus: jos olet jo Killer ja osuit omaan numeroosi, menetät itse yhden elämän!'
+        ]},
+        {title:'Vaihe 3: Eliminointi',items:[
+          'Killerinä voit heittää vastustajien numeroihin.',
+          'Jokainen osuma vastustajan numeroon vie heiltä yhden elämän.',
+          'Kun kaikki elämät ovat menneet → pelaaja on eliminoitu.',
+          'Viimeinen jäljellä oleva voittaa.'
+        ],example:'Matti valitsee 17. T17 → 3 merkkiä → KILLER! Sannalla numero 12. Matti heittää 12 → Sanna menettää elämän. Matti osuu omaan 17:ään → Matti itse menettää elämän!'},
+        {title:'Asetukset',items:[
+          'Elämien määrä: 1–9 elämää per pelaaja.'
+        ]}
+      ],
+      tip:'💡 Triple omaan numeroon = Killer yhdellä tikalla! Valitse numero jota on helppo heittää (esim. lähellä 20:tä). Killerinä muista: ÄLÄ osu omaan numeroosi!'
+    },
+    jailer:{
+      short:'Selviydy vapaana — vanki = heittoja menee. Viimeinen vapaana oleva voittaa!',
+      goal:'🔒 Vanginvartija on selviytymispeli jossa pelaajat voivat vangita toisiaan. Jokaisella kierroksella on oma kohdenumeronsa. Osumat muihin numeroihin siirtävät tikkoja vankilan kautta. Viimeinen pelaaja joka on vapaana (tai jolla on eniten selvittyjä kierroksia) voittaa.',
+      sections:[
+        {title:'Perusmekaniikat',items:[
+          'Joka kierroksella on yksi kohdenumero (▶N). Se vaihdetaan kierrosten välillä.',
+          'Kohdenumeroon osuminen: kaikki omat vanki-tikat vapautetaan.',
+          'Muuhun numeroon osuminen: lisää sen numeron verran tikkoja toiselle pelaajalle vankilaan. Jos numerolla on jo vankeja (muiden tikkoja), ne siirtyvät sinulle.',
+          'Inner Bull tai Outer Bull: vapauttaa KAIKKIEN kaikkien vanki-tikat!'
+        ]},
+        {title:'Vankila ja heitot',items:[
+          'Jokaisella vangitulla tikalla on numero. Vanki-tikat rajoittavat heittojasi.',
+          'Sinulla 0 vankia = 3 heittoa. 1 vanki = 2 heittoa. 2 vankia = 1 heitto. 3+ vankia = et voi heittää lainkaan!',
+          'Jos kaikilla pelaajilla on ≥3 vankia samanaikaisesti → eniten selvinnyt kierroksia voittaa.'
+        ],example:'Kohde on ▶7. Matti osuu 12 → 12 siirtyy Sannan vankilaan. Sanna: 1 vanki = vain 2 heittoa ensi vuorolla. Sanna osuu ▶7 → kaikki omat vanki-tikat vapautuvat!'},
+        {title:'Voitto',items:[
+          'Peli jatkuu kunnes vain yksi pelaaja on vapaana (alle 3 vankia) tai kaikilla on liikaa vankeja.',
+          'Viimeinen vapaana oleva voittaa. Tasatilanteessa eniten selvinneitä kierroksia.'
+        ]},
+        {title:'Asetukset',items:[
+          'Kohdenumeroita: 5, 10, 15 tai 20. Enemmän = pidempi peli.'
+        ]}
+      ],
+      tip:'💡 Priorisoi aina vapautuminen — kohdenumero ensimmäisenä! Bull vapauttaa kaikki, mikä voi pelastaa tai sabotoida. Vangitse vahvin vastustaja strategisesti.'
+    },
+    thief:{
+      short:'Omistaja saa pisteet numerosta. Enemmän osumia valtaa ruudun!',
+      goal:'🦹 Varas on aluehallintapeli: jokainen numero 1–20 kuuluu sille pelaajalle jolla on eniten osumia kyseiseen numeroon. Omistajana saat pisteet joka kerta kun osu omistamallesi ruudulle. Enemmän osumia kuin nykyinen omistaja → valtaat ruudun! Eniten pisteitä tavoitteeseen voittaa.',
+      sections:[
+        {title:'Ruudun omistus',items:[
+          'Numero jonka olet heittänyt ensimmäisenä = omistat sen.',
+          'Jos olet heittänyt enemmän kertoja ko. numeroon kuin nykyinen omistaja → ruutu siirtyy sinulle.',
+          'Tasatilanne (sama määrä osumia) = omistaja pysyy, ei varastoa.',
+          'Omistajana jokainen osuma numeroon antaa pisteitä (single, double, triple normaalisti).'
+        ],example:'Matti osuu 20:een (1 osuma) → omistaa 20:n, saa pisteet. Sanna osuu 20:een (1 osuma) → ei enemmän, ei varausta. Sanna osuu 20:een uudelleen (2 osumaa vs Matin 1) → VARAUS! Sanna omistaa nyt 20:n.'},
+        {title:'Pisteet',items:[
+          'Vain omistaja saa pisteet. Muilta osumat voivat varastaa ruudun mutta eivät suoraan tuota pisteitä varaston hetkellä.',
+          'Uusi omistaja saa pisteet seuraavista osumistaan.'
+        ]},
+        {title:'Kytkin: Varastaminen vs Siirtyminen',items:[
+          'Kytkin POIS (oletus): perinteinen varastaminen. Kun varaat ruudun, saat edelliset omistajan kerätyt pisteet ko. numerosta poistettu häneltä.',
+          'Kytkin PÄÄLLÄ: ruutu siirtyy sinulle ilman pisteensiirtoa. Edellinen omistaja saa pitää pisteensä, mutta tulevat pisteet tulevat sinulle.'
+        ]},
+        {title:'Asetukset',items:[
+          'Tavoite: 100–900 pistettä.',
+          'Varastaminen-kytkin: pois = pisteet varastetaan, päällä = vain omistajuus siirtyy.'
+        ]}
+      ],
+      tip:'💡 Triple antaa 3 osumaa yhdellä tikalla — paras tapa vallata ruutu! Tähtää arvokkaisiin numeroihin (20, 19, 18) joita vastustaja omistaa. Muista: pelkkä omistus ei riitä — sinun täytyy myös osua omistamillesi ruuduille pisteiden saamiseksi!'
+    },
+    knockdown:{
+      short:'Kaada kaikki omat keilat — mutta muut pystyttävät niitä! Ensimmäinen kaadettuaan kaikki voittaa.',
+      goal:'🎳 Kaatokisa: jokaisella pelaajalla on omat keilat (numerot) joita pitää kaataa. Ongelma: kun osu johonkin numeroon, se pystyttää saman numeron muilta pelaajilta! Ensimmäinen joka saa kaikki omat keilansa kaadettua voittaa.',
+      sections:[
+        {title:'Keilat',items:[
+          'Ennen peliä jokaiselle pelaajalle arvotaan omat keilat (numerot 1–20, jaettu tasaisesti).',
+          'Keilasi ovat pystyssä (⬆) kunnes osu niihin — silloin ne kaatuvat (✕).',
+          'Kun osu omaan kaatunutta keilaan, se pystyy taas (toggle).'
+        ]},
+        {title:'Vastavaikutus',items:[
+          'Kun osu johonkin numeroon, se pystyttää kaikilla muilla pelaajilla sen numeron jos se on kaatunana!',
+          'Siis: kaataessasi omia keilaasi, saatat pystyttää muiden jo kaadettuja keilaasi.',
+          'Strategia: kaada omat keilat järjestyksessä joka minimoi vahingon muille.'
+        ],example:'Matin keilat: 3, 7, 12. Sannan keilat: 5, 7, 18. Matti osuu 7 → Matin 7 kaatuu ✓, mutta Sannan 7 pystyy taas! Matti osuu 3 → Matin 3 kaatuu ✓, Sannalla ei 3:a eli ei vaikutusta.'},
+        {title:'Voitto',items:[
+          'Ensimmäinen pelaaja joka saa kaikki omat keilansa kaadettua voittaa välittömästi!'
+        ]}
+      ],
+      tip:'💡 Katso mitä keilaasi ja vastustajan keiloista on yhteisiä numeroita — kaataessasi yhteisen numeron saatat auttaa vastustajaa. Suunnittele järjestys!'
+    },
+    battle:{
+      short:'Piilota 3 laivaasi ja upota vastustajan laivat. 3 osumaa upottaa laivan!',
+      goal:'🚢 Laivanupotus-darts: molemmat pelaajat valitsevat salaa 3 numeroa jotka ovat heidän laivansa. Pelaaja 1 käyttää numeroita 1–10, pelaaja 2 numeroita 11–20. Heität vastustajan puolen numeroihin yrittäen löytää ja upottaa hänen laivansa. 3 osumaa samaan numeroon = laiva uppoaa. Kaikki 3 laivaa uponnut = voitto!',
+      sections:[
+        {title:'Valmistelu',items:[
+          'Pelaaja 1 valitsee salaa 3 numeroa väliltä 1–10. Pelaaja 2 valitsee salaa 3 numeroa väliltä 11–20.',
+          'Numerot ovat piilossa vastustajalta pelin aluksi — muista omat numerosi!'
+        ]},
+        {title:'Peli',items:[
+          'Pelaaja 1 heittää 3 tikkaa numeroihin 11–20 (vastustajan alue). Pelaaja 2 heittää 3 tikkaa numeroihin 1–10.',
+          '3 osumaa samaan numeroon = kyseinen laiva uppoaa (⚓). Osuma näkyy laivana vaikka laivaa ei olisi — voit paljastaa oman laivasi!',
+          'Peli loppuu välittömästi kun kaikki 3 vastustajan laivaa ovat uponneet.'
+        ],example:'Pelaaja 2:n laivat ovat 12, 15, 19. Pelaaja 1 heittää 12, 12, 15. Numerolla 12 on nyt 2 osumaa (1 puuttuu), numerolla 15 on 1 osuma. Seuraavalla vuorolla: 12 → laiva 12 uppoaa ⚓!'},
+        {title:'Näkyvyys',items:[
+          'Näet omat osumasi vastustajalle. Osumat näkyvät mutta et tiedä onko siellä laiva ennen kuin se uppoaa.',
+          'Omat laivasi paljastuvat vasta kun vastustaja osuu niihin.'
+        ]}
+      ],
+      tip:'💡 Heitä systemaattisesti kaikki numerot läpi — et tiedä missä laivat ovat. Jos saat 1 osuman johonkin numeroon, jatka samaan! 3 osumaa = laiva uppoaa.'
+    }
   };
   return R[gid]||{short:'',goal:'',sections:[],tip:''};
 }
- 
-// ===== PERF GRAPH =====
-function computePerfScore(h,gid){var r=h.round||1,s=h.score||0;if(gid==='g100'||gid==='gotcha'||gid==='shadow'||gid==='fives'||gid==='thief')return s/Math.max(r,1);if(gid==='g501')return(501-s)/Math.max(r,1);if(gid==='nines'||gid==='stairs'||gid==='killer')return r;if(gid==='shanghai'||gid==='halveit')return s/Math.max(r,1);if(gid==='golf')return Math.max(0,5-s/Math.max(r,1));if(gid==='scrkt'||gid==='ptscrkt'||gid==='ctcrkt')return 1/Math.max(r,1);if(gid==='jailer')return r;if(gid==='knockdown')return 1/Math.max(r,1);return s/Math.max(r,1);}
-function getPerfLabel(gid){var m={g100:'Pisteet/kierros',g501:'Edistyminen/kierros',gotcha:'Pisteet/kierros',nines:'Selviytymiskierrokset',stairs:'Selviytymiskierrokset',killer:'Selviytymiskierrokset',shanghai:'Pistetehokkuus',halveit:'Pistetehokkuus',fives:'Pisteet/kierros',golf:'Reikätehokkuus',scrkt:'Sulkemisnopeus',ptscrkt:'Sulkemisnopeus',ctcrkt:'Sulkemisnopeus',engcrkt:'Lyöjäpisteet/krt',jailer:'Kierroksia selvitty',knockdown:'Kaatamisnopeus',clock:'Numerot/kierros',thief:'Pisteet/kierros',battle:'Tehokkuus',shadow:'Pisteet/kierros'};return m[gid]||'Suoritusindeksi';}
-function computePerfIdx(pid,gid){var p=PL.find(function(x){return x.id===pid;});if(!p)return[];var hist=(p.stats&&p.stats.gameHistory&&p.stats.gameHistory[gid])||[];if(!hist.length)return[];var raws=hist.map(function(h){return computePerfScore(h,gid);});var mn=Math.min.apply(null,raws),mx=Math.max.apply(null,raws),range=mx-mn;return hist.map(function(h,i){var y=range<0.001?50:Math.round(10+((raws[i]-mn)/range)*85);return{x:i+1,y:Math.min(100,Math.max(0,y)),won:h.won};});}
-function renderPerfGraph(pid){var p=PL.find(function(x){return x.id===pid;});if(!p)return'';var hist=p.stats&&p.stats.gameHistory||{};var gids=Object.keys(hist).filter(function(g){return hist[g]&&hist[g].length>=1;});if(!gids.length)return'<div class="graph-section"><div class="graph-title">Suoritusgraafi</div><div class="no-data">Pelaa ensin peli.</div></div>';var sel=p._gSel||gids[0];var pts=computePerfIdx(pid,sel);var label=getPerfLabel(sel);var W=340,H=140,Pl={t:10,r:10,b:28,l:36};var iW=W-Pl.l-Pl.r,iH=H-Pl.t-Pl.b;var n=pts.length;var xS=function(i){return Pl.l+i*(iW/Math.max(n-1,1));};var yS=function(v){return Pl.t+iH*(1-v/100);};var s='';[0,25,50,75,100].forEach(function(v){var y=yS(v);s+='<line x1="'+Pl.l+'" y1="'+y+'" x2="'+(W-Pl.r)+'" y2="'+y+'" stroke="#e0e0e0" stroke-width=".5"/>';s+='<text x="'+(Pl.l-4)+'" y="'+(y+4)+'" text-anchor="end" font-size="9" fill="#888" font-family="sans-serif">'+v+'</text>';});pts.forEach(function(pt,i){if(i===0||i===pts.length-1||(i+1)%Math.max(1,Math.ceil(pts.length/6))===0)s+='<text x="'+xS(i)+'" y="'+(H-4)+'" text-anchor="middle" font-size="9" fill="#888" font-family="sans-serif">'+pt.x+'</text>';});if(pts.length>1){var pp=pts.map(function(pt,i){return(i===0?'M':'L')+xS(i)+','+yS(pt.y);}).join(' ');s+='<path d="'+pp+' L'+xS(pts.length-1)+','+yS(0)+' L'+xS(0)+','+yS(0)+' Z" fill="#1D9E75" opacity=".1"/>';s+='<path d="'+pp+'" fill="none" stroke="#1D9E75" stroke-width="2"/>';}pts.forEach(function(pt,i){var col=pt.won?'#1D9E75':'#BA7517';s+='<circle cx="'+xS(i)+'" cy="'+yS(pt.y)+'" r="3.5" fill="'+col+'" stroke="#fff" stroke-width="1.5"/>';s+='<text x="'+xS(i)+'" y="'+(yS(pt.y)-8)+'" text-anchor="middle" font-size="9" fill="'+col+'" font-family="sans-serif">'+pt.y+'</text>';});var btns=gids.map(function(g){var go=GAMES.find(function(x){return x.id===g;});return'<button class="graph-game-btn'+(g===sel?' on':'')+'" onclick="selGraph(\''+pid+'\',\''+g+'\')">'+(go?go.ic:'')+' '+(go?go.n.split('–')[0].trim().slice(0,12):g)+'</button>';}).join('');var gn=GAMES.find(function(g){return g.id===sel;});return'<div class="graph-section"><div class="graph-title"><span>Suoritusgraafi</span><span style="font-size:10px;color:var(--color-text-tertiary)">'+(gn?gn.n.split('–')[0].trim():'')+'</span></div><div class="graph-game-sel">'+btns+'</div><div class="graph-canvas-wrap"><svg width="100%" viewBox="0 0 '+W+' '+H+'" style="overflow:visible">'+s+'</svg><div style="display:flex;gap:12px;justify-content:center;margin-top:6px;font-size:11px;color:var(--color-text-secondary)"><span><svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#1D9E75"/></svg> Voitto</span><span><svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#BA7517"/></svg> Häviö</span><span style="color:var(--color-text-tertiary)">'+label+'</span></div></div></div>';}
+
+// ===== PERF GRAPH v2 =====
+
+// Laskee "täydellisen suorituksen" kierrosmäärän per peli+asetukset.
+// Tämä on teoreettinen minimi — lähes mahdoton saavuttaa.
+// Käytetään normalisoinnin pohjana: tähän verrataan pelaajan kierrosmäärää.
+function perfectRounds(gid, opts) {
+  opts = opts || {};
+  switch(gid) {
+    // ── Pistepelien täydellinen: T20+T20+T20 = 180p/kierros ──────
+    case 'g100': {
+      // Tavoite / 180 (paras mahdollinen kierros)
+      var t = opts.target || 100;
+      return Math.max(1, Math.ceil(t / 180));
+    }
+    case 'g501': {
+      // 501: täydellinen = 9 heittoa (3 kierrosta): T20,T20,T20 (180) + T20,T20,T20 (180) + T20,T20,D0... ei ihan mahdollista
+      // Realistinen paras: 501÷180 kierroksia, min 3 kierrosta (9 dart finish)
+      var t2 = opts.target || 501;
+      return Math.max(1, Math.ceil(t2 / 180));
+    }
+    case 'gotcha': {
+      var t3 = opts.target || 301;
+      return Math.max(1, Math.ceil(t3 / 180));
+    }
+    case 'thief': {
+      // Varas: kerää ~180p/kierros omista numeroista
+      var t4 = opts.target || 300;
+      return Math.max(1, Math.ceil(t4 / 180));
+    }
+    case 'fives': {
+      // Fives: paras kierros = 180p (jos jaollinen 5:llä: 180÷5=36p)
+      var t5 = opts.target || 50;
+      return Math.max(1, Math.ceil(t5 / 36));
+    }
+
+    // ── Selviytymispelit: täydellinen = pelaa maksimiikierrokset hävioitta ─
+    case 'nines':
+      // Ei minimiä — selviytyminen lasketaan, täydellinen = voittaa kaikki
+      return 1; // normalisointi eri tavalla
+
+    case 'stairs': {
+      // Stairs: täydellinen = selviytyy kaikki kierrokset, jokainen tikka paras
+      // Tavoite nousee start:in verran joka kierros. Milloin kierros vaatii >180p? Ei koskaan juurikaan.
+      // "Täydellinen" = 10 kierrosta (sen jälkeen vaatisi yli 180p)
+      var start = opts.start || 10;
+      // Kierros N vaatii start*N pistettä. 180÷start = max kierros jonka paras heittäjä selvittää helposti
+      return Math.max(1, Math.floor(180 / start));
+    }
+
+    // ── Shanghai: 7 kierrosta aina ─────────────────────────────────
+    case 'shanghai':
+      return 1; // Shanghai-voitto: 1 kierros (paras mahdollinen)
+
+    // ── Halveit: kierrosten mukaan ─────────────────────────────────
+    case 'halveit': {
+      // Paras: jokainen kohde saavutettu + T20 kolme kertaa = 180p/kierros
+      // Täydellinen suoritus = käy kaikki kierrokset läpi
+      return opts.rounds || 12;
+    }
+
+    // ── Golf: pienempi on parempi, täydellinen = kaikki reiät triplana (1p/reikä) ─
+    case 'golf': {
+      var holes = opts.holes || 9;
+      return holes; // reikien määrä = kierrosten määrä, "nopeus" on pisteiden sijasta pisteet/reikä
+    }
+
+    // ── Cricket: täydellinen = sulje kaikki 7 kohdetta mahdollisimman nopeasti ─
+    case 'scrkt':
+    case 'ptscrkt':
+    case 'ctcrkt':
+      // 7 kohdetta, triple sulkee yhden per tikka → 7 tikkaa = ~3 kierrosta
+      return 3;
+
+    // ── Clock: täydellinen = osuu joka numeroon suoraan ───────────
+    case 'clock': {
+      var tgt = opts.target || 20;
+      // Joka tikka osuu seuraavaan numeroon → tgt/3 kierrosta
+      return Math.max(1, Math.ceil(tgt / 3));
+    }
+
+    // ── Shadow: kiinteä kierrosmäärä ──────────────────────────────
+    case 'shadow':
+      return opts.rounds || 10;
+
+    // ── Killer: täydellinen = tulee killeriksi 1. kierroksella (T = 3 merkkiä) + eliminoi kaikki nopeasti ─
+    case 'killer':
+      return 2; // 1 killer-kierros + 1 eliminointikierros = teoreettinen minimi 2 pelaajalla
+
+    // ── Jailer: täydellinen = selviytyy kaikki kohdenumerot ────────
+    case 'jailer':
+      return opts.target || 10;
+
+    // ── Knockdown: täydellinen = kaataa kaikki keilan yhdellä kierroksella ─
+    case 'knockdown':
+      return 1;
+
+    // ── Battle: täydellinen = upottaa kaikki 3 laivaa 9 tikalla = 3 kierrosta ─
+    case 'battle':
+      return 3;
+
+    // ── English Cricket: teoreettinen minimi = 1 innings ─────────
+    case 'engcrkt':
+      return 1;
+
+    default:
+      return 10;
+  }
+}
+
+// Muuntaa kierrosmäärän normalisoituun 0-100 arvoon
+// perfect = 100, double = ~50, 5x = ~10
+function perfSpeedScore(h) {
+  var actual = h.round || 99;
+  var perfect = perfectRounds(h.gid || '', h.opts || {});
+  // Laske suhde: actual/perfect
+  // perfect → 100p, 2x perfect → ~60p, 5x perfect → ~15p, 10x → ~5p
+  // Käytetään log-skaalaa: 100 * (perfect/actual)^0.7
+  if (perfect <= 0) return 50;
+  var ratio = perfect / actual;
+  // ratio >= 1 tarkoittaa suorittanut täydellisesti tai paremmin → 100p
+  if (ratio >= 1) return 100;
+  // Logaritminen skaala: pisteet = 100 * ratio^0.6
+  return Math.max(0, Math.min(100, Math.round(100 * Math.pow(ratio, 0.6))));
+}
+
+function perfAccScore(h){
+  if(h.ppt&&h.ppt>0)return h.ppt;
+  var tot=h.total||0;if(!tot)return 0;
+  var T=h.triples||0,D=h.doubles||0,B=h.bulls||0,M=h.misses||0;
+  return(T*50+D*30+B*37+(tot-T-D-B-M)*10)/tot;
+}
+
+function normalizeArr(arr,invert){
+  var mn=Math.min.apply(null,arr),mx=Math.max.apply(null,arr),range=mx-mn;
+  return arr.map(function(v){
+    var norm=range<0.001?50:Math.round(10+((v-mn)/range)*80);
+    return invert?100-norm+10:norm;
+  });
+}
+
+function renderPerfGraph(pid){
+  var p=PL.find(function(x){return x.id===pid;});if(!p)return'';
+  var hist=p.stats&&p.stats.gameHistory||{};
+  var gids=Object.keys(hist).filter(function(g){return hist[g]&&hist[g].length>=2;});
+  if(!gids.length)return'<div class="graph-section"><div class="graph-title">Suoritusgraafi</div><div style="padding:20px;text-align:center;color:var(--color-text-tertiary);font-size:13px">Pelaa vähintään 2 peliä samaa pelimuotoa nähdäksesi trendin.</div></div>';
+  var sel=p._gSel||gids[0];
+  var mode=p._gMode||'speed';
+  var entries=hist[sel]||[];
+  var gn=GAMES.find(function(g){return g.id===sel;});
+  var rawSpeed=entries.map(perfSpeedScore);
+  var rawAcc=entries.map(perfAccScore);
+  // perfSpeedScore palauttaa jo 0-100 — ei normalisoida uudelleen
+  var normSpeed=rawSpeed.map(function(v){return v;}); // suoraan 0-100
+  var normAcc=normalizeArr(rawAcc,false);
+  var pts=entries.map(function(h,i){return{i:i,speed:normSpeed[i],acc:normAcc[i],rawSpeed:rawSpeed[i],rawAcc:Math.round(rawAcc[i]*10)/10,won:h.won,triples:h.triples,doubles:h.doubles,misses:h.misses,total:h.total};});
+  var W=340,H=155,Pl={t:18,r:12,b:30,l:32};
+  var iW=W-Pl.l-Pl.r,iH=H-Pl.t-Pl.b,n=pts.length;
+  var xS=function(i){return Pl.l+i*(iW/Math.max(n-1,1));};
+  var yS=function(v){return Pl.t+iH*(1-(Math.min(100,Math.max(0,v))/100));};
+  var vals=pts.map(function(pt){return mode==='speed'?pt.speed:pt.acc;});
+  var avgLine=vals.map(function(v,i){var w=[],lo=Math.max(0,i-1),hi=Math.min(n-1,i+1);for(var j=lo;j<=hi;j++)w.push(vals[j]);return w.reduce(function(a,b){return a+b;},0)/w.length;});
+  var mainColor=mode==='speed'?'#1D9E75':'#0071e3';
+  var svg='';
+  [0,25,50,75,100].forEach(function(v){var y=yS(v);svg+='<line x1="'+Pl.l+'" y1="'+y+'" x2="'+(W-Pl.r)+'" y2="'+y+'" stroke="#e8e8e8" stroke-width="0.5"/>';svg+='<text x="'+(Pl.l-4)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="8.5" fill="#bbb" font-family="sans-serif">'+v+'</text>';});
+  if(n>1){var pp=vals.map(function(v,i){return(i===0?'M':'L')+xS(i)+','+yS(v);}).join(' ');svg+='<path d="'+pp+' L'+xS(n-1)+','+yS(0)+' L'+xS(0)+','+yS(0)+' Z" fill="'+mainColor+'" opacity="0.08"/>';svg+='<path d="'+pp+'" fill="none" stroke="'+mainColor+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';var ap=avgLine.map(function(v,i){return(i===0?'M':'L')+xS(i)+','+yS(v);}).join(' ');svg+='<path d="'+ap+'" fill="none" stroke="'+mainColor+'" stroke-width="2.5" opacity="0.3" stroke-dasharray="5,3"/>';}
+  pts.forEach(function(pt,i){var v=mode==='speed'?pt.speed:pt.acc;var rawVal=mode==='speed'?(pt.rawSpeed===99?'?':pt.rawSpeed+'krt'):(pt.rawAcc>0?pt.rawAcc+'p/t':'?');var col=pt.won?mainColor:'#BA7517';svg+='<circle cx="'+xS(i)+'" cy="'+yS(v)+'" r="'+(pt.won?4:3)+'" fill="'+col+'" stroke="#fff" stroke-width="1.5"/>';if(n<=8||i===0||i===n-1||i%Math.ceil(n/6)===0)svg+='<text x="'+xS(i)+'" y="'+(yS(v)-8)+'" text-anchor="middle" font-size="8" fill="'+col+'" font-family="sans-serif" font-weight="600">'+rawVal+'</text>';});
+  pts.forEach(function(pt,i){if(i===0||i===n-1||n<=8||i%Math.ceil(n/5)===0)svg+='<text x="'+xS(i)+'" y="'+(H-6)+'" text-anchor="middle" font-size="8.5" fill="#ccc" font-family="sans-serif">'+(i+1)+'</text>';});
+  if(n>=3){var xm=0,ym=0;vals.forEach(function(v,i){xm+=i;ym+=v;});xm/=n;ym/=n;var num2=0,den2=0;vals.forEach(function(v,i){num2+=(i-xm)*(v-ym);den2+=(i-xm)*(i-xm);});if(Math.abs(den2)>0.001){var slope=num2/den2,intercept=ym-slope*xm;var ty0=slope*0+intercept,ty1=slope*(n-1)+intercept;var trendColor=slope>0.8?mainColor:slope<-0.8?'#E24B4A':'#aaa';var trendTxt=slope>0.8?'↑ Paranee':slope<-0.8?'↓ Heikkenee':'→ Tasainen';svg+='<line x1="'+xS(0)+'" y1="'+yS(ty0)+'" x2="'+xS(n-1)+'" y2="'+yS(ty1)+'" stroke="'+trendColor+'" stroke-width="1" stroke-dasharray="5,4" opacity="0.55"/>';svg+='<text x="'+(W-Pl.r)+'" y="12" text-anchor="end" font-size="9" fill="'+trendColor+'" font-family="sans-serif" font-weight="600">'+trendTxt+'</text>';}}
+  var last5=entries.slice(-5);
+  var avgRounds=last5.length?Math.round(last5.reduce(function(s,h){return s+(h.round||0);},0)/last5.length*10)/10:'--';
+  var hasThrowData=last5.some(function(h){return(h.total||0)>0;});
+  var avgTriplePct=hasThrowData?Math.round(last5.reduce(function(s,h){return s+(h.total>0?((h.triples||0)/h.total):0);},0)/last5.length*100):null;
+  var avgMissPct=hasThrowData?Math.round(last5.reduce(function(s,h){return s+(h.total>0?((h.misses||0)/h.total):0);},0)/last5.length*100):null;
+  var avgPpt=hasThrowData?Math.round(last5.reduce(function(s,h){return s+(h.ppt||0);},0)/last5.length*10)/10:null;
+  var statsRow='<div style="display:flex;gap:0;border-top:0.5px solid var(--color-border-tertiary);margin-top:6px">';
+  statsRow+='<div style="flex:1;text-align:center;padding:8px 4px;border-right:0.5px solid var(--color-border-tertiary)"><div style="font-size:15px;font-weight:600;color:var(--color-text-primary)">'+avgRounds+'</div><div style="font-size:10px;color:var(--color-text-tertiary)">Kiert. ka (5p)</div></div>';
+  if(avgTriplePct!==null){
+    statsRow+='<div style="flex:1;text-align:center;padding:8px 4px;border-right:0.5px solid var(--color-border-tertiary)"><div style="font-size:15px;font-weight:600;color:#E24B4A">'+avgTriplePct+'%</div><div style="font-size:10px;color:var(--color-text-tertiary)">Triplat</div></div>';
+    statsRow+='<div style="flex:1;text-align:center;padding:8px 4px;border-right:0.5px solid var(--color-border-tertiary)"><div style="font-size:15px;font-weight:600;color:'+(avgMissPct>20?'#E24B4A':'#1D9E75')+';">'+avgMissPct+'%</div><div style="font-size:10px;color:var(--color-text-tertiary)">Misset</div></div>';
+    if(avgPpt!==null)statsRow+='<div style="flex:1;text-align:center;padding:8px 4px"><div style="font-size:15px;font-weight:600;color:#0071e3">'+avgPpt+'</div><div style="font-size:10px;color:var(--color-text-tertiary)">P/tikka</div></div>';
+  }
+  statsRow+='</div>';
+  var gnName=gn?gn.n.replace(/[^a-zA-Z0-9À-ɏ ]/g,' ').trim():sel;
+  var gnLabel=gn?(gn.ic+' '+gnName):'?';
+  var btnsHtml='';
+  gids.forEach(function(g){
+    var go=GAMES.find(function(x){return x.id===g;});
+    var goName=go?go.n.replace(/[^a-zA-Z0-9À-ɏ ]/g,' ').trim().slice(0,12):g;
+    var goIc=go?go.ic:'';
+    var cls='graph-game-btn'+(g===sel?' on':'');
+    btnsHtml+='<button class="'+cls+'" onclick="selGraph('+JSON.stringify(pid)+','+JSON.stringify(g)+')">'+(goIc?goIc+' ':'')+goName+'</button>';
+  });
+  var speedCls='graph-game-btn'+(mode==='speed'?' on':'');
+  var accCls='graph-game-btn'+(mode==='accuracy'?' on':'');
+  var modeHtml='<button class="'+speedCls+'" onclick="selGraphMode('+JSON.stringify(pid)+',\'speed\')">&#x26A1; Nopeus</button>';
+  modeHtml+='<button class="'+accCls+'" onclick="selGraphMode('+JSON.stringify(pid)+',\'accuracy\')">&#x1F3AF; Tarkkuus</button>';
+  var modeLabel=mode==='speed'?'Korkea = nopeampi l\u00e4p\u00e4isy (v\u00e4hemm\u00e4n kierroksia)':'Korkea = tarkempi heitt\u00e4minen (pisteet/tikka)';
+  var out='<div class="graph-section">';
+  out+='<div class="graph-title" style="display:flex;justify-content:space-between;align-items:center"><span>Suoritusgraafi</span><span style="font-size:10px;color:var(--color-text-tertiary)">'+gnLabel+'</span></div>';
+  out+='<div class="graph-game-sel" style="margin-bottom:4px">'+btnsHtml+'</div>';
+  out+='<div class="graph-game-sel" style="margin-bottom:4px">'+modeHtml+'</div>';
+  out+='<div style="text-align:center;font-size:10px;color:var(--color-text-tertiary);margin-bottom:4px">'+modeLabel+'</div>';
+  out+='<div class="graph-canvas-wrap"><svg width="100%" viewBox="0 0 '+W+' '+H+'" style="overflow:visible">'+svg+'</svg>';
+  out+='<div style="display:flex;gap:12px;justify-content:center;align-items:center;margin-top:5px;flex-wrap:wrap;font-size:10px;color:var(--color-text-secondary)"><span>&#9679; Voitto</span><span style="opacity:.6">&#9679; H\u00e4vi\u00f6</span><span style="opacity:.5">- - Liukuva ka</span></div>';
+  out+='</div>'+statsRow+'</div>';
+  return out;
+}
+
 function selGraph(pid,gid){var p=PL.find(function(x){return x.id===pid;});if(!p)return;p._gSel=gid;renderPDetail(pid);}
- 
+function selGraphMode(pid,mode){var p=PL.find(function(x){return x.id===pid;});if(!p)return;p._gMode=mode;renderPDetail(pid);}
+
 // ===== DATA =====
 var AVC=['av0','av1','av2','av3','av4','av5','av6','av7'];
 var PL=JSON.parse(localStorage.getItem('ds_pl10')||'[]');
@@ -502,7 +1844,7 @@ var GAMES=[
  
 function renderGamesList(){var el=document.getElementById('games-list');var h='';['Perus','Haaste','Cricket','Erikois'].forEach(function(cat){h+='<div class="sec-lbl">'+cat+'</div><div class="gl">';GAMES.filter(function(g){return g.cat===cat;}).forEach(function(g){var r=getRules(g.id);h+='<div class="gc"><div class="gi" style="background:'+g.bg+';color:'+g.fc+'" onclick="openSetup(\''+g.id+'\')">'+g.ic+'</div><div style="flex:1;min-width:0;cursor:pointer" onclick="openSetup(\''+g.id+'\')"><div class="gn">'+g.n+'</div><div class="gd">'+r.short+'</div></div><button class="gc-qbtn" onclick="showRules(\''+g.id+'\',\'← Pelit\',false);event.stopPropagation()">?</button><span style="color:var(--color-text-tertiary);font-size:16px;cursor:pointer;padding-left:4px" onclick="openSetup(\''+g.id+'\')">›</span></div>';});h+='</div>';});el.innerHTML=h;}
  
-var S={gid:null,sel:[],opts:{}};
+var S={gid:null,sel:[],opts:{},aiPers:'adaptive'};
 function openSetup(gid){S={gid:gid,sel:[],opts:{}};aiPlayers=[];var g=GAMES.find(function(x){return x.id===gid;});document.getElementById('setup-title').textContent=g.n;document.getElementById('game-title').textContent=g.n;var f2=gid==='engcrkt'||gid==='battle';document.getElementById('players-header').textContent=f2?'Pelaajat (täsmälleen 2)':'Pelaajat (1–8)';document.getElementById('ai-selector').style.display=f2?'none':'block';renderSetupP();renderOpts(gid);updSBtn();renderAIAdded();navTo('pg-setup');}
 function renderSetupP(){var el=document.getElementById('setup-plist'),nm=document.getElementById('nop-msg');if(!PL.length){el.innerHTML='';nm.style.display='block';return;}nm.style.display='none';el.innerHTML=PL.map(function(p,i){return'<div class="pr" id="pr-'+p.id+'" onclick="toggleP('+p.id+')"><div class="prav '+AVC[i%AVC.length]+'">'+inits(p.name)+'</div><span class="prn">'+p.name+(p.nick?' <span style="font-size:11px;color:var(--color-text-tertiary)">"'+p.nick+'"</span>':'')+'</span><div class="prck">✓</div></div>';}).join('');}
 function toggleP(id){var gdef=GAMES.find(function(x){return x.id===S.gid;});var maxP=gdef?gdef.max||8:8;var i=S.sel.indexOf(id);if(i>=0)S.sel.splice(i,1);else if(S.sel.length+aiPlayers.length<maxP)S.sel.push(id);document.querySelectorAll('.pr').forEach(function(r){r.classList.remove('sel');});S.sel.forEach(function(pid){var el=document.getElementById('pr-'+pid);if(el)el.classList.add('sel');});updSBtn();}
@@ -511,7 +1853,7 @@ function renderOpts(gid){var oc=document.getElementById('opts-card'),ob=document
 function mkOpts(key,vals,def){S.opts[key]=def;return'<div class="orow" id="orow-'+key+'">'+vals.map(function(v){return'<button class="ob'+(v===def?' on':'')+'" data-key="'+key+'" data-val="'+v+'" onclick="pickOpt(this)">'+v+'</button>';}).join('')+'</div>';}
 function pickOpt(b){S.opts[b.dataset.key]=+b.dataset.val;var row=document.getElementById('orow-'+b.dataset.key);if(row)row.querySelectorAll('.ob').forEach(function(x){x.classList.toggle('on',x===b);});}
 function getOptsCfg(gid){switch(gid){case 'g100':return{title:'Tavoitepisteet',html:mkOpts('target',[100,200,300,400,500,600,700,800,900],100)};case 'g501':return{title:'Aloituspisteet',html:mkOpts('target',[101,201,301,401,501,601,701,801,901],501)};case 'gotcha':return{title:'Tavoite',html:mkOpts('target',[101,201,301,401,501,601,701,801,901],301)};case 'nines':return{title:'Elämät',html:mkOpts('lives',[3,6,9],3)};case 'clock':return{title:'Tavoitenumero',html:mkOpts('target',[5,10,15,20],20)};case 'golf':return{title:'Reikiä',html:mkOpts('holes',[9,18],9)};case 'killer':return{title:'Elämät',html:mkOpts('lives',[1,2,3,4,5,6,7,8,9],3)};case 'jailer':return{title:'Kohdenumeroita',html:mkOpts('target',[5,10,15,20],10)};case 'halveit':return{title:'Kierroksia',html:mkOpts('rounds',[8,12,16,20],12)};case 'stairs':return{title:'Aloitustavoite',html:mkOpts('start',[10,15,20],10)};case 'shadow':return{title:'Kierroksia',html:mkOpts('rounds',[5,10,15,20],10)};case 'fives':return{title:'Asetukset',html:'<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Pisteraja (5:n tarkkuus)</div><div style="display:flex;align-items:center;gap:12px"><button onclick="fivesAdj(-5)" style="width:40px;height:40px;border-radius:50%;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);font-size:22px;cursor:pointer;font-family:inherit;flex-shrink:0">−</button><div style="flex:1;text-align:center"><span id="fives-val-disp" style="font-size:36px;font-weight:500;color:var(--color-text-primary)">'+(S.opts.target||50)+'</span><div style="font-size:12px;color:var(--color-text-tertiary);margin-top:2px">pistettä</div></div><button onclick="fivesAdj(5)" style="width:40px;height:40px;border-radius:50%;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);font-size:22px;cursor:pointer;font-family:inherit;flex-shrink:0">+</button></div></div><div style="margin-top:4px"><div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Pelitapa</div><div style="display:flex;flex-direction:column;gap:8px"><div onclick="fivesSetBust(false)" id="fives-mode-free" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--border-radius-md);border:0.5px solid #1D9E75;background:#E1F5EE;cursor:pointer"><div style="width:16px;height:16px;border-radius:50%;border:2px solid #1D9E75;background:#1D9E75;flex-shrink:0;display:flex;align-items:center;justify-content:center"><div style="width:6px;height:6px;border-radius:50%;background:#fff"></div></div><div><div style="font-size:14px;font-weight:500;color:#085041">Vapaa</div><div style="font-size:11px;color:#0F6E56;margin-top:1px">Pisteet voivat ylittää rajan — voitto kun raja ylittyy</div></div></div><div onclick="fivesSetBust(true)" id="fives-mode-bust" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);cursor:pointer"><div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--color-border-secondary);flex-shrink:0"></div><div><div style="font-size:14px;font-weight:500">Tarkka (kuten 501)</div><div style="font-size:11px;color:var(--color-text-tertiary);margin-top:1px">Yli meneminen palauttaa pisteet vuoron alkuun</div></div></div></div></div>'};
-case 'engcrkt':return{title:'Hilat',html:mkOpts('wickets',[2,3,4,5,6,7,8,9,10],10)};case 'thief':return{title:'Pisteraja',html:mkOpts('target',[100,200,300,400,500,600,700,800,900],300)+'<div style="margin-top:10px;display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:var(--color-text-secondary)">Suojattu johtaja</span><button id="tog-soloMode" class="toggle off" onclick="S.opts.soloMode=!S.opts.soloMode;this.className=\'toggle \'+(S.opts.soloMode?\'on\':\'off\')"></button></div><div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Kun päällä: johtava pelaaja on ainut joka voi kerätä pisteitä numerosta — ei voi varastaa</div>'};default:return null;}}
+case 'engcrkt':return{title:'Hilat',html:mkOpts('wickets',[2,3,4,5,6,7,8,9,10],10)};case 'thief':return{title:'Pisteraja',html:mkOpts('target',[100,200,300,400,500,600,700,800,900],300)+'<div style="margin-top:10px;display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:var(--color-text-secondary)">Suojattu johtaja</span><button id="tog-soloMode" class="toggle off" onclick="S.opts.soloMode=!S.opts.soloMode;this.className=\'toggle \'+(S.opts.soloMode?\'on\':\'off\')"></button></div><div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Kun päällä: ruutu siirtyy uudelle omistajalle mutta vanhalta ei varasteta pisteitä. Kun pois: pisteet varastetaan edelliseltä omistajalta</div>'};default:return null;}}
  
 var G=null;
 function fivesAdj(delta){S.opts.target=Math.max(5,Math.min(500,(S.opts.target||50)+delta));var el=document.getElementById('fives-val-disp');if(el)el.textContent=S.opts.target;}
@@ -527,18 +1869,28 @@ function buildG(gid,ps,opts){
     case 'killer':g.ex.nums={};g.ex.killers={};g.ex.lives={};g.ex.phase='assign';ps.forEach(function(p){g.ex.nums[p.id]=null;g.ex.killers[p.id]=false;g.ex.lives[p.id]=opts.lives||3;});break;
     case 'scrkt':case 'ptscrkt':case 'ctcrkt':g.ex.marks={};ps.forEach(function(p){g.ex.marks[p.id]={};[15,16,17,18,19,20,'B'].forEach(function(n){g.ex.marks[p.id][n]=0;});});break;
     case 'engcrkt':{var bi=Math.random()<.5?0:1;g.ex.batter=ps[bi].id;g.ex.bowler=ps[1-bi].id;g.ex.wmax=opts.wickets||10;g.ex.wickets=opts.wickets||10;g.ex.inn=1;break;}
-    case 'golf':g.ex.hole=1;g.ex.maxH=opts.holes||9;g.ex.gs={};g.ex.golfSel={};ps.forEach(function(p){g.ex.gs[p.id]=[];});break;
+    case 'golf':g.ex.hole=1;g.ex.maxH=opts.holes||9;g.ex.gs={};g.ex.golfSel={};g.ex.tiedPlayers=null;ps.forEach(function(p){g.ex.gs[p.id]=[];});break;
     case 'stairs':g.ex.target=opts.start||10;g.ex.step=opts.start||10;g.ex.eliminated={};g.ex.roundScores={};ps.forEach(function(p){g.ex.eliminated[p.id]=false;});break;
     case 'halveit':g.ex.targets=buildHT(opts.rounds||12);g.ex.hi=0;break;
     case 'shadow':g.ex.maxR=opts.rounds||10;g.ex.hits={};break;
     case 'jailer':g.ex.tmax=opts.target||10;g.ex.tnum=1;g.ex.pris={};g.ex.jailAtTurnStart={};g.ex.survived={};g.ex.lastRound=false;ps.forEach(function(p){g.ex.pris[p.id]={};g.ex.jailAtTurnStart[p.id]=0;g.ex.survived[p.id]=0;});break;
     case 'battle':g.ex.phase='setup';g.ex.ships={};g.ex.shipHits={};g.ex.bhits={};g.ex.hitLog=[];g.ex.si=0;ps.forEach(function(p){g.ex.ships[p.id]=[];g.ex.bhits[p.id]=0;});break;
     case 'thief':g.ex.hits={};g.ex.owner={};g.ex.pts={};g.ex.soloMode=opts.soloMode||false;ps.forEach(function(p){g.ex.hits[p.id]={};g.ex.pts[p.id]={};});break;
-    case 'knockdown':{g.ex.tgts={};var n=ps.length;var mpp=Math.min(5,Math.floor(20/n));var allNums=[];for(var ki=1;ki<=20;ki++)allNums.push(ki);allNums.sort(function(){return Math.random()-.5;});ps.forEach(function(p,i){var nums=allNums.slice(i*mpp,(i+1)*mpp);g.ex.tgts[p.id]=nums.map(function(num){return{n:num,up:true};});});break;}
+    case 'knockdown':{g.ex.tgts={};g.ex.knocked=[];var n=ps.length;var mpp=Math.min(5,Math.floor(20/n));var allNums=[];for(var ki=1;ki<=20;ki++)allNums.push(ki);allNums.sort(function(){return Math.random()-.5;});ps.forEach(function(p,i){var nums=allNums.slice(i*mpp,(i+1)*mpp);g.ex.tgts[p.id]=nums.map(function(num){return{n:num,up:true};});});break;}
     case 'fives':g.ex.win=opts.target||50;g.ex.bustMode=opts.bustMode||false;g.ex.fivesSnap={};ps.forEach(function(p){g.ex.fivesSnap[p.id]=0;});break;
     case 'clock':g.ex.prog={};g.ex.tgt=opts.target||20;ps.forEach(function(p){g.ex.prog[p.id]=0;});break;
     case 'gotcha':g.ex.win=opts.target||301;g.ex.gotchaSnap={};ps.forEach(function(p){g.ex.gotchaSnap[p.id]=0;});break;
   }
+  // Snapshot heittotilastoista pelin alussa
+  var _snapTs=Date.now();
+  g.startTs=_snapTs;
+  ps.forEach(function(p){
+    var fp=PL.find(function(x){return x.id===p.id;});
+    if(!fp||p.isAI)return;
+    fp.stats=fp.stats||{};
+    var h=fp.stats.hits||{};
+    fp['_hitSnap_'+g.gid+'_'+_snapTs]=JSON.parse(JSON.stringify(h));
+  });
   return g;
 }
 function buildHT(count){var pool=[];for(var i=1;i<=20;i++)pool.push({type:'num',label:''+i,n:i});pool.push({type:'double',label:'Tupla'},{type:'triple',label:'Tripla'},{type:'bull',label:'Bull',n:'B'});return pool.sort(function(){return Math.random()-.5;}).slice(0,count);}
@@ -560,7 +1912,7 @@ function runAITurn(){var cp=G.players[G.ci];if(!cp||!cp.isAI||G.done)return;aiAc
 }
 function showAIO(player,txt){var a=document.getElementById('game-area');var o=document.getElementById('ai-o');if(!o){o=document.createElement('div');o.id='ai-o';o.className='ai-turn-overlay';a.appendChild(o);}o.innerHTML='<div class="ai-name-display">'+(player.emoji||'🤖')+' '+player.name+'</div><div class="ai-throw-display">'+(txt||'')+'</div><div class="ai-thinking">Heittää...</div>';}
 function hideAIO(){var o=document.getElementById('ai-o');if(o)o.remove();}
-function startTmr(){clearTmr();if(!G||G.done)return;tsecs=5;updTmr();tmr=setInterval(function(){tsecs--;if(tsecs<=0){clearTmr();confirmTurn();}else updTmr();},1000);}
+function startTmr(){clearTmr();if(!G||G.done)return;tsecs=5;updTmr();tmr=setInterval(function(){tsecs--;if(tsecs<=0){clearTmr();if(G.gid==='golf')golfConfirm();else confirmTurn();}else updTmr();},1000);}
 function updTmr(){var el=document.getElementById('tmr-n');if(el){el.textContent=tsecs;el.className='tnum '+(tsecs<=2?'urg':'ok');}}
 function skipTmr(){clearTmr();confirmTurn();}
 function cancelTmr(){clearTmr();if(G&&G.throws.length>0){var t=G.throws.pop();revertThrow(t);}if(G.gid==='jailer')renderJailer();else if(G.gid==='nines')renderNines();else renderG();}
@@ -613,21 +1965,42 @@ function applyThrow(t){
     case 'thief':{
       if(t.miss)break;var tkey=String(t.num);G.ex.hits[cp.id][tkey]=(G.ex.hits[cp.id][tkey]||0)+1;G.ex.pts[cp.id][tkey]=(G.ex.pts[cp.id][tkey]||0)+t.pts;
       var tmh=G.ex.hits[cp.id][tkey];var tprev=G.ex.owner[tkey];var tpoh=tprev?(G.ex.hits[tprev][tkey]||0):0;
-      // Solo mode: check if the owner is the current score leader — if so, can't steal
-      var soloProtected=false;
-      if(G.ex.soloMode&&tprev&&tprev!==cp.id){
-        var maxScore=Math.max.apply(null,G.players.map(function(p){return G.scores[p.id]||0;}));
-        if((G.scores[tprev]||0)>=maxScore)soloProtected=true;
+      if(!tprev){
+        // Ei omistajaa — ota haltuun ja lisää pisteet
+        G.ex.owner[tkey]=cp.id;G.scores[cp.id]+=t.pts;
+      } else if(tprev===cp.id){
+        // Oma ruutu — lisää pisteet
+        G.scores[cp.id]+=t.pts;
+      } else if(tmh>tpoh){
+        // Enemmän osumia → valtaa ruutu
+        if(G.ex.soloMode){
+          // Kytkin päällä: omistaja vaihtuu mutta pisteitä ei siirretä, vain uusi omistaja saa pisteet
+          G.ex.owner[tkey]=cp.id;G.scores[cp.id]+=t.pts;
+        } else {
+          // Kytkin pois: perinteiset varastaminen — siirretään pisteet edelliseltä
+          var top=G.ex.pts[tprev][tkey]||0;G.scores[tprev]=Math.max(0,G.scores[tprev]-top);G.scores[cp.id]+=t.pts;G.ex.owner[tkey]=cp.id;
+        }
       }
-      if(!tprev){G.ex.owner[tkey]=cp.id;G.scores[cp.id]+=t.pts;}
-      else if(tprev===cp.id){G.scores[cp.id]+=t.pts;}
-      else if(!soloProtected&&tmh>tpoh){var top=G.ex.pts[tprev][tkey]||0;G.scores[tprev]=Math.max(0,G.scores[tprev]-top);G.scores[cp.id]+=t.pts;G.ex.owner[tkey]=cp.id;}
-      else if(soloProtected){/* johtaja suojattu, ei pisteitä */}
       break;}
     case 'knockdown':{
       if(t.miss)break;var kn=+t.num;
-      G.players.forEach(function(p){if(p.id!==cp.id)G.ex.tgts[p.id].forEach(function(tg){if(tg.n===kn&&!tg.up)tg.up=true;});});
-      G.ex.tgts[cp.id].forEach(function(tg){if(tg.n===kn&&tg.up)tg.up=false;else if(tg.n===kn&&!tg.up)tg.up=true;});
+      // Muiden kaadetut keilat nousevat — PAITSI jos pelaaja on jo knocked (kaikki kaadettu)
+      G.players.forEach(function(p){
+        if(p.id!==cp.id&&G.ex.knocked.indexOf(p.id)<0){
+          G.ex.tgts[p.id].forEach(function(tg){if(tg.n===kn&&!tg.up)tg.up=true;});
+        }
+      });
+      // Omat keilat: jos itse ei ole knocked, kaatuu/nousee normaalisti
+      if(G.ex.knocked.indexOf(cp.id)<0){
+        G.ex.tgts[cp.id].forEach(function(tg){
+          if(tg.n===kn&&tg.up)tg.up=false;
+          else if(tg.n===kn&&!tg.up)tg.up=true;
+        });
+        // Tarkista voitto heti: kaikki omat kaadettu
+        if(G.ex.tgts[cp.id].every(function(tg){return!tg.up;})){
+          G.ex.knocked.push(cp.id);
+        }
+      }
       break;}
   }
 }
@@ -644,20 +2017,28 @@ function revertThrow(t){
   }
 }
  
+function recordRoundStats(cp,ts){
+  if(!cp||cp.isAI||cp.id<=0)return;
+  var fp=PL.find(function(x){return x.id===cp.id;});if(!fp)return;
+  fp.stats=fp.stats||{};
+  var pts=ts.reduce(function(a,t){return a+(t._bust?0:t.pts);},0);
+  if(pts>=(fp.stats.bestRound||0))fp.stats.bestRound=pts;
+  if(pts>100)fp.stats.over100=(fp.stats.over100||0)+1;
+}
 function checkMidTurnWin(){
   if(!G||G.done)return false;
   var cp=G.players[G.ci];var ts=G.throws;
   switch(G.gid){
-    case 'g100':if(G.scores[cp.id]>=(G.opts.target||100)){startWinTmr(cp);renderG();return true;}break;
-    case 'gotcha':if(G.scores[cp.id]===G.ex.win){startWinTmr(cp);renderG();return true;}break;
-    case 'g501':if(G.scores[cp.id]===0){playerFinishes(cp);renderG();return true;}break;
-    case 'clock':if(G.ex.prog[cp.id]>=G.ex.tgt){startWinTmr(cp);renderG();return true;}break;
+    case 'g100':if(G.scores[cp.id]>=(G.opts.target||100)){recordRoundStats(cp,ts);startWinTmr(cp);renderG();return true;}break;
+    case 'gotcha':if(G.scores[cp.id]===G.ex.win){recordRoundStats(cp,ts);startWinTmr(cp);renderG();return true;}break;
+    case 'g501':if(G.scores[cp.id]===0){recordRoundStats(cp,ts);playerFinishes(cp);renderG();return true;}break;
+    case 'clock':if(G.ex.prog[cp.id]>=G.ex.tgt){recordRoundStats(cp,ts);startWinTmr(cp);renderG();return true;}break;
     case 'scrkt':{var CN5=[15,16,17,18,19,20,'B'];if(CN5.every(function(n){return(G.ex.marks[cp.id][n]||0)>=3;})){startWinTmr(cp);renderG();return true;}break;}
     case 'ptscrkt':{var CN6=[15,16,17,18,19,20,'B'];if(CN6.every(function(n){return G.players.every(function(p){return(G.ex.marks[p.id][n]||0)>=3;});})){startWinTmr(G.players.reduce(function(a,b){return G.scores[a.id]>G.scores[b.id]?a:b;}));renderG();return true;}break;}
     case 'ctcrkt':{var CN7=[15,16,17,18,19,20,'B'];if(CN7.every(function(n){return G.players.every(function(p){return(G.ex.marks[p.id][n]||0)>=3;});})){startWinTmr(G.players.reduce(function(a,b){return G.scores[a.id]<G.scores[b.id]?a:b;}));renderG();return true;}break;}
     case 'killer':{if(G.ex.phase!=='play')break;var alive=G.players.filter(function(p){return G.ex.lives[p.id]>0;});if(alive.length<=1){startWinTmr(alive[0]||cp);renderG();return true;}break;}
     case 'thief':if(G.scores[cp.id]>=(G.opts.target||300)){startWinTmr(cp);renderG();return true;}break;
-    case 'knockdown':if(G.ex.tgts[cp.id].every(function(t){return!t.up;})){startWinTmr(cp);renderG();return true;}break;
+    case 'knockdown':break;
     case 'battle':if((G.ex.bhits[cp.id]||0)>=3){startWinTmr(cp);renderG();return true;}break;
     case 'shanghai':{var rn=G.round;var shh=ts.filter(function(t){return!t.miss&&+t.num===rn;});var types={};shh.forEach(function(h){types[h.type]=true;});if(types['big_single']&&types['double']&&types['triple']){startWinTmr(cp);renderG();return true;}break;}
     case 'jailer':{
@@ -697,7 +2078,8 @@ function renderBoard(){
   NUMS.forEach(function(num,i){var a1=base+i*18,a2=a1+18,ev=i%2===0,mid=base+i*18+9;var dc=ev?'#1D9E75':'#E24B4A',bc=ev?'#282828':'#c0956a';segs+='<path d="'+arc(R_DI,R_DO,a1,a2)+'" fill="'+dc+'" class="bs" data-n="'+num+'" data-t="double" data-l="D'+num+'" data-pts="'+(num*2)+'"/>';segs+=shTxt(num,'double',num*2,(R_DI+R_DO)/2,mid);segs+='<path d="'+arc(R_GI,R_GO,a1,a2)+'" fill="'+bc+'" class="bs" data-n="'+num+'" data-t="big_single" data-l="'+num+'" data-pts="'+num+'"/>';segs+=shTxt(num,'big_single',num,(R_GI+R_GO)/2,mid);segs+='<path d="'+arc(R_TI,R_TO,a1,a2)+'" fill="'+dc+'" class="bs" data-n="'+num+'" data-t="triple" data-l="T'+num+'" data-pts="'+(num*3)+'"/>';segs+=shTxt(num,'triple',num*3,(R_TI+R_TO)/2,mid);var mr=toR(mid);segs+='<text x="'+(CX+R_NL*Math.cos(mr))+'" y="'+(CY+R_NL*Math.sin(mr))+'" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="700" fill="#e8e8e8" font-family="sans-serif" pointer-events="none">'+num+'</text>';});
   segs+='<circle cx="'+CX+'" cy="'+CY+'" r="'+R_BO+'" fill="#1D9E75" class="bs" data-n="B" data-t="bull_outer" data-l="OB" data-pts="25"/>';
   segs+='<circle cx="'+CX+'" cy="'+CY+'" r="'+R_BI+'" fill="#E24B4A" class="bs" data-n="B" data-t="bull_inner" data-l="IB" data-pts="50"/>';
-  return'<div class="bwrap"><svg id="bsvg" viewBox="0 0 '+SZ+' '+SZ+'" style="width:100%;max-width:520px;cursor:crosshair;touch-action:manipulation;display:block"><style>#bsvg *{stroke:none!important}</style><rect width="'+SZ+'" height="'+SZ+'" fill="#ebebed"/><circle cx="'+CX+'" cy="'+CY+'" r="250" fill="#111"/>'+segs+'</svg></div>';
+  if(isSh){var obKey='bull_outer_B';var ibKey='bull_inner_B';var obHits=G.ex.hits[obKey]||0;var ibHits=G.ex.hits[ibKey]||0;var obEff=Math.floor(25*Math.pow(.5,obHits));var ibEff=Math.floor(50*Math.pow(.5,ibHits));segs+='<text x="'+CX+'" y="'+(CY+3)+'" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="700" fill="rgba(255,255,255,'+(ibEff>0?.92:.3)+')" font-family="sans-serif" pointer-events="none">'+ibEff+'</text>';segs+='<text x="'+CX+'" y="'+(CY-20)+'" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="700" fill="rgba(255,255,255,'+(obEff>0?.92:.3)+')" font-family="sans-serif" pointer-events="none">'+obEff+'</text>';}
+  return'<div class="bwrap"><svg id="bsvg" viewBox="0 0 '+SZ+' '+SZ+'" style="width:100%;max-width:680px;cursor:crosshair;touch-action:manipulation;display:block"><style>#bsvg *{stroke:none!important}</style><rect width="'+SZ+'" height="'+SZ+'" fill="#ebebed"/><circle cx="'+CX+'" cy="'+CY+'" r="250" fill="#111"/>'+segs+'</svg></div>';
 }
 function attachBoard(){document.querySelectorAll('#bsvg .bs').forEach(function(el){el.style.cursor='pointer';el.addEventListener('click',function(e){e.stopPropagation();if(G.throws.length>=3||(G.players[G.ci]&&G.players[G.ci].isAI))return;if(G.gid==='jailer'&&jailCanThrow(G.players[G.ci].id)<=0)return;if(G.gid==='battle'){var ci=G.ci;var mr=ci===0?[11,12,13,14,15,16,17,18,19,20]:[1,2,3,4,5,6,7,8,9,10];var rn2=this.dataset.n;if(rn2!=='B'&&mr.indexOf(parseInt(rn2))<0)return;}var rn=this.dataset.n,tp=this.dataset.t,l=this.dataset.l,pts=parseInt(this.dataset.pts,10);var n=rn==='B'?'B':parseInt(rn,10);reg(n,tp,l,pts);});});}
  
@@ -787,15 +2169,44 @@ function renderJailer(){
  
 function renderThief(){var cp=G.players[G.ci];var maxScore=Math.max.apply(null,G.players.map(function(p){return G.scores[p.id]||0;}));var h='<div class="thief-grid">';for(var n=1;n<=20;n++){var k=String(n);var ow=G.ex.owner[k];var isme=ow===cp.id;var isoth=ow&&ow!==cp.id;var mh=G.ex.hits[cp.id][k]||0;var oh=ow?(G.ex.hits[ow][k]||0):0;var on2=ow?(G.players.find(function(p){return p.id===ow;})||{name:'?'}).name.split(' ')[0]:'—';var cls='thief-cell'+(isme?' mine':isoth?' others':'');var isProtected=G.ex.soloMode&&ow&&ow!==cp.id&&(G.scores[ow]||0)>=maxScore;h+='<div class="'+cls+'"'+(isProtected?' style="border-color:#BA7517;background:#FAEEDA"':'')+'>'+( isProtected?'<div style="font-size:9px;color:#BA7517;margin-bottom:1px">🛡</div>':'')+' <div class="thief-cell-num">'+n+'</div>'+(ow?'<div class="thief-cell-hits">'+mh+'/'+oh+'</div>':'')+(ow?'<div class="thief-cell-owner" style="color:'+(isme?'#085041':isProtected?'#BA7517':'#791F1F')+'">'+(isme?'★':on2)+'</div>':'')+'</div>';}h+='</div><div class="ib">★=sinun. Omat/johtajan osumat. Enemmän → valtaat! Tavoite: <b>'+(G.opts.target||300)+'p</b>'+(G.ex.soloMode?' · 🛡 Johtaja suojattu':'')+'</div>';return h;}
  
-function renderGolf(){var cp=G.players[G.ci];var isAI=cp.isAI;var origH=G.opts.holes||9;var isExtra=G.ex.hole>origH;var h='';h+='<div class="order-banner">Järjestys: '+G.players.map(function(p,i){return'<span style="'+(i===G.ci?'color:var(--color-text-primary);font-weight:500':'')+'">'+ p.name.split(' ')[0]+'</span>';}).join(' → ')+'</div>';h+='<div class="shdr"><div class="shdr-l"><div class="scp">'+cp.name+'</div><div class="sti">Reikä '+G.ex.hole+'/'+(isExtra?G.ex.maxH:origH)+(isExtra?' (lisäreikä!)':'')+'</div></div></div>';h+='<div class="sbar">'+G.players.map(function(p,i){var sc=G.ex.gs[p.id]||[];var tot=sc.reduce(function(a,b){return a+b;},0);return'<div class="chip'+(i===G.ci?' act':'')+'"><div class="cn">'+p.name.split(' ')[0]+'</div><div class="cs">'+tot+'</div><div class="ce">'+sc.length+'rk</div></div>';}).join('')+'</div>';h+=renderGolfT();if(!isAI){var sel=G.ex.golfSel[cp.id];var labs=['Tripla','Tupla','Single iso','Single pieni','Ohi'];h+='<div style="padding:14px 16px 8px;font-size:13px;font-weight:500;color:var(--color-text-secondary)">Valitse tulos reiälle '+G.ex.hole+':</div>';h+='<div class="golf-btns">'+[1,2,3,4,5].map(function(v){return'<button class="golf-btn'+(sel===v?' sel':'')+'" onclick="golfPick('+v+')"><div>'+v+'</div><div class="golf-label">'+labs[v-1]+'</div></button>';}).join('')+'</div>';if(sel!==undefined)h+='<div class="gacts"><button class="ga dn" onclick="golfUndo()">↩ Kumoa</button><button class="ga" style="background:#1D9E75;color:#fff;border-color:#1D9E75" onclick="golfConfirm()">Vahvista ›</button></div>';}document.getElementById('game-area').innerHTML=h;if(isAI){var l=AIL[cp.level];var r=Math.random();var str=r<l.tripleRate?1:r<l.tripleRate+l.doubleRate?2:r<l.hitRate?3:r<l.hitRate+.05?4:5;setTimeout(function(){G.ex.golfSel[cp.id]=str;golfConfirm();},1200);}}
-function golfPick(v){G.ex.golfSel[G.players[G.ci].id]=v;renderGolf();}
-function golfUndo(){delete G.ex.golfSel[G.players[G.ci].id];renderGolf();}
-function golfConfirm(){var cp=G.players[G.ci];var str=G.ex.golfSel[cp.id];if(str===undefined)return;G.ex.gs[cp.id].push(str);G.scores[cp.id]=G.ex.gs[cp.id].reduce(function(a,b){return a+b;},0);delete G.ex.golfSel[cp.id];G.throws=[];var lastOfRound=(G.ci+1)%G.players.length===0;if(lastOfRound){G.ex.hole++;if(G.ex.hole>G.ex.maxH){// Kierrokset loppu — tarkista tasatilanne voitosta
-    var _gmn=Math.min.apply(null,G.players.map(function(p){return G.scores[p.id];}));var _gld=G.players.filter(function(p){return G.scores[p.id]===_gmn;});if(_gld.length===1){G.throws=[];playerFinishes(_gld[0]);return;}// Tasatilanne → lisäreikä
-    G.ex.maxH++;}}advanceTurn();}
+function renderGolf(){var cp=G.players[G.ci];var isAI=cp.isAI;var origH=G.opts.holes||9;var h='';h+='<div class="order-banner">Järjestys: '+G.players.map(function(p,i){return'<span style="'+(i===G.ci?'color:var(--color-text-primary);font-weight:500':'')+'">'+p.name.split(' ')[0]+'</span>';}).join(' → ')+'</div>';h+='<div class="shdr"><div class="shdr-l"><div class="scp">'+cp.name+'</div><div class="sti">Reikä '+G.ex.hole+'/'+origH+'</div></div>'+(G.ex.golfSel[cp.id]!==undefined&&!isAI?'<div class="tbox"><div class="tnum ok" id="tmr-n">5</div><div class="tbtns"><button class="tcancel" onclick="golfUndo()">↩ Peruuta</button></div></div>':'')+"</div>";h+='<div class="sbar">'+G.players.map(function(p,i){var sc=G.ex.gs[p.id]||[];var tot=sc.reduce(function(a,b){return a+b;},0);return'<div class="chip'+(i===G.ci?' act':'')+'"><div class="cn">'+p.name.split(' ')[0]+'</div><div class="cs">'+tot+'</div><div class="ce">'+sc.length+'rk</div></div>';}).join('')+'</div>';h+=renderGolfT();if(!isAI){var sel=G.ex.golfSel[cp.id];var labs=['Tripla','Tupla','Single iso','Single pieni','Ohi'];h+='<div style="padding:14px 16px 8px;font-size:13px;font-weight:500;color:var(--color-text-secondary)">Valitse tulos reiälle '+G.ex.hole+':</div>';h+='<div class="golf-btns">'+[1,2,3,4,5].map(function(v){return'<button class="golf-btn'+(sel===v?' sel':'')+'\" onclick="golfPick('+v+')"><div>'+v+'</div><div class="golf-label">'+labs[v-1]+'</div></button>';}).join('')+'</div>';}document.getElementById('game-area').innerHTML=h;if(isAI){var l=AIL[cp.level];var r=Math.random();var str=r<l.tripleRate?1:r<l.tripleRate+l.doubleRate?2:r<l.hitRate?3:r<l.hitRate+.05?4:5;setTimeout(function(){G.ex.golfSel[cp.id]=str;golfConfirm();},1200);}if(!isAI&&G.ex.golfSel[cp.id]!==undefined)startTmr();}
+function golfPick(v){clearTmr();G.ex.golfSel[G.players[G.ci].id]=v;renderGolf();}
+function golfUndo(){clearTmr();delete G.ex.golfSel[G.players[G.ci].id];renderGolf();}
+function golfConfirm(){
+  var cp=G.players[G.ci];
+  var str=G.ex.golfSel[cp.id];
+  if(str===undefined)return;
+
+  // Tallenna tulos
+  G.ex.gs[cp.id].push(str);
+  G.scores[cp.id]=G.ex.gs[cp.id].reduce(function(a,b){return a+b;},0);
+  delete G.ex.golfSel[cp.id];
+  G.throws=[];
+
+  // Ovatko kaikki pelaajat pelanneet yhtä monta reikää?
+  var minHoles=Math.min.apply(null,G.players.map(function(p){return G.ex.gs[p.id].length;}));
+  var maxHoles=Math.max.apply(null,G.players.map(function(p){return G.ex.gs[p.id].length;}));
+
+  if(minHoles===maxHoles){
+    G.ex.hole=minHoles+1;
+    if(minHoles>=G.ex.maxH){
+      // Kierrokset loppui — voittaja on pienimmät pisteet kerännyt
+      // Laitetaan kaikki pelaajat järjestykseen pisteiden mukaan (pienin ensin = paras)
+      var sorted=G.players.slice().sort(function(a,b){return G.scores[a.id]-G.scores[b.id];});
+      sorted.forEach(function(p){if(!hasFinished(p.id))G.finishOrder.push(p.id);});
+      endGame();
+      return;
+    }
+  }
+
+  advanceTurn();
+}
+
+// Poista vanha golfAfterAdvance — ei tarvita
+function golfAfterAdvance(){}
 function renderGolfT(){var h=G.ex.hole-1;if(h===0)return'';return'<div style="padding:4px 12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="color:var(--color-text-tertiary)">'+['Pelaaja'].concat(Array.from({length:h},function(_,i){return i+1;}),['Yht']).map(function(x){return'<th style="padding:3px 5px;border-bottom:0.5px solid var(--color-border-tertiary)">'+x+'</th>';}).join('')+'</tr>'+G.players.map(function(p){var sc=G.ex.gs[p.id]||[];return'<tr>'+[p.name.split(' ')[0]].concat(sc,[sc.reduce(function(a,b){return a+b;},0)]).map(function(v,i){return'<td style="padding:3px 5px;text-align:center;border-bottom:0.5px solid var(--color-border-tertiary);color:'+(i>0&&v<=2?'#1D9E75':i>0&&v>=5?'#c00':'var(--color-text-primary)')+'">'+v+'</td>';}).join('')+'</tr>';}).join('')+'</table></div>';}
  
-function renderKnockdown(){var h='<div class="kd-area">';G.players.forEach(function(p){h+='<div class="kd-section"><div class="kd-player-label">'+p.name.split(' ')[0]+'</div><div class="kd-grid">';G.ex.tgts[p.id].forEach(function(t){h+='<div class="kd-target '+(t.up?'up':'down')+'"><span style="font-size:22px;font-weight:700">'+t.n+'</span>'+(!t.up?'<span class="kd-x">✕</span>':'')+'</div>';});h+='</div></div>';});h+='</div>';return h;}
+function renderKnockdown(){var h='<div class="kd-area">';G.players.forEach(function(p){var isKnocked=G.ex.knocked.indexOf(p.id)>=0;h+='<div class="kd-section"><div class="kd-player-label" style="'+(isKnocked?'color:#1D9E75;font-weight:600':'')+'">'+p.name.split(' ')[0]+(isKnocked?' 🏆 Kaatanut kaikki!':'')+'</div><div class="kd-grid">';G.ex.tgts[p.id].forEach(function(t){h+='<div class="kd-target '+(t.up?'up':'down')+'" style="'+(isKnocked&&!t.up?'opacity:.4':'')+'"><span style="font-size:22px;font-weight:700">'+t.n+'</span>'+(!t.up?'<span class="kd-x">✕</span>':'')+'</div>';});h+='</div></div>';});h+='</div>';return h;}
  
 function renderKillerAssign(){var cp=G.players[G.ci];var taken=Object.values(G.ex.nums).filter(Boolean);var h='<div class="shdr"><div class="shdr-l"><div class="scp">'+cp.name+'</div><div class="sti">Valitse oma numero</div></div></div>';if(cp.isAI){h+='<div class="ib">'+cp.name+' valitsee...</div>';document.getElementById('game-area').innerHTML=h;setTimeout(function(){var avail=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].filter(function(n){return taken.indexOf(n)<0;});G.ex.nums[cp.id]=avail[Math.floor(Math.random()*avail.length)];killerConfirm();},900);return;}h+='<div class="ib">Valittu: <b>'+(G.ex.nums[cp.id]||'-')+'</b></div>';h+='<div class="qrow">'+[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(function(n){var t=taken.indexOf(n)>=0&&G.ex.nums[cp.id]!==n;return'<button class="qb'+(G.ex.nums[cp.id]===n?' on':'')+'" style="'+(t?'opacity:.3;cursor:not-allowed':'')+'" onclick="'+(t?'':'killerPick('+n+')')+'">'+n+'</button>';}).join('')+'</div>';h+='<div class="gacts"><button class="ga" style="'+(G.ex.nums[cp.id]?'background:#1D9E75;color:#fff;border-color:#1D9E75':'opacity:.4;cursor:not-allowed')+'" '+(G.ex.nums[cp.id]?'':'disabled')+' onclick="killerConfirm()">Vahvista ›</button></div>';document.getElementById('game-area').innerHTML=h;}
 function killerPick(n){var cp=G.players[G.ci];var taken=Object.values(G.ex.nums).filter(function(x){return x!==null&&x!==G.ex.nums[cp.id];});if(taken.indexOf(n)>=0)return;G.ex.nums[cp.id]=G.ex.nums[cp.id]===n?null:n;renderKillerAssign();}
@@ -814,14 +2225,15 @@ function recordHit(pid, type, num) {
   var fp = PL.find(function(p){ return p.id === pid; });
   if (!fp || pid < 0) return;
   fp.stats = fp.stats || {};
-  fp.stats.hits = fp.stats.hits || {bigSingle:0, smallSingle:0, double:0, triple:0, outerBull:0, innerBull:0};
-  if (type === 'bull_inner')       fp.stats.hits.innerBull  = (fp.stats.hits.innerBull  || 0) + 1;
-  else if (type === 'bull_outer')  fp.stats.hits.outerBull  = (fp.stats.hits.outerBull  || 0) + 1;
-  else if (type === 'double')      fp.stats.hits.double      = (fp.stats.hits.double      || 0) + 1;
-  else if (type === 'triple')      fp.stats.hits.triple      = (fp.stats.hits.triple      || 0) + 1;
-  else if (type === 'big_single')  fp.stats.hits.bigSingle   = (fp.stats.hits.bigSingle   || 0) + 1;
-  else if (type === 'small_single')fp.stats.hits.smallSingle = (fp.stats.hits.smallSingle || 0) + 1;
-  // ei saveP() tässä – tallennetaan vuoron vaihtuessa
+  fp.stats.hits = fp.stats.hits || {bigSingle:0,smallSingle:0,double:0,triple:0,outerBull:0,innerBull:0,miss:0,total:0};
+  fp.stats.hits.total = (fp.stats.hits.total||0) + 1;
+  if      (type==='bull_inner')  fp.stats.hits.innerBull  = (fp.stats.hits.innerBull ||0)+1;
+  else if (type==='bull_outer')  fp.stats.hits.outerBull  = (fp.stats.hits.outerBull ||0)+1;
+  else if (type==='double')      fp.stats.hits.double     = (fp.stats.hits.double    ||0)+1;
+  else if (type==='triple')      fp.stats.hits.triple     = (fp.stats.hits.triple    ||0)+1;
+  else if (type==='big_single')  fp.stats.hits.bigSingle  = (fp.stats.hits.bigSingle ||0)+1;
+  else if (type==='small_single')fp.stats.hits.smallSingle= (fp.stats.hits.smallSingle||0)+1;
+  else if (type==='miss')        fp.stats.hits.miss       = (fp.stats.hits.miss      ||0)+1;
 }
 
 function reg(num,type,label,ptsOvr){
@@ -832,9 +2244,9 @@ function reg(num,type,label,ptsOvr){
   var pts=miss?0:(ptsOvr!==undefined?ptsOvr:(type==='double'?+num*2:type==='triple'?+num*3:type==='bull_outer'?25:type==='bull_inner'?50:+num||0));
   var tObj={num:num,type:type,label:label,pts:pts,miss:miss,bull:bull};
   G.throws.push(tObj);applyThrow(tObj);playSfx(miss,bull);
-  // KORJAUS 2: Rekisteröi osuma tilastoihin heti
-  if(!miss && G.players[G.ci] && !G.players[G.ci].isAI && G.players[G.ci].id > 0){
-    recordHit(G.players[G.ci].id, type, num);
+  // Rekisteröi heitto tilastoihin heti (myös misset)
+  if(G.players[G.ci] && !G.players[G.ci].isAI && G.players[G.ci].id > 0){
+    recordHit(G.players[G.ci].id, miss?'miss':type, num);
   }
   if(tObj._bust){
     // Näytä bust-näkymä lyhyesti, sitten vaihda vuoro
@@ -898,29 +2310,38 @@ function confirmTurn(){
         }
       }
       break;
+    case 'knockdown':break;
     case 'thief':if(G.scores[cp.id]>=(G.opts.target||300)){playerFinishes(cp);return;}break;
     case 'battle':if((G.ex.bhits[cp.id]||0)>=3){playerFinishes(cp);return;}break;
   }
   if(G.gid==='jailer'){var jnx=(G.ci+1)%G.players.length;var jnp=G.players[jnx];G.ex.jailAtTurnStart[jnp.id]=Object.values(G.ex.pris[jnp.id]||{}).reduce(function(a,b){return a+b;},0);}
 
-  // KORJAUS 3: bestRound ja over100 — käyttää oikeaa pelaajaa ja jättää bust-heitot pois
-  if(cp && !cp.isAI && cp.id > 0){
-    var _fp2 = PL.find(function(x){ return x.id === cp.id; });
-    if(_fp2){
-      _fp2.stats = _fp2.stats || {};
-      var _roundPts = ts.reduce(function(a,t){ return a + (t._bust ? 0 : t.pts); }, 0);
-      if(_roundPts > (_fp2.stats.bestRound || 0)) _fp2.stats.bestRound = _roundPts;
-      if(_roundPts > 100) _fp2.stats.over100 = (_fp2.stats.over100 || 0) + 1;
-      saveP();
-    }
-  }
+  recordRoundStats(cp,ts);
 
   G.throws=[];advanceTurn();
 }
  
-function advanceTurn(){var total=G.players.length;var next=(G.ci+1)%total,loops=0;while(loops<total){var p=G.players[next];var skip=hasFinished(p.id)||(G.gid==='stairs'&&G.ex.eliminated[p.id])||(G.gid==='nines'&&(G.ex.lives[p.id]||0)<=0);if(!skip)break;next=(next+1)%total;loops++;}if(loops>=total||activePs().length===0){endGame();return;}G.ci=next;if(!G.done){renderG();playTurnChange();if(G.players[G.ci]&&G.players[G.ci].isAI)setTimeout(runAITurn,600);}}
+function advanceTurn(){var total=G.players.length;var next=(G.ci+1)%total,loops=0;while(loops<total){var p=G.players[next];var skip=hasFinished(p.id)||(G.gid==='stairs'&&G.ex.eliminated[p.id])||(G.gid==='nines'&&(G.ex.lives[p.id]||0)<=0)||(G.gid==='golf'&&G.ex.tiedPlayers&&G.ex.tiedPlayers.indexOf(p.id)<0)||(G.gid==='knockdown'&&G.ex.knocked.indexOf(p.id)>=0);if(!skip)break;next=(next+1)%total;loops++;}if(loops>=total||activePs().length===0){endGame();return;}G.ci=next;if(!G.done){renderG();playTurnChange();if(G.players[G.ci]&&G.players[G.ci].isAI)setTimeout(runAITurn,600);}}
 function playerFinishes(player){clearTmr();hideAIO();aiActive=false;if(!hasFinished(player.id))G.finishOrder.push(player.id);G.throws=[];if(activePs().length===0){endGame();return;}advanceTurn();}
-function recordGame(pid,gid,score,won,round){var fp=PL.find(function(p){return p.id===pid;});if(!fp||pid<0)return;fp.stats=fp.stats||{};fp.stats.gameHistory=fp.stats.gameHistory||{};fp.stats.gameHistory[gid]=fp.stats.gameHistory[gid]||[];fp.stats.gameHistory[gid].push({score:score,won:won,round:round});if(fp.stats.gameHistory[gid].length>30)fp.stats.gameHistory[gid]=fp.stats.gameHistory[gid].slice(-30);}
+function recordGame(pid,gid,score,won,round,throwStats,opts){
+  var fp=PL.find(function(p){return p.id===pid;});if(!fp||pid<0)return;
+  fp.stats=fp.stats||{};fp.stats.gameHistory=fp.stats.gameHistory||{};
+  fp.stats.gameHistory[gid]=fp.stats.gameHistory[gid]||[];
+  var entry={score:score,won:won,round:round,ts:Date.now(),gid:gid};
+  if(throwStats){
+    entry.triples=throwStats.triples||0;
+    entry.doubles=throwStats.doubles||0;
+    entry.singles=throwStats.singles||0;
+    entry.misses=throwStats.misses||0;
+    entry.bulls=throwStats.bulls||0;
+    entry.total=throwStats.total||0;
+    entry.ppt=throwStats.total>0?Math.round((throwStats.pts||0)/throwStats.total*10)/10:0;
+  }
+  // Tallenna asetukset jotta voidaan laskea oikea "täydellinen suoritus"
+  if(opts)entry.opts=JSON.parse(JSON.stringify(opts));
+  fp.stats.gameHistory[gid].push(entry);
+  if(fp.stats.gameHistory[gid].length>50)fp.stats.gameHistory[gid]=fp.stats.gameHistory[gid].slice(-50);
+}
  
 function endGame(){
   G.done=true;clearSp();playWin();
@@ -930,7 +2351,25 @@ function endGame(){
   G.players.forEach(function(p){
     if(p.isAI||p.id<0)return;
     var won=order[0]===p.id;var score=G.scores[p.id]||0;
-    recordGame(p.id,G.gid,score,won,rounds);
+    // Kerää heittotilastot profiilista (recordHit on päivittänyt niitä pelin aikana)
+    var fp2=PL.find(function(x){return x.id===p.id;});
+    var hitsNow=fp2&&fp2.stats&&fp2.stats.hits||{};
+    // Laske tämän pelin aikana kertyneet uudet heitot (snap otetaan pelin alussa)
+    var snapKey='_hitSnap_'+G.gid+'_'+(G.startTs||0);
+    var snap=fp2&&fp2[snapKey]||{};
+    var throwStats={
+      triples:(hitsNow.triple||0)-(snap.triple||0),
+      doubles:(hitsNow.double||0)-(snap.double||0),
+      singles:(hitsNow.bigSingle||0)-(snap.bigSingle||0)+(hitsNow.smallSingle||0)-(snap.smallSingle||0),
+      misses:(hitsNow.miss||0)-(snap.miss||0),
+      bulls:(hitsNow.innerBull||0)-(snap.innerBull||0)+(hitsNow.outerBull||0)-(snap.outerBull||0),
+      pts:0,total:0
+    };
+    throwStats.total=throwStats.triples+throwStats.doubles+throwStats.singles+throwStats.misses+throwStats.bulls;
+    throwStats.pts=throwStats.triples*45+throwStats.doubles*25+throwStats.singles*10+throwStats.bulls*37;
+    if(fp2)delete fp2[snapKey];
+    // Tallenna myös pelin asetukset vertailua varten
+    recordGame(p.id,G.gid,score,won,rounds,throwStats,G.opts);
     var fp=PL.find(function(x){return x.id===p.id;});if(!fp)return;
     fp.stats=fp.stats||{};fp.stats.games=(fp.stats.games||0)+1;
     if(isSolo&&!isBot)fp.stats.soloGames=(fp.stats.soloGames||0)+1;
@@ -969,7 +2408,9 @@ function renderPDetail(id){
     '<div class="fwtable"><div class="fwtitle">Nopein peli (kierroksia)</div>'+fwRows+'</div>';
   navTo('pg-pdetail');
 }
-function delProfile(){if(!curPid)return;if(!confirm('Poista pelaaja?'))return;PL=PL.filter(function(p){return p.id!==curPid;});saveP();navTo('pg-profiles');}
+function delProfile(){if(!curPid)return;var p=PL.find(function(x){return x.id===curPid;});if(!p)return;var name=p.name;showConfirmModal('Poista pelaaja?','Haluatko varmasti poistaa pelaajan <b>'+name+'</b>? Kaikki tilastot poistetaan pysyvästi.',function(){PL=PL.filter(function(x){return x.id!==curPid;});saveP();navTo('pg-profiles');});}
+function showConfirmModal(title,msg,onOk){var el=document.getElementById('confirm-modal');if(!el){el=document.createElement('div');el.id='confirm-modal';el.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);padding:24px';el.innerHTML='<div style="background:var(--color-surface);border-radius:16px;padding:24px;max-width:320px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.3)"><div id="cm-title" style="font-size:17px;font-weight:700;color:var(--color-text-primary);margin-bottom:10px"></div><div id="cm-msg" style="font-size:14px;color:var(--color-text-secondary);margin-bottom:20px;line-height:1.5"></div><div style="display:flex;gap:10px"><button onclick="closeConfirmModal()" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--color-border);background:var(--color-surface-raised);color:var(--color-text-primary);font-size:15px;cursor:pointer">Peruuta</button><button id="cm-ok" style="flex:1;padding:12px;border-radius:10px;border:none;background:#c0392b;color:#fff;font-size:15px;font-weight:600;cursor:pointer">Poista</button></div></div>';document.body.appendChild(el);}document.getElementById('cm-title').textContent=title;document.getElementById('cm-msg').innerHTML=msg;document.getElementById('cm-ok').onclick=function(){closeConfirmModal();onOk();};el.style.display='flex';}
+function closeConfirmModal(){var el=document.getElementById('confirm-modal');if(el)el.style.display='none';}
 function openAddModal(){document.getElementById('inp-name').value='';document.getElementById('inp-nick').value='';document.getElementById('modal-add').classList.add('open');setTimeout(function(){document.getElementById('inp-name').focus();},100);}
 function addPlayer(){var name=document.getElementById('inp-name').value.trim();if(!name)return;var nick=document.getElementById('inp-nick').value.trim();PL.push({id:Date.now(),name:name,nick:nick,joined:new Date().toISOString().slice(0,7),stats:{games:0,wins:0,soloGames:0,soloWins:0,curStreak:0,bestStreak:0,winPct:0,bestRound:0,over100:0,fastestWins:{},hits:{bigSingle:0,smallSingle:0,double:0,triple:0,outerBull:0,innerBull:0},gameHistory:{}}});saveP();closeModal('modal-add');renderProfiles();}
 document.getElementById('inp-name').addEventListener('keydown',function(e){if(e.key==='Enter')addPlayer();});
@@ -1226,7 +2667,25 @@ endGame=function(){
   G.players.forEach(function(p){
     if(p.isAI||p.id<0)return;
     var won=order[0]===p.id;var score=G.scores[p.id]||0;
-    recordGame(p.id,G.gid,score,won,rounds);
+    // Kerää heittotilastot profiilista (recordHit on päivittänyt niitä pelin aikana)
+    var fp2=PL.find(function(x){return x.id===p.id;});
+    var hitsNow=fp2&&fp2.stats&&fp2.stats.hits||{};
+    // Laske tämän pelin aikana kertyneet uudet heitot (snap otetaan pelin alussa)
+    var snapKey='_hitSnap_'+G.gid+'_'+(G.startTs||0);
+    var snap=fp2&&fp2[snapKey]||{};
+    var throwStats={
+      triples:(hitsNow.triple||0)-(snap.triple||0),
+      doubles:(hitsNow.double||0)-(snap.double||0),
+      singles:(hitsNow.bigSingle||0)-(snap.bigSingle||0)+(hitsNow.smallSingle||0)-(snap.smallSingle||0),
+      misses:(hitsNow.miss||0)-(snap.miss||0),
+      bulls:(hitsNow.innerBull||0)-(snap.innerBull||0)+(hitsNow.outerBull||0)-(snap.outerBull||0),
+      pts:0,total:0
+    };
+    throwStats.total=throwStats.triples+throwStats.doubles+throwStats.singles+throwStats.misses+throwStats.bulls;
+    throwStats.pts=throwStats.triples*45+throwStats.doubles*25+throwStats.singles*10+throwStats.bulls*37;
+    if(fp2)delete fp2[snapKey];
+    // Tallenna myös pelin asetukset vertailua varten
+    recordGame(p.id,G.gid,score,won,rounds,throwStats,G.opts);
     var fp=PL.find(function(x){return x.id===p.id;});if(!fp)return;
     fp.stats=fp.stats||{};fp.stats.games=(fp.stats.games||0)+1;
     if(won){fp.stats.wins=(fp.stats.wins||0)+1;fp.stats.fastestWins=fp.stats.fastestWins||{};if(!fp.stats.fastestWins[G.gid]||rounds<fp.stats.fastestWins[G.gid])fp.stats.fastestWins[G.gid]=rounds;}
