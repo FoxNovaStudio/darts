@@ -1593,6 +1593,33 @@ function getRules(gid){
         ]}
       ],
       tip:'💡 Heitä systemaattisesti kaikki numerot läpi — et tiedä missä laivat ovat. Jos saat 1 osuman johonkin numeroon, jatka samaan! 3 osumaa = laiva uppoaa.'
+    },
+    legover:{
+      short:'Ylitä arvottu pistemäärä — onnistui → seuraavalle vaikeampi luku!',
+      goal:'📈 Joka vuorolla on kohdeluku. Sinun pitää ylittää se kolmella tikalla. Onnistuit? Seuraavalle arvotaan suurempi luku. Epäonnistuit? Menetät elämän ja seuraavalle arvotaan uusi satunnainen luku.',
+      sections:[
+        {title:'Säännöt',items:['Sovellus antaa kohdeluvun (esim. 45). Heität 3 tikkaa.','Jos yhteispisteet ylittävät kohdeluvun → onnistuit! Seuraavan kohdeluku kasvaa (max 170).','Jos et ylitä → menetät elämän. Seuraavalle arvotaan uusi luku väliltä 20–70.','Pelaaja joka menettää kaikki elämät tippuu pelistä.']},
+        {title:'Vaikeuden kasvu',items:['Jokainen onnistunut suoritus tekee seuraavasta luvusta 5–20 pistettä suuremman.','Epäonnistuminen nollaa vaikeuden — uusi satunnainen luku.']}
+      ],
+      tip:'💡 T20 (60p) ylittää luvut alle 60. Luvun kasvaessa yli 100p tarvitset kahta triplaa tai bull-osumia!'
+    },
+    legunder:{
+      short:'Alita arvottu pistemäärä — onnistui → seuraavalle vaikeampi (pienempi) luku!',
+      goal:'📉 Sama kuin Leg Over mutta käänteisesti. Sinun pitää alittaa kohdeluku kolmella tikalla. Onnistuit? Seuraavalle arvotaan pienempi luku. Epäonnistuit? Menetät elämän.',
+      sections:[
+        {title:'Säännöt',items:['Sovellus antaa kohdeluvun (esim. 60). Heität 3 tikkaa.','Jos yhteispisteet jäävät alle kohdeluvun (ja yli 0) → onnistuit!','Seuraavan kohdeluku pienenee 5–15 pistettä (min 10).','Jos et alita tai heität 0 → menetät elämän.']},
+        {title:'Strategia',items:['Pienet numerot ja miss-heitot pitävät summan matalana.','Luvun pienentyessä alle 15p vaaditaan erittäin matalia heittoja — lähes pakko heittää ohi!']}
+      ],
+      tip:'💡 Alittaaksesi 20p tarvitset todella matalia heittoja. Numero 1 (1p) ja pieni-single auttavat!'
+    },
+    littlebig:{
+      short:'Osu kohdenumeroon tai menetät elämän — ja voit määrätä seuraavan kohteen!',
+      goal:'🎯 Joka kierros on kohdenumero (1–20). Sinun pitää osua siihen vähintään kerran kolmella tikalla. Ossuit? Jäljellä olevilla tikoilla voit heittää minkä tahansa numeron — siitä tulee seuraavan pelaajan kohde!',
+      sections:[
+        {title:'Säännöt',items:['Kohdenumero arvotaan kierroksen alussa (1–20).','Heität 3 tikkaa. Vähintään yksi osuma kohdenumeroon riittää.','Jos ei yhtään osumaa → menetät elämän.','Ossuit kohteeseen ja tikkoja jäljellä? Voit heittää haluamaasi numeroon — se tulee seuraavan pelaajan kohteeksi!']},
+        {title:'Strategia',items:['Osu kohteeseen ensimmäisellä tikalla, sitten valinnanvapaus lopuille.','Määrää seuraavalle vaikea numero (esim. 1 tai 3) — tikkataulun reuna-alueet ovat vaikeita!','Voit myös olla hyvä ja antaa helpomman kohteen — tai sabotoida!']}
+      ],
+      tip:'💡 Numero 20 on helpoin osua (iso sektori). Hankalimmat ovat 3, 11, 14 — pienissä sektoreissa olevat numerot!'
     }
   };
   return R[gid]||{short:'',goal:'',sections:[],tip:''};
@@ -1839,7 +1866,10 @@ var GAMES=[
   {id:'jailer',n:'Vanginvartija',ic:'🔒',bg:'#EEEDFE',fc:'#3C3489',cat:'Erikois'},
   {id:'thief',n:'Varas',ic:'🦹',bg:'#FAECE7',fc:'#712B13',cat:'Erikois'},
   {id:'knockdown',n:'Kaatokisa',ic:'🎳',bg:'#F1EFE8',fc:'#444441',cat:'Erikois'},
-  {id:'battle',n:'Taistelu',ic:'🚢',bg:'#E6F1FB',fc:'#0C447C',cat:'Erikois',min:2,max:2}
+  {id:'battle',n:'Taistelu',ic:'🚢',bg:'#E6F1FB',fc:'#0C447C',cat:'Erikois',min:2,max:2},
+  {id:'legover',n:'Leg Over',ic:'📈',bg:'#FAEEDA',fc:'#633806',cat:'Erikois'},
+  {id:'legunder',n:'Leg Under',ic:'📉',bg:'#E6F1FB',fc:'#0C447C',cat:'Erikois'},
+  {id:'littlebig',n:'Little Big',ic:'🎯',bg:'#FBEAF0',fc:'#72243E',cat:'Erikois'}
 ];
  
 function renderGamesList(){var el=document.getElementById('games-list');var h='';['Perus','Haaste','Cricket','Erikois'].forEach(function(cat){h+='<div class="sec-lbl">'+cat+'</div><div class="gl">';GAMES.filter(function(g){return g.cat===cat;}).forEach(function(g){var r=getRules(g.id);h+='<div class="gc"><div class="gi" style="background:'+g.bg+';color:'+g.fc+'" onclick="openSetup(\''+g.id+'\')">'+g.ic+'</div><div style="flex:1;min-width:0;cursor:pointer" onclick="openSetup(\''+g.id+'\')"><div class="gn">'+g.n+'</div><div class="gd">'+r.short+'</div></div><button class="gc-qbtn" onclick="showRules(\''+g.id+'\',\'← Pelit\',false);event.stopPropagation()">?</button><span style="color:var(--color-text-tertiary);font-size:16px;cursor:pointer;padding-left:4px" onclick="openSetup(\''+g.id+'\')">›</span></div>';});h+='</div>';});el.innerHTML=h;}
@@ -1853,7 +1883,10 @@ function renderOpts(gid){var oc=document.getElementById('opts-card'),ob=document
 function mkOpts(key,vals,def){S.opts[key]=def;return'<div class="orow" id="orow-'+key+'">'+vals.map(function(v){return'<button class="ob'+(v===def?' on':'')+'" data-key="'+key+'" data-val="'+v+'" onclick="pickOpt(this)">'+v+'</button>';}).join('')+'</div>';}
 function pickOpt(b){S.opts[b.dataset.key]=+b.dataset.val;var row=document.getElementById('orow-'+b.dataset.key);if(row)row.querySelectorAll('.ob').forEach(function(x){x.classList.toggle('on',x===b);});}
 function getOptsCfg(gid){switch(gid){case 'g100':return{title:'Tavoitepisteet',html:mkOpts('target',[100,200,300,400,500,600,700,800,900],100)};case 'g501':return{title:'Aloituspisteet',html:mkOpts('target',[101,201,301,401,501,601,701,801,901],501)};case 'gotcha':return{title:'Tavoite',html:mkOpts('target',[101,201,301,401,501,601,701,801,901],301)};case 'nines':return{title:'Elämät',html:mkOpts('lives',[3,6,9],3)};case 'clock':return{title:'Tavoitenumero',html:mkOpts('target',[5,10,15,20],20)};case 'golf':return{title:'Reikiä',html:mkOpts('holes',[9,18],9)};case 'killer':return{title:'Elämät',html:mkOpts('lives',[1,2,3,4,5,6,7,8,9],3)};case 'jailer':return{title:'Kohdenumeroita',html:mkOpts('target',[5,10,15,20],10)};case 'halveit':return{title:'Kierroksia',html:mkOpts('rounds',[8,12,16,20],12)};case 'stairs':return{title:'Aloitustavoite',html:mkOpts('start',[10,15,20],10)};case 'shadow':return{title:'Kierroksia',html:mkOpts('rounds',[5,10,15,20],10)};case 'fives':return{title:'Asetukset',html:'<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Pisteraja (5:n tarkkuus)</div><div style="display:flex;align-items:center;gap:12px"><button onclick="fivesAdj(-5)" style="width:40px;height:40px;border-radius:50%;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);font-size:22px;cursor:pointer;font-family:inherit;flex-shrink:0">−</button><div style="flex:1;text-align:center"><span id="fives-val-disp" style="font-size:36px;font-weight:500;color:var(--color-text-primary)">'+(S.opts.target||50)+'</span><div style="font-size:12px;color:var(--color-text-tertiary);margin-top:2px">pistettä</div></div><button onclick="fivesAdj(5)" style="width:40px;height:40px;border-radius:50%;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);font-size:22px;cursor:pointer;font-family:inherit;flex-shrink:0">+</button></div></div><div style="margin-top:4px"><div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Pelitapa</div><div style="display:flex;flex-direction:column;gap:8px"><div onclick="fivesSetBust(false)" id="fives-mode-free" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--border-radius-md);border:0.5px solid #1D9E75;background:#E1F5EE;cursor:pointer"><div style="width:16px;height:16px;border-radius:50%;border:2px solid #1D9E75;background:#1D9E75;flex-shrink:0;display:flex;align-items:center;justify-content:center"><div style="width:6px;height:6px;border-radius:50%;background:#fff"></div></div><div><div style="font-size:14px;font-weight:500;color:#085041">Vapaa</div><div style="font-size:11px;color:#0F6E56;margin-top:1px">Pisteet voivat ylittää rajan — voitto kun raja ylittyy</div></div></div><div onclick="fivesSetBust(true)" id="fives-mode-bust" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);cursor:pointer"><div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--color-border-secondary);flex-shrink:0"></div><div><div style="font-size:14px;font-weight:500">Tarkka (kuten 501)</div><div style="font-size:11px;color:var(--color-text-tertiary);margin-top:1px">Yli meneminen palauttaa pisteet vuoron alkuun</div></div></div></div></div>'};
-case 'engcrkt':return{title:'Hilat',html:mkOpts('wickets',[2,3,4,5,6,7,8,9,10],10)};case 'thief':return{title:'Pisteraja',html:mkOpts('target',[100,200,300,400,500,600,700,800,900],300)+'<div style="margin-top:10px;display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:var(--color-text-secondary)">Suojattu johtaja</span><button id="tog-soloMode" class="toggle off" onclick="S.opts.soloMode=!S.opts.soloMode;this.className=\'toggle \'+(S.opts.soloMode?\'on\':\'off\')"></button></div><div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Kun päällä: ruutu siirtyy uudelle omistajalle mutta vanhalta ei varasteta pisteitä. Kun pois: pisteet varastetaan edelliseltä omistajalta</div>'};default:return null;}}
+case 'engcrkt':return{title:'Hilat',html:mkOpts('wickets',[2,3,4,5,6,7,8,9,10],10)};
+case 'legover':return{title:'Elämät',html:mkOpts('lives',[3,6,9],3)};
+case 'legunder':return{title:'Elämät',html:mkOpts('lives',[3,6,9],3)};
+case 'littlebig':return{title:'Elämät',html:mkOpts('lives',[3,6,9],3)};case 'thief':return{title:'Pisteraja',html:mkOpts('target',[100,200,300,400,500,600,700,800,900],300)+'<div style="margin-top:10px;display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:var(--color-text-secondary)">Suojattu johtaja</span><button id="tog-soloMode" class="toggle off" onclick="S.opts.soloMode=!S.opts.soloMode;this.className=\'toggle \'+(S.opts.soloMode?\'on\':\'off\')"></button></div><div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Kun päällä: ruutu siirtyy uudelle omistajalle mutta vanhalta ei varasteta pisteitä. Kun pois: pisteet varastetaan edelliseltä omistajalta</div>'};default:return null;}}
  
 var G=null;
 function fivesAdj(delta){S.opts.target=Math.max(5,Math.min(500,(S.opts.target||50)+delta));var el=document.getElementById('fives-val-disp');if(el)el.textContent=S.opts.target;}
@@ -1877,6 +1910,25 @@ function buildG(gid,ps,opts){
     case 'battle':g.ex.phase='setup';g.ex.ships={};g.ex.shipHits={};g.ex.bhits={};g.ex.hitLog=[];g.ex.si=0;ps.forEach(function(p){g.ex.ships[p.id]=[];g.ex.bhits[p.id]=0;});break;
     case 'thief':g.ex.hits={};g.ex.owner={};g.ex.pts={};g.ex.soloMode=opts.soloMode||false;ps.forEach(function(p){g.ex.hits[p.id]={};g.ex.pts[p.id]={};});break;
     case 'knockdown':{g.ex.tgts={};g.ex.knocked=[];var n=ps.length;var mpp=Math.min(5,Math.floor(20/n));var allNums=[];for(var ki=1;ki<=20;ki++)allNums.push(ki);allNums.sort(function(){return Math.random()-.5;});ps.forEach(function(p,i){var nums=allNums.slice(i*mpp,(i+1)*mpp);g.ex.tgts[p.id]=nums.map(function(num){return{n:num,up:true};});});break;}
+    case 'legover':case 'legunder':{
+      g.ex.lives={};g.ex.target={};
+      ps.forEach(function(p){g.ex.lives[p.id]=opts.lives||3;});
+      // Ensimmäiselle pelaajalle arvotaan aloitusluku (ei edeltäjää)
+      var isOver2=gid==='legover';
+      var initVal=isOver2?(20+Math.floor(Math.random()*41)):(40+Math.floor(Math.random()*41));
+      g.ex.target[ps[0].id]=initVal;
+      g.ex.lastScore=null; // edellisen pelaajan heittämä summa
+      break;
+    }
+    case 'littlebig':{
+      g.ex.lives={};
+      g.ex.target=Math.floor(Math.random()*20)+1; // kohdenumero 1-20
+      g.ex.hitThisTurn=false; // onko osuttu kohteeseen tällä vuorolla
+      g.ex.canAssign=false;   // voiko pelaaja nyt määrätä kohteen seuraavalle
+      g.ex.assignMode=false;  // odottaako käyttäjä kohteen heittoa
+      ps.forEach(function(p){g.ex.lives[p.id]=opts.lives||3;});
+      break;
+    }
     case 'fives':g.ex.win=opts.target||50;g.ex.bustMode=opts.bustMode||false;g.ex.fivesSnap={};ps.forEach(function(p){g.ex.fivesSnap[p.id]=0;});break;
     case 'clock':g.ex.prog={};g.ex.tgt=opts.target||20;ps.forEach(function(p){g.ex.prog[p.id]=0;});break;
     case 'gotcha':g.ex.win=opts.target||301;g.ex.gotchaSnap={};ps.forEach(function(p){g.ex.gotchaSnap[p.id]=0;});break;
@@ -1984,22 +2036,33 @@ function applyThrow(t){
       break;}
     case 'knockdown':{
       if(t.miss)break;var kn=+t.num;
-      // Muiden kaadetut keilat nousevat — PAITSI jos pelaaja on jo knocked (kaikki kaadettu)
       G.players.forEach(function(p){
         if(p.id!==cp.id&&G.ex.knocked.indexOf(p.id)<0){
           G.ex.tgts[p.id].forEach(function(tg){if(tg.n===kn&&!tg.up)tg.up=true;});
         }
       });
-      // Omat keilat: jos itse ei ole knocked, kaatuu/nousee normaalisti
       if(G.ex.knocked.indexOf(cp.id)<0){
         G.ex.tgts[cp.id].forEach(function(tg){
           if(tg.n===kn&&tg.up)tg.up=false;
           else if(tg.n===kn&&!tg.up)tg.up=true;
         });
-        // Tarkista voitto heti: kaikki omat kaadettu
         if(G.ex.tgts[cp.id].every(function(tg){return!tg.up;})){
           G.ex.knocked.push(cp.id);
         }
+      }
+      break;}
+
+    case 'legover':case 'legunder':{
+      // Kerää pisteet — tarkistus tapahtuu confirmTurn:issa
+      if(!t.miss)G.scores[cp.id]+=t.pts;
+      break;}
+
+    case 'littlebig':{
+      if(t.miss)break;
+      var lbTgt=G.ex.target;
+      if(+t.num===lbTgt&&!t.bull){
+        // Osui kohteeseen!
+        G.ex.hitThisTurn=true;
       }
       break;}
   }
@@ -2037,6 +2100,15 @@ function checkMidTurnWin(){
     case 'ptscrkt':{var CN6=[15,16,17,18,19,20,'B'];if(CN6.every(function(n){return G.players.every(function(p){return(G.ex.marks[p.id][n]||0)>=3;});})){startWinTmr(G.players.reduce(function(a,b){return G.scores[a.id]>G.scores[b.id]?a:b;}));renderG();return true;}break;}
     case 'ctcrkt':{var CN7=[15,16,17,18,19,20,'B'];if(CN7.every(function(n){return G.players.every(function(p){return(G.ex.marks[p.id][n]||0)>=3;});})){startWinTmr(G.players.reduce(function(a,b){return G.scores[a.id]<G.scores[b.id]?a:b;}));renderG();return true;}break;}
     case 'killer':{if(G.ex.phase!=='play')break;var alive=G.players.filter(function(p){return G.ex.lives[p.id]>0;});if(alive.length<=1){startWinTmr(alive[0]||cp);renderG();return true;}break;}
+    case 'littlebig':{
+      // Jos osui kohteeseen, voi nyt määrätä seuraavalle kohteen jäljellä olevilla tikoilla
+      if(G.ex.hitThisTurn&&!G.ex.assignMode){
+        G.ex.canAssign=true;
+        G.ex.assignMode=true;
+        renderG();
+        return true; // pysäytä normaali vuoronkulku — jatko tapahtuu confirmTurnissa tai assignissa
+      }
+      break;}
     case 'thief':if(G.scores[cp.id]>=(G.opts.target||300)){startWinTmr(cp);renderG();return true;}break;
     case 'knockdown':break;
     case 'battle':if((G.ex.bhits[cp.id]||0)>=3){startWinTmr(cp);renderG();return true;}break;
@@ -2064,9 +2136,108 @@ function checkMidTurnWin(){
   return false;
 }
  
-function getTI(){switch(G.gid){case 'shanghai':return'Kierros '+G.round+(G.round>7?' (lisäkierros)':'/7')+' · Kohde: '+G.round;case 'halveit':{var _origRounds=G.opts.rounds||12;var _isExtra=G.ex.hi>=_origRounds;return'Kierros '+(G.ex.hi+1)+(_isExtra?' (lisäkierros!)':'/'+_origRounds)+' · Kohde: '+(G.ex.targets[G.ex.hi]?G.ex.targets[G.ex.hi].label:'-');}case 'jailer':return'Kierros '+G.round+' · Kohde ▶'+G.ex.tnum+'/'+G.ex.tmax+' · '+G.throws.length+'/'+jailMaxThrows(G.players[G.ci].id);default:return'Kierros '+G.round+' · '+G.throws.length+'/3';}}
-function getSD(p){var s=G.scores[p.id];switch(G.gid){case 'g501':return{m:s,e:s<=170&&s>1?'lopetus':''};case 'killer':return{m:G.ex.nums[p.id]||'?',e:G.ex.killers[p.id]?'KILLER ♥'+G.ex.lives[p.id]:s+'/3'};case 'stairs':return{m:s,e:G.ex.eliminated[p.id]?'tippui':''};case 'clock':return{m:G.ex.prog[p.id],e:'/'+G.ex.tgt};case 'scrkt':{var CN8=[15,16,17,18,19,20,'B'];return{m:CN8.filter(function(n){return(G.ex.marks[p.id][n]||0)>=3;}).length+'/7',e:''}}case 'ptscrkt':case 'ctcrkt':return{m:s,e:''};case 'engcrkt':return{m:s,e:p.id===G.ex.batter?'Lyöjä':'Keilaaja'};case 'jailer':return{m:jailTotal(p.id)>=3?'❌':'🎯'+(G.ex.survived[p.id]||0),e:jailTotal(p.id)>0?jailTotal(p.id)+'🔒':''};default:return{m:s,e:''};}}
+function getTI(){switch(G.gid){case 'shanghai':return'Kierros '+G.round+(G.round>7?' (lisäkierros)':'/7')+' · Kohde: '+G.round;case 'halveit':{var _origRounds=G.opts.rounds||12;var _isExtra=G.ex.hi>=_origRounds;return'Kierros '+(G.ex.hi+1)+(_isExtra?' (lisäkierros!)':'/'+_origRounds)+' · Kohde: '+(G.ex.targets[G.ex.hi]?G.ex.targets[G.ex.hi].label:'-');}case 'jailer':return'Kierros '+G.round+' · Kohde ▶'+G.ex.tnum+'/'+G.ex.tmax+' · '+G.throws.length+'/'+jailMaxThrows(G.players[G.ci].id);case 'legover':case 'legunder':{var cp2=G.players[G.ci];var tgt2=G.ex.target[cp2.id];return'Kierros '+G.round+' · Tavoite: '+(G.gid==='legover'?'yli ':'alle ')+tgt2+' · '+G.throws.length+'/3';}
+    case 'littlebig':return'Kierros '+G.round+(G.ex.assignMode?' · Määrää kohde!':' · Kohde: '+G.ex.target)+' · '+G.throws.length+'/3';
+    default:return'Kierros '+G.round+' · '+G.throws.length+'/3';}}
+function getSD(p){var s=G.scores[p.id];switch(G.gid){case 'g501':return{m:s,e:s<=170&&s>1?'lopetus':''};case 'killer':return{m:G.ex.nums[p.id]||'?',e:G.ex.killers[p.id]?'KILLER ♥'+G.ex.lives[p.id]:s+'/3'};case 'stairs':return{m:s,e:G.ex.eliminated[p.id]?'tippui':''};case 'clock':return{m:G.ex.prog[p.id],e:'/'+G.ex.tgt};case 'scrkt':{var CN8=[15,16,17,18,19,20,'B'];return{m:CN8.filter(function(n){return(G.ex.marks[p.id][n]||0)>=3;}).length+'/7',e:''}}case 'ptscrkt':case 'ctcrkt':return{m:s,e:''};case 'engcrkt':return{m:s,e:p.id===G.ex.batter?'Lyöjä':'Keilaaja'};case 'jailer':return{m:jailTotal(p.id)>=3?'❌':'🎯'+(G.ex.survived[p.id]||0),e:jailTotal(p.id)>0?jailTotal(p.id)+'🔒':''};case 'legover':case 'legunder':{var llv=G.ex.lives[p.id]||0;return{m:'♥×'+llv,e:G.ex.target[p.id]?(G.gid==='legover'?'>':'<')+G.ex.target[p.id]:'?'};}
+    case 'littlebig':{var lblv=G.ex.lives[p.id]||0;return{m:'♥×'+lblv,e:'→'+G.ex.target};}
+    default:return{m:s,e:''};}}
  
+function renderLeg(){
+  var cp=G.players[G.ci];
+  var isOver=G.gid==='legover';
+  var tgt=G.ex.target[cp.id]||50;
+  var sum=G.throws.reduce(function(a,t){return a+t.pts;},0);
+  var done3=G.throws.length>=3;
+  var succeeded=isOver?(sum>tgt):(sum<tgt&&sum>0);
+  var h='';
+  h+='<div class="order-banner">Järjestys: '+G.players.map(function(p,i){
+    var dead=(G.ex.lives[p.id]||0)<=0;
+    return '<span style="'+(i===G.ci?'color:var(--color-text-primary);font-weight:500':dead?'opacity:.3':'')+'">'+(p.isAI?p.emoji+' ':'')+p.name.split(' ')[0]+(dead?' ✗':'')+'</span>';
+  }).join(' → ')+'</div>';
+  h+='<div class="shdr"><div class="shdr-l"><div class="scp">'+(cp.isAI?cp.emoji+' ':'')+cp.name+'</div>';
+  h+='<div class="sti">Kierros '+G.round+' · '+G.throws.length+'/3</div></div>';
+  if(done3&&!cp.isAI)h+='<div class="tbox"><div class="tnum ok" id="tmr-n">5</div><div class="tbtns"><button class="tcancel" onclick="cancelTmr()">&#8617; Peruuta</button><button class="tskip" onclick="skipTmr()">Seuraava &#8594;</button></div></div>';
+  h+='</div>';
+  h+='<div class="sbar">'+G.players.map(function(p,i){
+    var lv=G.ex.lives[p.id]||0,ml=G.opts.lives||3;
+    var hearts=Array.from({length:ml},function(_,j){return '<span class="life-heart'+(j>=lv?' lost':'')+'">&#9829;</span>';}).join('');
+    var ptgt=G.ex.target[p.id];
+    return '<div class="chip'+(i===G.ci?' act':'')+'"><div class="cn">'+(p.isAI?p.emoji+' ':'')+p.name.split(' ')[0]+'</div><div class="cs">'+(ptgt?(isOver?'>':'<')+ptgt:'?')+'</div><div class="ce">'+hearts+'</div></div>';
+  }).join('')+'</div>';
+  h+='<div class="ib" style="font-size:16px;text-align:center;padding:16px">Tavoite: heittää <b>'+(isOver?'yli':'alle')+' '+tgt+' pistettä</b></div>';
+  h+='<div class="ib" style="text-align:center;font-size:20px;font-weight:600;color:'+(done3?(succeeded?'#1D9E75':'#E24B4A'):'var(--color-text-primary)')+'">Yhteensä: '+sum+'p'+(done3?(succeeded?' &#10003; Onnistui!':' &#10007; Epäonnistui'):' ...')+'</div>';
+  h+=renderBoard();
+  h+='<div class="trow">'+[0,1,2].map(function(i){var t=G.throws[i];if(!t)return '<div class="tc">—</div>';return '<div class="tc '+(t.miss?'miss':t.bull?'bull':'hit')+'">'+t.label+'</div>';}).join('')+'</div>';
+  if(!done3&&!cp.isAI){
+    var qbtns=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(function(n){return '<button class="qb" onclick="reg('+n+String.fromCharCode(44)+"'big_single'"+String.fromCharCode(44)+"'"+n+"'"+')">'+n+'</button>';}).join('');
+    h+='<div class="qrow"><span style="font-size:11px;color:var(--color-text-tertiary);align-self:center;margin-right:4px">Pika:</span>'+qbtns;
+    h+='<button class="qb" onclick="regOB()">OB</button>';
+    h+='<button class="qb" onclick="regIB()">IB</button>';
+    h+='<button class="qb" style="color:#c00" onclick="regMiss()">Ohi</button></div>';
+    h+='<div class="gacts"><button class="ga dn" onclick="undoT()">&#8617; Kumoa</button></div>';
+  }
+  document.getElementById('game-area').innerHTML=h;
+  attachBoard();
+  if(done3&&!cp.isAI)startTmr();
+}
+
+function renderLittleBig(){
+  var cp=G.players[G.ci];
+  var tgt=G.ex.target;
+  var done3=G.throws.length>=3;
+  var hit=G.ex.hitThisTurn;
+  var assignMode=G.ex.assignMode;
+  var h='';
+  h+='<div class="order-banner">Järjestys: '+G.players.map(function(p,i){
+    var dead=(G.ex.lives[p.id]||0)<=0;
+    return '<span style="'+(i===G.ci?'color:var(--color-text-primary);font-weight:500':dead?'opacity:.3':'')+'">'+(p.isAI?p.emoji+' ':'')+p.name.split(' ')[0]+(dead?' ✗':'')+'</span>';
+  }).join(' → ')+'</div>';
+  h+='<div class="shdr"><div class="shdr-l"><div class="scp">'+(cp.isAI?cp.emoji+' ':'')+cp.name+'</div>';
+  h+='<div class="sti">Kierros '+G.round+(assignMode?' · Määrää kohde!':' · Kohde: '+tgt)+' · '+G.throws.length+'/3</div></div>';
+  if(!assignMode&&done3&&!cp.isAI)h+='<div class="tbox"><div class="tnum ok" id="tmr-n">5</div><div class="tbtns"><button class="tcancel" onclick="cancelTmr()">&#8617; Peruuta</button><button class="tskip" onclick="skipTmr()">Seuraava &#8594;</button></div></div>';
+  h+='</div>';
+  h+='<div class="sbar">'+G.players.map(function(p,i){
+    var lv=G.ex.lives[p.id]||0,ml=G.opts.lives||3;
+    var hearts=Array.from({length:ml},function(_,j){return '<span class="life-heart'+(j>=lv?' lost':'')+'">&#9829;</span>';}).join('');
+    return '<div class="chip'+(i===G.ci?' act':'')+'"><div class="cn">'+(p.isAI?p.emoji+' ':'')+p.name.split(' ')[0]+'</div><div class="cs">&#9829;&#215;'+lv+'</div><div class="ce">'+hearts+'</div></div>';
+  }).join('')+'</div>';
+  if(assignMode){
+    h+='<div class="ib" style="background:#E1F5EE;color:#085041;text-align:center;font-size:15px;font-weight:600;padding:14px">&#10003; Osuit kohteeseen '+tgt+'!</div>';
+    h+='<div class="ib" style="text-align:center;font-size:14px">Heitä jäljellä olevilla tikoilla haluamasi numero — se tulee seuraavan pelaajan kohteeksi.<br><span style="font-size:12px;color:var(--color-text-tertiary)">Tai ohita — peli arpoo kohteen automaattisesti.</span></div>';
+    h+=renderBoard();
+    h+='<div class="trow">'+[0,1,2].map(function(i){var t=G.throws[i];if(!t)return '<div class="tc">—</div>';return '<div class="tc '+(t.miss?'miss':'hit')+'">'+t.label+'</div>';}).join('')+'</div>';
+    if(!cp.isAI){
+      var lbBtns=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(function(n){return '<button class="qb'+(n===tgt?' hit-btn':'')+'" onclick="lbAssign('+n+')" style="'+(n===tgt?'background:#1D9E75;color:#fff':'')+'">'+(n===tgt?'★':'')+n+'</button>';}).join('');
+      h+='<div class="qrow"><span style="font-size:11px;color:var(--color-text-tertiary);align-self:center;margin-right:4px">Valitse:</span>'+lbBtns+'</div>';
+      h+='<div class="gacts"><button class="ga" onclick="confirmTurn()">Ohita (satunnainen) &#8594;</button></div>';
+    }
+  } else {
+    h+='<div class="ib" style="font-size:16px;text-align:center;padding:16px">Kohde: <b style="font-size:28px;color:#1D9E75">'+tgt+'</b></div>';
+    if(hit)h+='<div class="ib" style="background:#E1F5EE;color:#085041;text-align:center">&#10003; Osuit! Heitä loput tikat määrätäksesi kohteen.</div>';
+    h+=renderBoard();
+    h+='<div class="trow">'+[0,1,2].map(function(i){var t=G.throws[i];if(!t)return '<div class="tc">—</div>';var isHit2=!t.miss&&+t.num===tgt;return '<div class="tc '+(t.miss?'miss':isHit2?'hit':'miss')+'">'+t.label+'</div>';}).join('')+'</div>';
+    if(!done3&&!cp.isAI){
+      var numBtns=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(function(n){return '<button class="qb" onclick="reg('+n+",'big_single','"+n+"'"+')" style="'+(n===tgt?'background:#1D9E75;color:#fff;font-weight:700':'')+'">'+(n===tgt?'★':'')+n+'</button>';}).join('');
+      h+='<div class="qrow"><span style="font-size:11px;color:var(--color-text-tertiary);align-self:center;margin-right:4px">Pika:</span>'+numBtns;
+      h+='<button class="qb" style="color:#c00" onclick="regMiss()">Ohi</button></div>';
+      h+='<div class="gacts"><button class="ga dn" onclick="undoT()">&#8617; Kumoa</button></div>';
+    }
+  }
+  document.getElementById('game-area').innerHTML=h;
+  attachBoard();
+  if(!assignMode&&done3&&!cp.isAI)startTmr();
+}
+
+function regOB(){reg('B','bull_outer','OB');}
+function regIB(){reg('B','bull_inner','IB');}
+function regMiss(){reg(0,'miss','Ohi');}
+function lbAssign(n){
+  // Pelaaja heittää tikan määrätäkseen seuraavan kohteen
+  G.ex.target=n;
+  confirmTurn();
+}
+
 function renderBoard(){
   var NUMS=getBoardNums();var isSh=G&&G.gid==='shadow';var CX=260,CY=260,SZ=520;
   function toR(d){return d*Math.PI/180;}
@@ -2090,6 +2261,8 @@ function renderG(){
   if(G.gid==='battle'){if(G.ex.phase==='setup'){renderBattleSetup();return;}renderBattlePlay();return;}
   if(G.gid==='killer'&&G.ex.phase==='assign'){renderKillerAssign();return;}
   if(G.gid==='nines'){renderNines();return;}
+  if(G.gid==='legover'||G.gid==='legunder'){renderLeg();return;}
+  if(G.gid==='littlebig'){renderLittleBig();return;}
   var cp=G.players[G.ci];
   var isBust=(G.gid==='g501'||G.gid==='gotcha')&&G.throws.some(function(t){return t._bust;});
   var done3=G.throws.length>=3||isBust;var isAI=cp.isAI;var h='';
@@ -2313,6 +2486,51 @@ function confirmTurn(){
     case 'knockdown':break;
     case 'thief':if(G.scores[cp.id]>=(G.opts.target||300)){playerFinishes(cp);return;}break;
     case 'battle':if((G.ex.bhits[cp.id]||0)>=3){playerFinishes(cp);return;}break;
+
+    case 'legover':case 'legunder':{
+      var loIsOver=G.gid==='legover';
+      var loSum=ts.reduce(function(a,t){return a+t.pts;},0);
+      var loTgt=G.ex.target[cp.id];
+      var loSucceeded=loIsOver?(loSum>loTgt):(loSum<loTgt&&loSum>0);
+      if(!loSucceeded){
+        // Epäonnistui — menettää elämän
+        G.ex.lives[cp.id]=Math.max(0,(G.ex.lives[cp.id]||0)-1);
+        if(G.ex.lives[cp.id]<=0){
+          var loAlive=G.players.filter(function(p){return(G.ex.lives[p.id]||0)>0;});
+          if(loAlive.length<=1){G.throws=[];playerFinishes(loAlive[0]||cp);return;}
+        }
+      }
+      G.scores[cp.id]=loSum;
+      // Seuraavan kohde = TÄMÄN pelaajan heittämä summa
+      // (jos summa oli 0/epäkelpo, arvotaan kohtuullinen luku)
+      var loNext=G.players[(G.ci+1)%G.players.length];
+      var newTgt;
+      if(loSum>0){
+        newTgt=loSum; // tämän pisteet = seuraavan tavoite
+      } else {
+        // Heitti 0 tai miss — arvotaan kohtuullinen luku
+        newTgt=loIsOver?(20+Math.floor(Math.random()*41)):(40+Math.floor(Math.random()*41));
+      }
+      G.ex.lastScore=loSum;
+      G.ex.target[loNext.id]=newTgt;
+      break;}
+
+    case 'littlebig':{
+      // Osumaton → menettää elämän
+      if(!G.ex.hitThisTurn&&!G.ex.assignMode){
+        G.ex.lives[cp.id]=Math.max(0,(G.ex.lives[cp.id]||0)-1);
+        if(G.ex.lives[cp.id]<=0){
+          var lbAlive=G.players.filter(function(p){return(G.ex.lives[p.id]||0)>0;});
+          if(lbAlive.length<=1){G.throws=[];playerFinishes(lbAlive[0]||cp);return;}
+        }
+      }
+      // Resetoi assign-tila ja arvo uusi kohde
+      G.ex.hitThisTurn=false;
+      G.ex.assignMode=false;
+      G.ex.canAssign=false;
+      // Uusi kohdenumero seuraavalle kierrokselle
+      G.ex.target=Math.floor(Math.random()*20)+1;
+      break;}
   }
   if(G.gid==='jailer'){var jnx=(G.ci+1)%G.players.length;var jnp=G.players[jnx];G.ex.jailAtTurnStart[jnp.id]=Object.values(G.ex.pris[jnp.id]||{}).reduce(function(a,b){return a+b;},0);}
 
@@ -2321,7 +2539,7 @@ function confirmTurn(){
   G.throws=[];advanceTurn();
 }
  
-function advanceTurn(){var total=G.players.length;var next=(G.ci+1)%total,loops=0;while(loops<total){var p=G.players[next];var skip=hasFinished(p.id)||(G.gid==='stairs'&&G.ex.eliminated[p.id])||(G.gid==='nines'&&(G.ex.lives[p.id]||0)<=0)||(G.gid==='golf'&&G.ex.tiedPlayers&&G.ex.tiedPlayers.indexOf(p.id)<0)||(G.gid==='knockdown'&&G.ex.knocked.indexOf(p.id)>=0);if(!skip)break;next=(next+1)%total;loops++;}if(loops>=total||activePs().length===0){endGame();return;}G.ci=next;if(!G.done){renderG();playTurnChange();if(G.players[G.ci]&&G.players[G.ci].isAI)setTimeout(runAITurn,600);}}
+function advanceTurn(){var total=G.players.length;var next=(G.ci+1)%total,loops=0;while(loops<total){var p=G.players[next];var skip=hasFinished(p.id)||(G.gid==='stairs'&&G.ex.eliminated[p.id])||(G.gid==='nines'&&(G.ex.lives[p.id]||0)<=0)||((G.gid==='legover'||G.gid==='legunder'||G.gid==='littlebig')&&(G.ex.lives[p.id]||0)<=0)||(G.gid==='golf'&&G.ex.tiedPlayers&&G.ex.tiedPlayers.indexOf(p.id)<0)||(G.gid==='knockdown'&&G.ex.knocked.indexOf(p.id)>=0);if(!skip)break;next=(next+1)%total;loops++;}if(loops>=total||activePs().length===0){endGame();return;}G.ci=next;if(!G.done){renderG();playTurnChange();if(G.players[G.ci]&&G.players[G.ci].isAI)setTimeout(runAITurn,600);}}
 function playerFinishes(player){clearTmr();hideAIO();aiActive=false;if(!hasFinished(player.id))G.finishOrder.push(player.id);G.throws=[];if(activePs().length===0){endGame();return;}advanceTurn();}
 function recordGame(pid,gid,score,won,round,throwStats,opts){
   var fp=PL.find(function(p){return p.id===pid;});if(!fp||pid<0)return;
